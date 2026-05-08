@@ -26,7 +26,7 @@ jobs:
     - name: Checkout stripped dlls
       uses: actions/checkout@v4
       with:
-        repository: ScoreSaber/scoresaber-pc-ci-stripped
+        repository: ScoreSaber/pc-ci-stripped
         token: ${{ secrets.CI_PAT }}
         path: Stripped
         sparse-checkout: |
