@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <ScoreSaberDevelopmentUploadToken Condition="'$(ScoreSaberDevelopmentUploadToken)' == ''"></ScoreSaberDevelopmentUploadToken>
+    <ScoreSaberDevelopmentAuthNonce Condition="'$(ScoreSaberDevelopmentAuthNonce)' == ''"></ScoreSaberDevelopmentAuthNonce>
+    <ScoreSaberDevelopmentPlayerId Condition="'$(ScoreSaberDevelopmentPlayerId)' == ''"></ScoreSaberDevelopmentPlayerId>
+    <ScoreSaberDevelopmentPlayerName Condition="'$(ScoreSaberDevelopmentPlayerName)' == ''"></ScoreSaberDevelopmentPlayerName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ScoreSaberOfficialBuildId Condition="'$(ScoreSaberOfficialBuildId)' == ''"></ScoreSaberOfficialBuildId>
+    <ScoreSaberOfficialBuildCredential Condition="'$(ScoreSaberOfficialBuildCredential)' == ''"></ScoreSaberOfficialBuildCredential>
+    <ScoreSaberOfficialArtifactSha256 Condition="'$(ScoreSaberOfficialArtifactSha256)' == ''"></ScoreSaberOfficialArtifactSha256>
+  </PropertyGroup>
+</Project>

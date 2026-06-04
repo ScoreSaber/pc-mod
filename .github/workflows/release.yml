@@ -3,30 +3,71 @@ name: Build
 on:
    workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   Build:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Setup dotnet
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
       
     - name: Read manifest and set game version
       id: read-json
       run: |
-        json_content=$(cat ${{github.workspace}}/ScoreSaber/manifest.json)
+        json_content=$(cat ${{github.workspace}}/src/manifest.json)
         game_version=$(echo "$json_content" | jq -r .gameVersion)
+        plugin_version=$(echo "$json_content" | jq -r .version)
+        upload_version_hash=$(printf "%s%s" "$plugin_version" "$game_version" | md5sum | awk '{print $1}')
         echo "Game Version: $game_version"
-        echo "::set-output name=game_version::$game_version"  
+        echo "Plugin Version: $plugin_version"
+        echo "game_version=$game_version" >> "$GITHUB_OUTPUT"
+        echo "plugin_version=$plugin_version" >> "$GITHUB_OUTPUT"
+        echo "upload_version_hash=$upload_version_hash" >> "$GITHUB_OUTPUT"
+
+    - name: Register official build
+      id: official-build
+      shell: pwsh
+      run: |
+        $oidcResponse = Invoke-RestMethod `
+          -Uri $env:ACTIONS_ID_TOKEN_REQUEST_URL `
+          -Headers @{ Authorization = "Bearer $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN" }
+
+        $buildId = "scoresaber-pc-${{ github.run_id }}-${{ github.run_attempt }}"
+        $body = @{
+          buildId = $buildId
+          pluginVersion = "${{ steps.read-json.outputs.plugin_version }}"
+          gameVersion = "${{ steps.read-json.outputs.game_version }}"
+          uploadVersionHash = "${{ steps.read-json.outputs.upload_version_hash }}"
+          protocolVersion = 2
+          commitSha = "${{ github.sha }}"
+          sourceRepository = "${{ github.repository }}"
+          sourceRef = "${{ github.ref }}"
+          sourceWorkflowRef = "${{ github.workflow_ref }}"
+        } | ConvertTo-Json
+
+        $response = Invoke-RestMethod `
+          -Uri "https://scoresaber.com/api/v2/game/official-builds" `
+          -Method Post `
+          -ContentType "application/json" `
+          -Headers @{ Authorization = "Bearer $($oidcResponse.value)" } `
+          -Body $body
+
+        Write-Output "::add-mask::$($response.credential)"
+        "build_id=$($response.build.buildId)" >> $env:GITHUB_OUTPUT
+        "credential=$($response.credential)" >> $env:GITHUB_OUTPUT
         
     - name: Checkout stripped dlls
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
-        repository: ScoreSaber/scoresaber-pc-ci-stripped
+        repository: ScoreSaber/pc-ci-stripped
         token: ${{ secrets.CI_PAT }}
         path: Stripped
         sparse-checkout: |
@@ -46,25 +87,38 @@ jobs:
     - name: Acquire mod references
       uses: Goobwabber/download-beatmods-deps@1.3
       with:
-        manifest: ${{github.workspace}}/ScoreSaber/manifest.json
+        manifest: ${{github.workspace}}/src/manifest.json
+
+    - name: Acquire LeaderboardCore reference
+      shell: pwsh
+      run: |
+        $mods = Invoke-RestMethod -Uri "https://beatmods.com/api/v1/mod?gameVersion=${{ steps.read-json.outputs.game_version }}"
+        $leaderboardCore = $mods | Where-Object { $_.name -eq "LeaderboardCore" } | Select-Object -First 1
+        if ($null -eq $leaderboardCore) {
+          throw "LeaderboardCore was not found on BeatMods for ${{ steps.read-json.outputs.game_version }}"
+        }
+
+        $download = $leaderboardCore.downloads | Select-Object -First 1
+        $url = "https://beatmods.com$($download.url)"
+        Invoke-WebRequest -Uri $url -OutFile LeaderboardCore.zip
+        Expand-Archive -LiteralPath LeaderboardCore.zip -DestinationPath Refs -Force
         
     - name: Build
-      id: Build
       env:
         FrameworkPathOverride: /usr/lib/mono/4.8-api
-      run: dotnet build --configuration Release
+        ScoreSaberOfficialBuildId: ${{ steps.official-build.outputs.build_id }}
+        ScoreSaberOfficialBuildCredential: ${{ steps.official-build.outputs.credential }}
+      shell: pwsh
+      run: ./build.ps1 -Configuration Release -ReferencesDir "${{ github.workspace }}/Refs"
+
+    - name: Check formatting
+      run: dotnet format whitespace ScoreSaber.sln --verify-no-changes --no-restore --exclude src/Core/Api/Generated src/Libraries/SevenZip
       
     - name: Git Status
       run: git status
       
-    - name: Echo file name
-      run: echo $BUILDTEXT \($ASSEMBLYNAME\)
-      env:
-        BUILDTEXT: Filename=${{ steps.Build.outputs.filename }}
-        ASSEMBLYNAME: AssemblyName=${{ steps.Build.outputs.assemblyname }}
-        
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.Build.outputs.filename }}
-        path: ${{ steps.Build.outputs.artifactpath }}
+        name: ScoreSaber
+        path: src/bin/Release/zip/*.zip

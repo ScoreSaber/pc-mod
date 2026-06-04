@@ -3,7 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScoreSaber", "ScoreSaber\ScoreSaber.csproj", "{844132E4-CDFC-49D3-950D-38F62ED8B513}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScoreSaber", "src\ScoreSaber.csproj", "{844132E4-CDFC-49D3-950D-38F62ED8B513}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "openapi", "openapi", "{B018551F-92C4-86B1-9B11-E8915DB30FBA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScoreSaber.OpenApiTools", "tools\openapi\ScoreSaber.OpenApiTools\ScoreSaber.OpenApiTools.csproj", "{0996D012-0F1B-4B08-8D53-C983EF24EC24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +23,18 @@ Global
 		{844132E4-CDFC-49D3-950D-38F62ED8B513}.Dev|Any CPU.Build.0 = Dev|Any CPU
 		{844132E4-CDFC-49D3-950D-38F62ED8B513}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{844132E4-CDFC-49D3-950D-38F62ED8B513}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0996D012-0F1B-4B08-8D53-C983EF24EC24}.Dev|Any CPU.ActiveCfg = Debug|Any CPU
+		{0996D012-0F1B-4B08-8D53-C983EF24EC24}.Dev|Any CPU.Build.0 = Debug|Any CPU
+		{0996D012-0F1B-4B08-8D53-C983EF24EC24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0996D012-0F1B-4B08-8D53-C983EF24EC24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{844132E4-CDFC-49D3-950D-38F62ED8B513} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{B018551F-92C4-86B1-9B11-E8915DB30FBA} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{0996D012-0F1B-4B08-8D53-C983EF24EC24} = {B018551F-92C4-86B1-9B11-E8915DB30FBA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AD9D84F9-F24F-4505-9112-D5266A2D020D}

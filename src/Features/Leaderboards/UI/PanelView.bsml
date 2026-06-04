@@ -1,0 +1,19 @@
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <horizontal id='prompt-root' active='~prompt-active' pref-width='87' anchor-pos-x='-7' anchor-pos-y='10.3' pref-height='7' horizontal-fit='PreferredSize' child-align='UpperLeft' child-expand-width='false' spacing='1'>
+    <text id='prompt-text-component' text='~prompt-text' anchor-pos-x='0' anchor-pos-y='10' align='BottomLeft' italics='true' overflow-mode='Ellipsis' font-size='3.5' />
+    <loading-indicator id='prompt-loader' active='~prompt-loader-active' preserve-aspect='true' pref-width='4' pref-height='4' />
+  </horizontal>
+  <vertical pref-width='70' pref-height='10' child-expand-width='false' child-expand-height='false'>
+    <horizontal id='content-root' pref-width='70' pref-height='10' child-expand-width='false'>
+      <vertical pref-width='60' pref-height='10' spacing='-1'>
+        <clickable-text active='~is-clickable-top' text='~top-text' on-click='clicked-top' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~top-hover-hint' />
+        <text active='~not-is-clickable-top' text='~top-text' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~top-hover-hint' />
+        <clickable-text active='~is-clickable-bottom' text='~bottom-text' on-click='clicked-bottom' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~bottom-hover-hint' />
+        <text active='~not-is-clickable-bottom' text='~bottom-text' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~bottom-hover-hint' />
+      </vertical>
+      <vertical preferred-width='6' anchor-pos-x='35'>
+        <clickable-image src='#SettingsIcon' on-click='clicked-settings' preserve-aspect='true' size-delta-x='6' size-delta-y='6' pref-width='6' pref-height='6' hover-hint='Opens the ScoreSaber settings menu' />
+      </vertical>
+    </horizontal>
+  </vertical>
+</bg>

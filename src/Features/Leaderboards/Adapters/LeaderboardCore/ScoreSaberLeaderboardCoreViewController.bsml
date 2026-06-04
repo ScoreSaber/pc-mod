@@ -1,0 +1,22 @@
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <horizontal horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='100' pref-height='70' pad-left='7' pad-top='1'>
+    <vertical horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='9' pref-height='25' />
+    <vertical active='~scores-active' horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='80' pref-height='70'>
+      <leaderboard id='leaderboard' cell-size='5.99' />
+    </vertical>
+    <vertical active='~error-active' horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='80' pref-height='58' child-align='MiddleCenter' spacing='1.5'>
+      <text text='~error-title' align='Center' font-size='5' italics='true' />
+      <text text='~error-text' align='Center' font-size='3.1' overflow-mode='Ellipsis' />
+    </vertical>
+    <vertical active='~is-loading' pref-width='80' pref-height='10'>
+      <vertical pref-width='10'>
+        <loading-indicator preserve-aspect='true'/>
+      </vertical>
+    </vertical>
+  </horizontal>
+  <page-button direction='Up' anchor-pos-x='-40' anchor-pos-y='4' active='~up-enabled' pref-width='5' on-click='up-clicked' />
+  <vertical bg='round-rect-panel' bg-color='#ffffffaa' anchor-pos-x='-40' anchor-pos-y='3' pref-width='10' pref-height='35' vertical-fit='PreferredSize'>
+    <icon-segments id='scopes-segmented-control' data='scopes' />
+  </vertical>
+  <page-button direction='Down' anchor-pos-x='-40' anchor-pos-y='-40' active='~down-enabled' pref-width='5' on-click='down-clicked' />
+</bg>
