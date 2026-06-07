@@ -36,8 +36,9 @@ jobs:
       id: official-build
       shell: pwsh
       run: |
+        $audience = [Uri]::EscapeDataString("scoresaber-upload-build-registration")
         $oidcResponse = Invoke-RestMethod `
-          -Uri $env:ACTIONS_ID_TOKEN_REQUEST_URL `
+          -Uri "$env:ACTIONS_ID_TOKEN_REQUEST_URL&audience=$audience" `
           -Headers @{ Authorization = "Bearer $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN" }
 
         $buildId = "scoresaber-pc-${{ github.run_id }}-${{ github.run_attempt }}"
