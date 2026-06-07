@@ -25,7 +25,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         private SettingsService _settings;
         private RectTransform _promptRoot;
         private CurvedTextMeshPro _promptTextComponent;
-        private LoadingControl _promptLoader;
+        private GameObject _promptLoaderSlot;
         private RectTransform _contentRoot;
         private string _promptText = string.Empty;
         private bool _promptActive;
@@ -108,10 +108,10 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             set => _promptTextComponent = value;
         }
 
-        [UIComponent("prompt-loader")]
-        protected LoadingControl promptLoader {
-            get => _promptLoader;
-            set => _promptLoader = value;
+        [UIObject("prompt-loader-slot")]
+        protected GameObject promptLoaderSlot {
+            get => _promptLoaderSlot;
+            set => _promptLoaderSlot = value;
         }
 
         [UIComponent("content-root")]
@@ -198,6 +198,12 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             _promptDismissRemaining = dismissTime;
         }
 
+        public void DismissLoadingPrompt() {
+            if (promptLoading) {
+                DismissPrompt();
+            }
+        }
+
         public void Loaded(bool value) => isLoaded = value;
 
         internal void SetGlobalLeaderboardRanking(string text) => topText = text;
@@ -277,8 +283,8 @@ namespace ScoreSaber.Features.Leaderboards.UI {
                 _promptTextComponent.text = promptActive ? promptText : string.Empty;
             }
 
-            if (_promptLoader != null) {
-                _promptLoader.gameObject.SetActive(promptActive && promptLoading);
+            if (_promptLoaderSlot != null) {
+                _promptLoaderSlot.SetActive(promptActive && promptLoading);
             }
 
             if (_contentRoot != null) {

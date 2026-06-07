@@ -54,8 +54,10 @@ namespace ScoreSaber.Features.Leaderboards {
                     _panelView.SetPromptInfo(status, true);
                     break;
                 case GameSessionService.LoginStatus.Error:
+                    _panelView.SetPromptError(status, false);
+                    break;
                 case GameSessionService.LoginStatus.Success:
-                    _panelView.DismissPrompt();
+                    _panelView.SetPromptSuccess(status, false, 2f);
                     if (refreshLeaderboard) {
                         _leaderboardSession.RefreshFromFirstPage();
                     }

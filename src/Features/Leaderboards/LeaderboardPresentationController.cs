@@ -55,7 +55,7 @@ namespace ScoreSaber.Features.Leaderboards {
         }
 
         private void ShowLoadedLeaderboard(LeaderboardScreenState state) {
-            _panelView.DismissPrompt();
+            _panelView.DismissLoadingPrompt();
             _panelView.SetRankedStatus(state.RankedStatus);
             if (state.Leaderboard == null) {
                 return;
@@ -70,7 +70,7 @@ namespace ScoreSaber.Features.Leaderboards {
 
         private void ShowLeaderboardError(LeaderboardScreenState state) {
             _avatarHost.ClearAvatars();
-            _panelView.DismissPrompt();
+            _panelView.DismissLoadingPrompt();
             _panelView.SetRankedStatus(state.Leaderboard != null ? state.RankedStatus : "Unavailable");
         }
 

@@ -1,7 +1,9 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <horizontal id='prompt-root' active='~prompt-active' pref-width='87' anchor-pos-x='-8' anchor-pos-y='10.3' pref-height='7' horizontal-fit='PreferredSize' child-align='UpperLeft' child-expand-width='false' spacing='1'>
     <text id='prompt-text-component' text='~prompt-text' anchor-pos-x='0' anchor-pos-y='10' align='BottomLeft' italics='true' overflow-mode='Ellipsis' font-size='3.5' />
-    <loading-indicator id='prompt-loader' active='~prompt-loader-active' preserve-aspect='true' pref-width='4' pref-height='4' />
+    <vertical id='prompt-loader-slot' active='~prompt-loader-active' pref-width='4' pref-height='4' child-align='MiddleCenter' child-expand-width='false' child-expand-height='false'>
+      <loading-indicator id='prompt-loader' preserve-aspect='true' pref-width='4' pref-height='4' />
+    </vertical>
   </horizontal>
   <vertical pref-width='70' pref-height='10' child-expand-width='false' child-expand-height='false'>
     <horizontal id='content-root' pref-width='70' pref-height='10' child-expand-width='false'>
