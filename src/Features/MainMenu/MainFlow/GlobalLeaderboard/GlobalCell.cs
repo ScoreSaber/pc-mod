@@ -34,9 +34,10 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
 
         private readonly string _identifier;
         private readonly Action<string, string> _profileClicked;
+        private readonly Action _playClickSound;
         private readonly ScoreSaberUIMaterials _materials;
 
-        public GlobalCell(ScoreSaberUIMaterials materials, string id, string avatarUrl, string username, string country, string rank, double pp, Action<string, string> onActivateProfile = null) {
+        public GlobalCell(ScoreSaberUIMaterials materials, string id, string avatarUrl, string username, string country, string rank, double pp, Action<string, string> onActivateProfile = null, Action playClickSound = null) {
 
             _materials = materials;
             _identifier = id;
@@ -45,6 +46,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
             _username = username;
             _globalRank = rank;
             _profileClicked = onActivateProfile;
+            _playClickSound = playClickSound;
             _countryText = $"{country}";
             _flagUrl = ScoreSaberUrls.Flag(country);
         }
@@ -52,6 +54,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
         [UIAction("profile-clicked")]
         private void ProfileClicked() {
 
+            _playClickSound?.Invoke();
             _profileClicked?.Invoke(_identifier, _username);
         }
 
