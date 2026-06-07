@@ -1,7 +1,6 @@
 ﻿using ScoreSaber.Core.Api;
 using ScoreSaber.Core.Api.Paging;
 using ScoreSaber.Features.Players.Domain;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,11 +17,10 @@ namespace ScoreSaber.Features.Players.Services {
             Plugin.Log.Debug("GlobalPlayerQueryService Setup");
         }
 
-        public async Task<GlobalPlayerPage> GetPlayerPage(GlobalPlayerScope scope, int page) {
+        public async Task<GlobalPlayerPage> GetPlayerPage(GlobalPlayerScope scope, int page, CancellationToken cancellationToken) {
 
             PlayerListQuery query = BuildQuery(scope, page);
-            PagedResult<PlayerSummary> players = await _apiClient.GetPlayers(query, _gameSessionService.GameSession, CancellationToken.None);
-            await AddGlobalHistory(players);
+            PagedResult<PlayerSummary> players = await _apiClient.GetPlayers(query, _gameSessionService.GameSession, cancellationToken);
             return new GlobalPlayerPage {
                 Scope = scope,
                 Page = page,
@@ -45,16 +43,6 @@ namespace ScoreSaber.Features.Players.Services {
             GlobalPlayerScope.Region => PlayerQueryScope.Region,
             _ => PlayerQueryScope.Global
         };
-
-        private async Task AddGlobalHistory(PagedResult<PlayerSummary> players) {
-            foreach (PlayerSummary player in players.Items) {
-                try {
-                    player.GlobalHistory = await _apiClient.GetGlobalPlayerHistory(player.Id, CancellationToken.None);
-                } catch (Exception ex) {
-                    Plugin.Log.Debug($"Failed to load global history for player {player.Id}: {ex.Message}");
-                }
-            }
-        }
 
     }
 }

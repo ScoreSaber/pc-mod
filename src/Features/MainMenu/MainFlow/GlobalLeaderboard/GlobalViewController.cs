@@ -13,6 +13,7 @@ using ScoreSaber.Features.Players.Profile;
 using ScoreSaber.Features.Leaderboards.UI;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -77,6 +78,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
         private GlobalLeaderboardHost _globalLeaderboardHost = null;
         private SettingsService _settings = null;
         private ScoreSaberUIMaterials _materials = null;
+        private CancellationTokenSource _refreshCancellation = null;
 
         [Inject]
         protected void Construct(
@@ -130,13 +132,20 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
 
         private async Task RefreshDelayed() {
 
+            CancelRefresh();
+            _refreshCancellation = new CancellationTokenSource();
+            CancellationToken cancellationToken = _refreshCancellation.Token;
             _globalLeaderboardHost.SetLoading(true);
 
             string localRequestId = _globalPlayerSession.BeginRequest();
-            await Task.Delay(400);
-            GlobalPlayerPage page = await _globalPlayerQueryService.GetPlayerPage(_globalPlayerSession.Scope, _globalPlayerSession.Page);
-            if (_globalPlayerSession.IsCurrentRequest(localRequestId) && page != null) {
-                _globalLeaderboardHost.SetCells(CreateCells(page));
+            try {
+                GlobalPlayerPage page = await _globalPlayerQueryService.GetPlayerPage(_globalPlayerSession.Scope, _globalPlayerSession.Page, cancellationToken);
+                if (_globalPlayerSession.IsCurrentRequest(localRequestId) && page != null) {
+                    _globalLeaderboardHost.SetCells(CreateCells(page));
+                }
+            } catch (OperationCanceledException) {
+            } catch (Exception ex) {
+                Plugin.Log.Error($"Failed to load global leaderboard: {ex}");
             }
         }
 
@@ -228,5 +237,21 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
             GlobalPlayerScope.Region => _countryScopeImage,
             _ => _globalScopeImage
         };
+
+        protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling) {
+            CancelRefresh();
+            base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
+        }
+
+        protected override void OnDestroy() {
+            CancelRefresh();
+            base.OnDestroy();
+        }
+
+        private void CancelRefresh() {
+            _refreshCancellation?.Cancel();
+            _refreshCancellation?.Dispose();
+            _refreshCancellation = null;
+        }
     }
 }
