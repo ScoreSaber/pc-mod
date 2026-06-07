@@ -138,16 +138,18 @@ namespace ScoreSaber.Core.Api {
         }
 
         public async Task<LeaderboardSnapshot> GetLeaderboard(LeaderboardQuery query, GameSession session, CancellationToken cancellationToken) {
-            LeaderboardDetails leaderboard = await GetLeaderboardDetails(query, cancellationToken);
+            Task<LeaderboardDetails> leaderboardTask = GetLeaderboardDetails(query, cancellationToken);
+            Task<LeaderboardScoresSnapshot> scoresTask = GetLeaderboardScores(query, session, cancellationToken);
+
             LeaderboardScoresSnapshot scores;
             try {
-                scores = await GetLeaderboardScores(query, session, cancellationToken);
+                scores = await scoresTask;
             } catch (GeneratedApiException ex) when (IsNoPlayerScoreResponse(query, ex)) {
                 scores = new LeaderboardScoresSnapshot();
             }
 
             return new LeaderboardSnapshot {
-                Leaderboard = leaderboard,
+                Leaderboard = await leaderboardTask,
                 Scores = scores.Scores,
                 PlayerScore = scores.PlayerScore
             };
