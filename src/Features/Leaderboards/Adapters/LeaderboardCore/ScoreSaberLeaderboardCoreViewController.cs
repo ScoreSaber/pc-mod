@@ -35,6 +35,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private static string _suppressedPlatformCustomLevelWarningText = string.Empty;
 
         private PlatformLeaderboardViewController _platformLeaderboardViewController;
+        private BasicUIAudioManager _uiAudioManager;
         private SettingsService _settings;
         private IconSegmentedControl _scopeControl;
         private List<DataItem> _scopes;
@@ -61,9 +62,10 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         internal event Action PageDownRequested;
 
         [Inject]
-        private void Construct(SettingsService settings, PlatformLeaderboardViewController platformLeaderboardViewController) {
+        private void Construct(SettingsService settings, PlatformLeaderboardViewController platformLeaderboardViewController, [InjectOptional] BasicUIAudioManager uiAudioManager) {
             _settings = settings;
             _platformLeaderboardViewController = platformLeaderboardViewController;
+            _uiAudioManager = uiAudioManager;
         }
 
         [UIValue("is-loaded")]
@@ -281,6 +283,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         private void TableDidSelectCellWithIdx(TableView tableView, int index) {
             tableView.ClearSelection();
+            UiClickAudio.Play(_uiAudioManager);
             SelectScore(index);
         }
 
