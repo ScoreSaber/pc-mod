@@ -9,8 +9,8 @@ namespace ScoreSaber.Features.Replays.HarmonyPatches {
                 return true;
             }
 
-            Accessors.RelativeScore(ref __instance, 1f);
-            Accessors.ImmediateRank(ref __instance, RankModel.Rank.SS);
+            __instance.relativeScore = 1f;
+            __instance.immediateRank = RankModel.Rank.SS;
             ___relativeScoreOrImmediateRankDidChangeEvent?.Invoke();
             return false;
         }

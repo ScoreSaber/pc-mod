@@ -45,7 +45,7 @@ namespace ScoreSaber.Features.Replays.Recorders {
             _scoreKeyframes.Add(new ScoreEvent() {
                 Score = rawScore,
                 Time = audioTimeSyncController.songTime,
-                ImmediateMaxPossibleScore = Accessors.ImmediateMultipliedPossible(ref scoreController)
+                ImmediateMaxPossibleScore = scoreController._immediateMaxPossibleMultipliedScore
             });
         }
 

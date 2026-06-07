@@ -5,6 +5,11 @@ using Zenject;
 
 namespace ScoreSaber.Features.Replays.Playback {
     internal class ReplayTimeSyncController : TimeSynchronizer, ITickable {
+        private static readonly FieldAccessor<BeatmapCallbacksController.InitData, float>.Accessor InitialStartFilterTime =
+            FieldAccessor<BeatmapCallbacksController.InitData, float>.GetAccessor("startFilterTime");
+        private static readonly FieldAccessor<BeatmapCallbacksController, float>.Accessor CallbackStartFilterTime =
+            FieldAccessor<BeatmapCallbacksController, float>.GetAccessor("_startFilterTime");
+
         private static readonly KeyCode[] TimeJumpKeys = {
             KeyCode.Alpha1,
             KeyCode.Alpha2,
@@ -36,7 +41,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             _noteCutSoundEffectManager = noteCutSoundEffectManager;
             _beatmapObjectSpawnController = beatmapObjectSpawnController;
             _beatmapObjectCallbackController = beatmapObjectCallbackController;
-            _audioManagerSO = Accessors.AudioManager(ref noteCutSoundEffectManager);
+            _audioManagerSO = noteCutSoundEffectManager._audioManager;
         }
 
         public void Tick() {
@@ -94,10 +99,10 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             // Forcibly enabling all the note/obstacle components to ensure their dissolve coroutine executes (it no likey when game pausey).
             // TODO: do we have to do this for arcs aswell?
-            ResetBeatmapObjects(Accessors.GameNotePool(ref _basicBeatmapObjectManager).activeItems);
-            ResetBeatmapObjects(Accessors.BurstSliderHeadNotePool(ref _basicBeatmapObjectManager).activeItems);
-            ResetBeatmapObjects(Accessors.BurstSliderNotePool(ref _basicBeatmapObjectManager).activeItems);
-            ResetBeatmapObjects(Accessors.BombNotePool(ref _basicBeatmapObjectManager).activeItems);
+            ResetBeatmapObjects(_basicBeatmapObjectManager._basicGameNotePoolContainer.activeItems);
+            ResetBeatmapObjects(_basicBeatmapObjectManager._burstSliderHeadGameNotePoolContainer.activeItems);
+            ResetBeatmapObjects(_basicBeatmapObjectManager._burstSliderGameNotePoolContainer.activeItems);
+            ResetBeatmapObjects(_basicBeatmapObjectManager._bombNotePoolContainer.activeItems);
             ResetBeatmapObjects(_basicBeatmapObjectManager.activeObstacleControllers);
 
             var previousState = audioTimeSyncController.state;
@@ -108,16 +113,16 @@ namespace ScoreSaber.Features.Replays.Playback {
             if (previousState == AudioTimeSyncController.State.Playing)
                 audioTimeSyncController.Resume();
 
-            Accessors.InitialStartFilterTime(ref _callbackInitData) = time;
-            Accessors.CallbackStartFilterTime(ref _beatmapObjectCallbackController) = time;
+            InitialStartFilterTime(ref _callbackInitData) = time;
+            CallbackStartFilterTime(ref _beatmapObjectCallbackController) = time;
 
-            foreach (var callback in Accessors.CallbacksInTime(ref _beatmapObjectCallbackController)) {
+            foreach (var callback in _beatmapObjectCallbackController._callbacksInTimes) {
 
                 if (callback.Value.lastProcessedNode != null && callback.Value.lastProcessedNode.Value.time > time)
                     callback.Value.lastProcessedNode = null;
             }
 
-            Accessors.AudioSongTime(ref _audioTimeSyncController) = time;
+            _audioTimeSyncController._songTime = time;
 
             audioTimeSyncController.Update();
             UpdateTimes();
@@ -137,10 +142,10 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             CancelAllHitSounds();
             var _audioTimeSyncController = audioTimeSyncController; // UMBRAMEGALUL
-            Accessors.AudioSource(ref _audioTimeSyncController).pitch = newScale;
+            _audioTimeSyncController._audioSource.pitch = newScale;
 
-            Accessors.AudioTimeScale(ref _audioTimeSyncController) = newScale;
-            Accessors.AudioStartOffset(ref _audioTimeSyncController)
+            _audioTimeSyncController._timeScale = newScale;
+            _audioTimeSyncController._audioStartTimeOffsetSinceStart
                 = (Time.timeSinceLevelLoad * _audioTimeSyncController.timeScale) - (_audioTimeSyncController.songTime + _audioInitData.songTimeOffset);
 
             _audioManagerSO.musicPitch = 1f / newScale;
@@ -149,7 +154,7 @@ namespace ScoreSaber.Features.Replays.Playback {
 
         public void CancelAllHitSounds() {
 
-            var activeItems = Accessors.NoteCutPool(ref _noteCutSoundEffectManager).activeItems;
+            var activeItems = _noteCutSoundEffectManager._noteCutSoundEffectPoolContainer.activeItems;
             for (int i = 0; i < activeItems.Count; i++) {
                 var effect = activeItems[i];
                 if (effect.isActiveAndEnabled)

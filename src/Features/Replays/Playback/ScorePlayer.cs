@@ -57,21 +57,21 @@ namespace ScoreSaber.Features.Replays.Playback {
 
         private void UpdateMultiplier() {
 
-            var totalMultiplier = Accessors.ModifiersModelSO(ref _scoreController).GetTotalMultiplier(Accessors.ModifierPanelsSO(ref _scoreController), _gameEnergyCounter.energy);
-            Accessors.GameplayMultiplier(ref _scoreController) = totalMultiplier;
+            var totalMultiplier = _scoreController._gameplayModifiersModel.GetTotalMultiplier(_scoreController._gameplayModifierParams, _gameEnergyCounter.energy);
+            _scoreController._prevMultiplierFromModifiers = totalMultiplier;
         }
 
         private void UpdateScore(int newScore, int? immediateMaxPossibleScore, float time) {
 
             var immediate = immediateMaxPossibleScore ?? ScoreSaberScoreModel.OldMaxRawScoreForNumberOfNotes(CalculatePostNoteCountForTime(time));
-            var multiplier = Accessors.GameplayMultiplier(ref _scoreController);
+            var multiplier = _scoreController._prevMultiplierFromModifiers;
 
             var newModifiedScore = ScoreModel.GetModifiedScoreForGameplayModifiersScoreMultiplier(newScore, multiplier);
 
-            Accessors.MultipliedScore(ref _scoreController) = newScore;
-            Accessors.ImmediateMultipliedPossible(ref _scoreController) = immediate;
-            Accessors.ModifiedScore(ref _scoreController) = newModifiedScore;
-            Accessors.ImmediateModifiedPossible(ref _scoreController) = ScoreModel.GetModifiedScoreForGameplayModifiersScoreMultiplier(immediate, multiplier);
+            _scoreController._multipliedScore = newScore;
+            _scoreController._immediateMaxPossibleMultipliedScore = immediate;
+            _scoreController._modifiedScore = newModifiedScore;
+            _scoreController._immediateMaxPossibleModifiedScore = ScoreModel.GetModifiedScoreForGameplayModifiersScoreMultiplier(immediate, multiplier);
 
             FieldAccessor<ScoreController, Action<int, int>>.Get(_scoreController, "scoreDidChangeEvent").Invoke(newScore, newModifiedScore);
         }

@@ -25,10 +25,10 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             _siraLog = siraLog;
             _saberManager = saberManager;
-            _gameNotePool = Accessors.GameNotePool(ref basicBeatmapObjectManager);
-            _burstSliderHeadNotePool = Accessors.BurstSliderHeadNotePool(ref basicBeatmapObjectManager);
-            _burstSliderNotePool = Accessors.BurstSliderNotePool(ref basicBeatmapObjectManager);
-            _bombNotePool = Accessors.BombNotePool(ref basicBeatmapObjectManager);
+            _gameNotePool = basicBeatmapObjectManager._basicGameNotePoolContainer;
+            _burstSliderHeadNotePool = basicBeatmapObjectManager._burstSliderHeadGameNotePoolContainer;
+            _burstSliderNotePool = basicBeatmapObjectManager._burstSliderGameNotePoolContainer;
+            _bombNotePool = basicBeatmapObjectManager._bombNotePoolContainer;
             _sortedNoteEvents = file.noteKeyframes.OrderBy(nk => nk.Time).ToArray();
             _replayFile = file;
         }
@@ -151,17 +151,16 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             if (!__instance.isFinished) {
 
-                var ratingCounter = Accessors.RatingCounter(ref ____cutScoreBuffer);
+                var ratingCounter = ____cutScoreBuffer._saberSwingRatingCounter;
 
                 // Supply the rating counter with the proper cut ratings
-                Accessors.AfterCutRating(ref ratingCounter) = activeEvent.AfterCutRating;
-                Accessors.BeforeCutRating(ref ratingCounter) = activeEvent.BeforeCutRating;
+                ratingCounter._afterCutRating = activeEvent.AfterCutRating;
+                ratingCounter._beforeCutRating = activeEvent.BeforeCutRating;
 
                 // Then immediately finish it
                 ____cutScoreBuffer.HandleSaberSwingRatingCounterDidFinish(ratingCounter);
 
-                ScoringElement element = __instance;
-                Accessors.ScoringElementFinisher(ref element, true);
+                __instance.isFinished = true;
             }
         }
 

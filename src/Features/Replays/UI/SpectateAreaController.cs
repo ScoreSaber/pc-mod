@@ -41,11 +41,11 @@ namespace ScoreSaber.Features.Replays.UI {
                 _activeNote.noteTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.Euler(45f, 45f, 45f));
 
                 ColorNoteVisuals visuals = _activeNote.GetComponent<ColorNoteVisuals>();
-                Accessors.SetCircleVisibility(ref visuals, false);
-                Accessors.SetArrowVisibility(ref visuals, false);
-                var color = Accessors.NoteColor(ref visuals) = Color.cyan.ColorWithAlpha(3f);
+                visuals.showCircle = false;
+                visuals.showArrow = false;
+                var color = visuals._noteColor = Color.cyan.ColorWithAlpha(3f);
 
-                foreach (var block in Accessors.NoteMaterialBlocks(ref visuals)) {
+                foreach (var block in visuals._materialPropertyBlockControllers) {
                     block.materialPropertyBlock.SetColor(_colorID, color);
                     block.ApplyChanges();
                 }

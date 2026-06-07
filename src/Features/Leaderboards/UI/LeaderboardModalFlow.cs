@@ -1,4 +1,5 @@
 using BeatSaberMarkupLanguage.Parser;
+using HMUI;
 using ScoreSaber.Features.Replays.Services;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.Services;
@@ -11,10 +12,14 @@ using ScoreSaber.Features.Leaderboards.UI.ScoreDetails;
 using ScoreSaber.Features.Players.Profile;
 using System;
 using System.Threading.Tasks;
+using IPA.Utilities;
 using UnityEngine;
 
 namespace ScoreSaber.Features.Leaderboards.UI {
     internal class LeaderboardModalFlow : IDisposable {
+        private static readonly FieldAccessor<ModalView, bool>.Accessor AnimateParentCanvas =
+            FieldAccessor<ModalView, bool>.GetAccessor("_animateParentCanvas");
+
         private readonly PanelView _panelView;
         private readonly ReplayLoader _replayLoader;
         private readonly ReplayQueryService _replayQueryService;
@@ -64,8 +69,8 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             if (ScoreDetailView.detailModalRoot != null && _profileDetailView?.profileModalRoot != null) {
                 ScoreDetailView.detailModalRoot.gameObject.SetActive(false);
                 _profileDetailView.profileModalRoot.gameObject.SetActive(false);
-                Accessors.animateParentCanvas(ref ScoreDetailView.detailModalRoot) = true;
-                Accessors.animateParentCanvas(ref _profileDetailView.profileModalRoot) = true;
+                AnimateParentCanvas(ref ScoreDetailView.detailModalRoot) = true;
+                AnimateParentCanvas(ref _profileDetailView.profileModalRoot) = true;
             }
         }
 

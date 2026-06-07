@@ -139,7 +139,7 @@ namespace ScoreSaber.Features.Replays.Legacy {
 
             var pos = Vector3.Lerp(keyframe1._pos3, keyframe2._pos3, t);
             Quaternion rot = Quaternion.Lerp(keyframe1._rot3, keyframe2._rot3, t);
-            Accessors.HeadTransform(ref _playerTransforms).SetPositionAndRotation(pos, rot);
+            _playerTransforms._headTransform.SetPositionAndRotation(pos, rot);
             var eulerAngles = rot.eulerAngles;
             Vector3 headRotationOffset = new Vector3(_settings.Current.replayCameraXRotation, _settings.Current.replayCameraYRotation, _settings.Current.replayCameraZRotation);
             eulerAngles += headRotationOffset;
@@ -168,7 +168,7 @@ namespace ScoreSaber.Features.Replays.Legacy {
 
             if (_playbackPreviousCombo != keyframe.combo) {
                 comboChanged = true;
-                Accessors.Combo(ref _comboController) = keyframe.combo;
+                _comboController._combo = keyframe.combo;
             }
 
             if (_playbackPreviousScore != keyframe.score) {
@@ -187,7 +187,7 @@ namespace ScoreSaber.Features.Replays.Legacy {
 
             if (comboChanged) {
                 FieldAccessor<ScoreController, Action<int, int>>.Get(_scoreController, "scoreDidChangeEvent").Invoke(keyframe.score,
-                    ScoreModel.GetModifiedScoreForGameplayModifiersScoreMultiplier(keyframe.score, Accessors.GameplayMultiplier(ref _scoreController)));
+                    ScoreModel.GetModifiedScoreForGameplayModifiersScoreMultiplier(keyframe.score, _scoreController._prevMultiplierFromModifiers));
             }
 
             if (multiplierChanged) {
@@ -201,12 +201,12 @@ namespace ScoreSaber.Features.Replays.Legacy {
             if (keyframe.combo > _playbackPreviousCombo) {
                 if (_multiplier < 8) {
 
-                    var counter = Accessors.MultiplierCounter(ref _scoreController);
+                    var counter = _scoreController._scoreMultiplierCounter;
 
                     if (_multiplierIncreaseProgress < _multiplierIncreaseMaxProgress) {
                         _multiplierIncreaseProgress++;
 
-                        Accessors.Progress(ref counter) = _multiplierIncreaseProgress;
+                        counter._multiplierIncreaseProgress = _multiplierIncreaseProgress;
                         multiplierChanged = true;
                     }
                     if (_multiplierIncreaseProgress >= _multiplierIncreaseMaxProgress) {
@@ -214,9 +214,9 @@ namespace ScoreSaber.Features.Replays.Legacy {
                         _multiplierIncreaseProgress = 0;
                         _multiplierIncreaseMaxProgress = _multiplier * 2;
 
-                        Accessors.Multiplier(ref counter) = _multiplier;
-                        Accessors.Progress(ref counter) = _multiplierIncreaseProgress;
-                        Accessors.MaxProgress(ref counter) = _multiplierIncreaseMaxProgress;
+                        counter._multiplier = _multiplier;
+                        counter._multiplierIncreaseProgress = _multiplierIncreaseProgress;
+                        counter._multiplierIncreaseMaxProgress = _multiplierIncreaseMaxProgress;
 
                         multiplierChanged = true;
                     }
@@ -232,7 +232,7 @@ namespace ScoreSaber.Features.Replays.Legacy {
                     multiplierChanged = true;
                 }
 
-                var counter = Accessors.MultiplierCounter(ref _scoreController);
+                var counter = _scoreController._scoreMultiplierCounter;
                 counter.ProcessMultiplierEvent(ScoreMultiplierCounter.MultiplierEventType.Negative);
                 FieldAccessor<ScoreController, Action<int, float>>.Get(_scoreController, "multiplierDidChangeEvent").Invoke(_multiplier, _multiplierIncreaseProgress);
             }
