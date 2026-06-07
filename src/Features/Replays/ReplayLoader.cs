@@ -1,4 +1,5 @@
 ﻿using IPA.Utilities.Async;
+using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Features.ScoreSubmission.Services;
@@ -18,8 +19,9 @@ namespace ScoreSaber.Features.Replays {
         private readonly EnvironmentsListModel _environmentsListModel;
         private readonly ReplayState _replayState;
         private readonly ScoreSubmissionService _scoreSubmissionService;
+        private readonly SettingsService _settings;
 
-        public ReplayLoader(PlayerDataModel playerDataModel, MenuTransitionsHelper menuTransitionsHelper, EnvironmentsListModel environmentsListModel, ReplayState replayState, ReplayFileCodec replayFileCodec, ScoreSubmissionService scoreSubmissionService) {
+        public ReplayLoader(PlayerDataModel playerDataModel, MenuTransitionsHelper menuTransitionsHelper, EnvironmentsListModel environmentsListModel, ReplayState replayState, ReplayFileCodec replayFileCodec, ScoreSubmissionService scoreSubmissionService, SettingsService settings) {
 
             _playerDataModel = playerDataModel;
             _menuTransitionsHelper = menuTransitionsHelper;
@@ -27,6 +29,7 @@ namespace ScoreSaber.Features.Replays {
             _environmentsListModel = environmentsListModel;
             _replayState = replayState;
             _scoreSubmissionService = scoreSubmissionService;
+            _settings = settings;
         }
 
         public async Task Load(byte[] replay, BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, GameplayModifiers modifiers, string playerName) {
@@ -125,6 +128,10 @@ namespace ScoreSaber.Features.Replays {
 
             PlayerData playerData = _playerDataModel.playerData;
             PlayerSpecificSettings localPlayerSettings = playerData.playerSpecificSettings;
+            if (_settings.Current.replayOverrideHandedness && replay.metadata.LeftHanded != localPlayerSettings.leftHanded) {
+                replay.Mirror();
+            }
+
             PlayerSpecificSettings playerSettings = new PlayerSpecificSettings(replay.metadata.LeftHanded, replay.metadata.InitialHeight,
                 replay.heightKeyframes.Count > 0, localPlayerSettings.sfxVolume, localPlayerSettings.reduceDebris,
                 localPlayerSettings.noTextsAndHuds, localPlayerSettings.noFailEffects, localPlayerSettings.advancedHud,

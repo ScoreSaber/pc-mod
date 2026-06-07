@@ -7,7 +7,7 @@
     <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-height="0.3">
       <image src="#WhitePixel" pref-width="60" pref-height="0.3" />
     </vertical>
-    <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="50" pref-height="10">
+    <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55" pref-height="10">
       <tab tags="page-tab" tab-name="Player">
         <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="10">
           <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize">
@@ -43,7 +43,7 @@
       </tab>
       <tab tags="page-tab" tab-name="Time">
         <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55">
-          <slider-setting text="Time Scale" min="0.1" max="2" increment="0.05" value="time-sync" apply-on-change="true" formatter="format-time-percent" />
+          <slider-setting text="Time Scale" overflow-mode="Overflow" word-wrapping="false" min="0.1" max="2" increment="0.05" value="time-sync" apply-on-change="true" formatter="format-time-percent" />
         </vertical>
       </tab>
     </horizontal>

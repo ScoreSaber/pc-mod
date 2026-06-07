@@ -66,6 +66,12 @@ namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
             set => _settings.Current.replayCameraSmoothing = value;
         }
 
+        [UIValue("replayOverrideHandedness")]
+        public bool ReplayOverrideHandedness {
+            get => _settings.Current.replayOverrideHandedness;
+            set => _settings.Current.replayOverrideHandedness = value;
+        }
+
         [UIValue("replayCameraFOV")]
         public float ReplayCameraFOV {
             get => _settings.Current.replayCameraFOV;

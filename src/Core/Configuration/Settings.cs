@@ -15,6 +15,7 @@ namespace ScoreSaber.Core.Configuration {
         public bool enableCountryLeaderboards { get; set; }
         public string locationFilterMode { get; set; }
         public bool replayCameraSmoothing { get; set; }
+        public bool replayOverrideHandedness { get; set; }
         public float replayCameraFOV { get; set; }
         public float replayCameraXOffset { get; set; }
         public float replayCameraYOffset { get; set; }
@@ -41,6 +42,7 @@ namespace ScoreSaber.Core.Configuration {
             enableCountryLeaderboards = true;
             locationFilterMode = "Country";
             replayCameraSmoothing = true;
+            replayOverrideHandedness = false;
             replayCameraFOV = 70f;
             replayCameraXOffset = 0.0f;
             replayCameraYOffset = 0.0f;

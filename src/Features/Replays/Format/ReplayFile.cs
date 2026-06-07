@@ -23,6 +23,20 @@ namespace ScoreSaber.Features.Replays.Format {
             multiplierKeyframes = new List<MultiplierEvent>();
             energyKeyframes = new List<EnergyEvent>();
         }
+
+        internal void Mirror() {
+            for (int i = 0; i < poseKeyframes.Count; ++i) {
+                var keyframe = poseKeyframes[i];
+                keyframe.Mirror();
+                poseKeyframes[i] = keyframe;
+            }
+            for (int i = 0; i < noteKeyframes.Count; ++i) {
+                var keyframe = noteKeyframes[i];
+                keyframe.Mirror();
+                noteKeyframes[i] = keyframe;
+            }
+            metadata.LeftHanded = !metadata.LeftHanded;
+        }
     }
 
     internal struct Metadata {
@@ -78,6 +92,15 @@ namespace ScoreSaber.Features.Replays.Format {
         internal VRRotation? InverseWorldRotation;
         internal VRRotation? NoteRotation;
         internal VRPosition? NotePosition;
+
+        internal void Mirror() {
+            NoteID.Mirror();
+            CutPoint.Mirror();
+            CutNormal.Mirror();
+            SaberDirection.Mirror();
+            SaberType = 1 - SaberType;
+            CutAngle = -CutAngle;
+        }
     };
 
     internal enum NoteEventType {
@@ -162,6 +185,22 @@ namespace ScoreSaber.Features.Replays.Format {
             }
             return true;
         }
+
+        internal void Mirror() {
+            LineIndex = 3 - LineIndex;
+            ColorType = 1 - ColorType;
+            switch (CutDirection) {
+                case 2: CutDirection = 3; break;
+                case 3: CutDirection = 2; break;
+                case 4: CutDirection = 5; break;
+                case 5: CutDirection = 4; break;
+                case 6: CutDirection = 7; break;
+                case 7: CutDirection = 6; break;
+            }
+            if (CutDirectionAngleOffset is float cutDirectionAngleOffset) {
+                CutDirectionAngleOffset = -cutDirectionAngleOffset;
+            }
+        }
     };
 
     internal struct EnergyEvent {
@@ -186,11 +225,25 @@ namespace ScoreSaber.Features.Replays.Format {
         internal VRPose Right;
         internal int FPS;
         internal float Time;
+
+        internal void Mirror() {
+            Head.Mirror();
+
+            (Right, Left) = (Left, Right);
+
+            Left.Mirror();
+            Right.Mirror();
+        }
     };
 
     internal struct VRPose {
         internal VRPosition Position;
         internal VRRotation Rotation;
+
+        internal void Mirror() {
+            Position.Mirror();
+            Rotation.Mirror();
+        }
     };
 
     internal struct VRPosition {
@@ -201,6 +254,10 @@ namespace ScoreSaber.Features.Replays.Format {
         internal static VRPosition None() {
             return new VRPosition() { X = 0, Y = 0, Z = 0 };
         }
+
+        internal void Mirror() {
+            X = -X;
+        }
     };
 
     internal struct VRRotation {
@@ -208,5 +265,10 @@ namespace ScoreSaber.Features.Replays.Format {
         internal float Y;
         internal float Z;
         internal float W;
+
+        internal void Mirror() {
+            Y = -Y;
+            Z = -Z;
+        }
     };
 }

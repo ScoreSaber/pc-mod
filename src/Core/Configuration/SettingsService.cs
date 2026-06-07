@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ScoreSaber.Core.Configuration {
     internal class SettingsService {
-        private const int CurrentVersion = 8;
+        private const int CurrentVersion = 9;
 
         internal string DataPath => "UserData";
         internal string ConfigPath => DataPath + @"\ScoreSaber";
@@ -77,6 +77,9 @@ namespace ScoreSaber.Core.Configuration {
             }
             if (settings.fileVersion < 8) {
                 settings.replayCameraSmoothing = true;
+            }
+            if (settings.fileVersion < 9) {
+                settings.replayOverrideHandedness = false;
             }
         }
     }
