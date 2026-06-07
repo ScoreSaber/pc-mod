@@ -32,8 +32,8 @@
 				<image src="ScoreSaber.Resources.pixel.png" size-delta-x="48" pref-height="0.4" />
 				<vertical pref-width="50" pref-height="40">
 					<text id="device-hmd-text" text="" font-size="3.5" />
-					<!-- <text id="devicecontrollerleft-text" text="" font-size="3.5" />
-					<text id="devicecontrollerright-text" text="" font-size="3.5" /> -->
+					<text id="devicecontrollerleft-text" text="" font-size="3.5" />
+					<text id="devicecontrollerright-text" text="" font-size="3.5" />
 					<text id="score-text" text="" font-size="3.5" />
 					<text id="pp-text" text="" font-size="3.5" />
 					<text id="max-combo-text" text="" font-size="3.5" />

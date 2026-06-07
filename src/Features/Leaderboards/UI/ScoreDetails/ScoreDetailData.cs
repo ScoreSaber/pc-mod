@@ -9,6 +9,8 @@ namespace ScoreSaber.Features.Leaderboards.UI.ScoreDetails {
         internal string PlayerId { get; set; }
         internal string PlayerNameText { get; set; }
         internal string DeviceHMDText { get; set; }
+        internal string DeviceControllerLeftText { get; set; }
+        internal string DeviceControllerRightText { get; set; }
         internal string ScoreText { get; set; }
         internal string PPText { get; set; }
         internal string MaxComboText { get; set; }
@@ -30,6 +32,8 @@ namespace ScoreSaber.Features.Leaderboards.UI.ScoreDetails {
                 PlayerId = score.Player.Id,
                 PlayerNameText = $"{score.Player.Name}'s score",
                 DeviceHMDText = score.Device.HMD ?? VRDevices.GetLegacyHMDFriendlyName(score.LegacyHMDId),
+                DeviceControllerLeftText = string.IsNullOrEmpty(score.Device.ControllerLeft) ? "N/A" : score.Device.ControllerLeft,
+                DeviceControllerRightText = string.IsNullOrEmpty(score.Device.ControllerRight) ? "N/A" : score.Device.ControllerRight,
                 ScoreText = $"{string.Format("{0:n0}", score.ModifiedScore)} (<color=#FFD42A>{scoreMap.Accuracy}%</color>)",
                 PPText = $"<color=#6772E5>{score.PP}pp</color>",
                 MaxComboText = score.MaxCombo != 0 ? score.MaxCombo.ToString() : "N/A",

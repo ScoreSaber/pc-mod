@@ -18,11 +18,10 @@ namespace ScoreSaber.Features.Leaderboards.UI.ScoreDetails {
         protected readonly CurvedTextMeshPro _nameText = null;
         [UIComponent("device-hmd-text")]
         protected readonly CurvedTextMeshPro _deviceHMDText = null;
-        /* TODO: readd once we improve our controller detection
         [UIComponent("devicecontrollerleft-text")]
         protected readonly CurvedTextMeshPro _deviceControllerLeftText = null;
         [UIComponent("devicecontrollerright-text")]
-        protected readonly CurvedTextMeshPro _deviceControllerRightText = null;*/
+        protected readonly CurvedTextMeshPro _deviceControllerRightText = null;
         [UIComponent("score-text")]
         protected readonly CurvedTextMeshPro _scoreText = null;
         [UIComponent("pp-text")]
@@ -90,8 +89,8 @@ namespace ScoreSaber.Features.Leaderboards.UI.ScoreDetails {
             ApplyCrown(_currentScore);
             _nameText.text = _currentScore.PlayerNameText;
             SetFancyText(_deviceHMDText, "HMD", _currentScore.DeviceHMDText);
-            //SetFancyText(_deviceControllerLeftText, "Left Controller", score.deviceControllerLeft ?? "N/A");
-            //SetFancyText(_deviceControllerRightText, "Right Controller", score.deviceControllerRight ?? "N/A");
+            SetFancyText(_deviceControllerLeftText, "Left Controller", _currentScore.DeviceControllerLeftText);
+            SetFancyText(_deviceControllerRightText, "Right Controller", _currentScore.DeviceControllerRightText);
             SetFancyText(_scoreText, "Score", _currentScore.ScoreText);
             SetFancyText(_ppText, "Performance Points", _currentScore.PPText);
             SetFancyText(_maxComboText, "Combo", _currentScore.MaxComboText);
