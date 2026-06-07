@@ -4,6 +4,7 @@ using HMUI;
 using IPA.Utilities;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Leaderboards.Domain;
+using ScoreSaber.Features.Leaderboards.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -318,7 +319,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
                 clickHandler = cell.gameObject.AddComponent<LeaderboardRowClickHandler>();
             }
 
-            clickHandler.Configure(cell.idx, SelectScore, SeparatorImage(ref cell) as ImageView);
+            clickHandler.Configure(cell.idx, _innerTable, SeparatorImage(ref cell) as ImageView);
         }
 
         private static void EnableRichText(LeaderboardTableCell cell) {
@@ -496,13 +497,13 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private Graphic _graphic;
         private ImageView _separator;
         private Vector3 _separatorScale;
+        private TableView _tableView;
         private int _index;
-        private Action<int> _clicked;
         private bool _isScaled;
 
-        internal void Configure(int index, Action<int> clicked, ImageView separator) {
+        internal void Configure(int index, TableView tableView, ImageView separator) {
             _index = index;
-            _clicked = clicked;
+            _tableView = tableView;
             _separator = separator;
 
             if (_graphic == null) {
@@ -519,7 +520,11 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         }
 
         public void OnPointerClick(PointerEventData eventData) {
-            _clicked?.Invoke(_index);
+            if (_tableView == null || !ContainsPointer(eventData)) {
+                return;
+            }
+
+            _tableView.SelectCellWithIdx(_index, true);
         }
 
         public void OnPointerEnter(PointerEventData eventData) {
@@ -560,6 +565,25 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
                 _separator.color1,
                 targetColor1,
                 duration));
+        }
+
+        private bool ContainsPointer(PointerEventData eventData) {
+            RectTransform rectTransform = transform as RectTransform;
+            if (rectTransform == null) {
+                return true;
+            }
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPoint)) {
+                return false;
+            }
+
+            Rect rect = rectTransform.rect;
+            float rowHalfHeight = _tableView != null ? _tableView.cellSize * 0.5f : rect.height * 0.5f;
+            float rowCenterY = rect.center.y;
+            return localPoint.x >= rect.xMin &&
+                localPoint.x <= rect.xMax &&
+                localPoint.y >= rowCenterY - rowHalfHeight &&
+                localPoint.y <= rowCenterY + rowHalfHeight;
         }
 
         private static IEnumerator LerpColors(
