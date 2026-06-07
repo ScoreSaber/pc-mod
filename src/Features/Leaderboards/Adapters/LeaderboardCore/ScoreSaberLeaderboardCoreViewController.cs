@@ -297,8 +297,19 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
                 EnableRichText(leaderboardCell);
                 ApplyPlayerNameLayout(leaderboardCell);
+                ApplySeparator(leaderboardCell);
                 ConfigureClickHandler(leaderboardCell);
             }
+        }
+
+        private static void ApplySeparator(LeaderboardTableCell cell) {
+            Image separator = SeparatorImage(ref cell);
+            if (separator == null) {
+                return;
+            }
+
+            separator.gameObject.SetActive(true);
+            separator.enabled = true;
         }
 
         private void ConfigureClickHandler(LeaderboardTableCell cell) {
