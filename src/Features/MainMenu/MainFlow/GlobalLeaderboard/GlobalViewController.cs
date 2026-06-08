@@ -78,7 +78,6 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
         private GlobalLeaderboardHost _globalLeaderboardHost = null;
         private SettingsService _settings = null;
         private ScoreSaberUIMaterials _materials = null;
-        private BasicUIAudioManager _uiAudioManager = null;
         private CancellationTokenSource _refreshCancellation = null;
 
         [Inject]
@@ -88,8 +87,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
             GlobalPlayerSession globalPlayerSession,
             GlobalLeaderboardHost globalLeaderboardHost,
             SettingsService settings,
-            ScoreSaberUIMaterials materials,
-            [InjectOptional] BasicUIAudioManager uiAudioManager) {
+            ScoreSaberUIMaterials materials) {
 
             _container = container;
             _globalPlayerQueryService = globalPlayerQueryService;
@@ -97,7 +95,6 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
             _globalLeaderboardHost = globalLeaderboardHost;
             _settings = settings;
             _materials = materials;
-            _uiAudioManager = uiAudioManager;
             Plugin.Log.Debug("GlobalViewController Setup");
         }
 
@@ -164,8 +161,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
                     player.Country,
                     FormatRank(page, i, player.Stats.Rank),
                     player.Stats.TotalPP,
-                    OnGlobalCellClicked,
-                    PlayClickSound));
+                    OnGlobalCellClicked));
             }
             return cells;
         }
@@ -181,8 +177,6 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
         private void OnGlobalCellClicked(string identifier, string name) {
             ShowProfile(identifier, name).RunTask();
         }
-
-        private void PlayClickSound() => UiClickAudio.Play(_uiAudioManager);
 
         public async Task ShowProfile(string playerId, string name) {
 
