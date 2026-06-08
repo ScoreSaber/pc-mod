@@ -1,14 +1,34 @@
 <Project>
+  <!-- Dev upload trust token -->
+  <!--
   <PropertyGroup>
-    <ScoreSaberDevelopmentUploadToken Condition="'$(ScoreSaberDevelopmentUploadToken)' == ''"></ScoreSaberDevelopmentUploadToken>
-    <ScoreSaberDevelopmentAuthNonce Condition="'$(ScoreSaberDevelopmentAuthNonce)' == ''"></ScoreSaberDevelopmentAuthNonce>
-    <ScoreSaberDevelopmentPlayerId Condition="'$(ScoreSaberDevelopmentPlayerId)' == ''"></ScoreSaberDevelopmentPlayerId>
-    <ScoreSaberDevelopmentPlayerName Condition="'$(ScoreSaberDevelopmentPlayerName)' == ''"></ScoreSaberDevelopmentPlayerName>
+    <ScoreSaberDevelopmentUploadToken></ScoreSaberDevelopmentUploadToken>
   </PropertyGroup>
+  -->
 
+  <!-- Used by ./build.sh -->
+  <!--
   <PropertyGroup>
-    <ScoreSaberOfficialBuildId Condition="'$(ScoreSaberOfficialBuildId)' == ''"></ScoreSaberOfficialBuildId>
-    <ScoreSaberOfficialBuildCredential Condition="'$(ScoreSaberOfficialBuildCredential)' == ''"></ScoreSaberOfficialBuildCredential>
-    <ScoreSaberOfficialArtifactSha256 Condition="'$(ScoreSaberOfficialArtifactSha256)' == ''"></ScoreSaberOfficialArtifactSha256>
+    <ScoreSaberSshTarget>user@host</ScoreSaberSshTarget>
+    <ScoreSaberSshBeatSaberDir>C:\Path\To\Beat Saber</ScoreSaberSshBeatSaberDir>
   </PropertyGroup>
+  -->
+
+  <!-- Admin only auth override settings -->
+  <!--
+  <PropertyGroup>
+    <ScoreSaberDevelopmentAuthNonce></ScoreSaberDevelopmentAuthNonce>
+    <ScoreSaberDevelopmentPlayerId></ScoreSaberDevelopmentPlayerId>
+    <ScoreSaberDevelopmentPlayerName></ScoreSaberDevelopmentPlayerName>
+  </PropertyGroup>
+  -->
+
+  <!-- Official build metadata. Used for CI -->
+  <!--
+  <PropertyGroup>
+    <ScoreSaberOfficialBuildId></ScoreSaberOfficialBuildId>
+    <ScoreSaberOfficialBuildCredential></ScoreSaberOfficialBuildCredential>
+    <ScoreSaberOfficialArtifactSha256></ScoreSaberOfficialArtifactSha256>
+  </PropertyGroup>
+  -->
 </Project>

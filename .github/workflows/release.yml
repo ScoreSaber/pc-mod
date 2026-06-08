@@ -109,8 +109,7 @@ jobs:
         FrameworkPathOverride: /usr/lib/mono/4.8-api
         ScoreSaberOfficialBuildId: ${{ steps.official-build.outputs.build_id }}
         ScoreSaberOfficialBuildCredential: ${{ steps.official-build.outputs.credential }}
-      shell: pwsh
-      run: ./build.ps1 -Configuration Release -ReferencesDir "${{ github.workspace }}/Refs"
+      run: dotnet build --configuration Release -p:DisableCopyToGame=True
 
     - name: Check formatting
       run: dotnet format whitespace ScoreSaber.sln --verify-no-changes --no-restore --exclude src/Core/Api/Generated src/Libraries/SevenZip
