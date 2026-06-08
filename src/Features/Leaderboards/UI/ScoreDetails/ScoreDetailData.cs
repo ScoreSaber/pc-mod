@@ -27,6 +27,7 @@ namespace ScoreSaber.Features.Leaderboards.UI.ScoreDetails {
         internal static ScoreDetailData Create(ScoreMap scoreMap) {
             LeaderboardScore score = scoreMap.Score;
             Tuple<string, string> crownDetails = PlayerPresentation.GetCrownDetails(score.Player.Id);
+            bool givesPP = scoreMap.Parent.Leaderboard.Status == LeaderboardStatus.Ranked;
             return new ScoreDetailData {
                 Score = scoreMap,
                 PlayerId = score.Player.Id,
@@ -35,7 +36,7 @@ namespace ScoreSaber.Features.Leaderboards.UI.ScoreDetails {
                 DeviceControllerLeftText = string.IsNullOrEmpty(score.Device.ControllerLeft) ? "N/A" : score.Device.ControllerLeft,
                 DeviceControllerRightText = string.IsNullOrEmpty(score.Device.ControllerRight) ? "N/A" : score.Device.ControllerRight,
                 ScoreText = $"{string.Format("{0:n0}", score.ModifiedScore)} (<color=#FFD42A>{scoreMap.Accuracy}%</color>)",
-                PPText = $"<color=#6772E5>{score.PP}pp</color>",
+                PPText = givesPP ? $"<color=#6772E5>{score.PP}pp</color>" : "N/A",
                 MaxComboText = score.MaxCombo != 0 ? score.MaxCombo.ToString() : "N/A",
                 FullComboText = score.MaxCombo != 0 ? score.FullCombo ? "<color=#9EDBB1>Yes</color>" : "<color=#FF0000>No</color>" : "N/A",
                 BadCutsText = score.MaxCombo != 0 ? score.BadCuts > 0 ? $"<color=#FF0000>{score.BadCuts}</color>" : score.BadCuts.ToString() : "N/A",
