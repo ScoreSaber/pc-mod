@@ -24,7 +24,7 @@ namespace ScoreSaber.Features.Leaderboards {
         }
 
         public void OnLeaderboardSet(BeatmapKey beatmapKey) {
-            if (!ScoreSaberBeatmapKey.IsSupported(beatmapKey)) {
+            if (!ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey)) {
                 _leaderboardSession.ClearBeatmap();
                 return;
             }
@@ -35,7 +35,9 @@ namespace ScoreSaber.Features.Leaderboards {
                 _avatarHost.ClearAvatars();
             }
 
-            _gameSessionService.EnsureAuthenticated();
+            if (!ScoreSaberBeatmapKey.IsWip(beatmapKey)) {
+                _gameSessionService.EnsureAuthenticated();
+            }
             _leaderboardSession.SetBeatmap(beatmapKey);
         }
     }

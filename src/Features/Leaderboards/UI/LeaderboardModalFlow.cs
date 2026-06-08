@@ -110,7 +110,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
 
             try {
                 _panelView.SetPromptInfo("Downloading Replay...", true);
-                byte[] replay = await _replayQueryService.GetReplayData(score.Parent.BeatmapLevel, score.Parent.BeatmapKey, score);
+                byte[] replay = await _replayQueryService.GetReplayData(score);
                 _panelView.SetPromptInfo("Replay downloaded! Unpacking...", true);
                 await _replayLoader.Load(replay, score.Parent.BeatmapLevel, score.Parent.BeatmapKey, score.GameplayModifiers, score.Score.Player.Name);
                 _panelView.SetPromptSuccess("Replay Started!", false, 1f);

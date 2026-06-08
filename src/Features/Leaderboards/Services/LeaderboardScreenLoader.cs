@@ -29,6 +29,10 @@ namespace ScoreSaber.Features.Leaderboards.Services {
         }
 
         internal async Task<LeaderboardScreenState> Load(BeatmapKey beatmapKey, LeaderboardScreenScope scope, int page, CancellationToken cancellationToken) {
+            if (ScoreSaberBeatmapKey.IsWip(beatmapKey)) {
+                return LeaderboardScreenState.Failed(LeaderboardScreenStatus.Error, "ScoreSaber doesn't support WIP levels", false, null, string.Empty, false, page);
+            }
+
             if (!ScoreSaberBeatmapKey.IsSupported(beatmapKey)) {
                 return LeaderboardScreenState.Failed(LeaderboardScreenStatus.Error, string.Empty, false, null, string.Empty, false, page);
             }

@@ -98,6 +98,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
                     request.BeatmapKey,
                     request.Results,
                     request.PlayOutcomeTime,
+                    visibleUpload,
                     visibleUpload ? Emit : (Action<ScoreSubmissionStatus>)null,
                     false,
                     false,
@@ -170,6 +171,10 @@ namespace ScoreSaber.Features.ScoreSubmission {
 
             if (request.GameMode != "Solo" && request.GameMode != "Multiplayer") {
                 return ScoreSubmissionDecision.Ignore("unsupported game mode");
+            }
+
+            if (!ScoreSaberBeatmapKey.IsSupported(request.BeatmapKey)) {
+                return ScoreSubmissionDecision.Ignore("unsupported or WIP ScoreSaber level id");
             }
 
             if (request.Practicing || IsPracticeViewActive()) {

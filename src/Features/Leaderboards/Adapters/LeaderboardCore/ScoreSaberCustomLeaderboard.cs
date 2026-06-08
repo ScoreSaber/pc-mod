@@ -25,7 +25,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         protected override ViewController panelViewController => _panelView;
 
-        public override bool ShowForLevel(BeatmapKey? beatmapKey) => beatmapKey.HasValue && ScoreSaberBeatmapKey.IsSupported(beatmapKey.Value);
+        public override bool ShowForLevel(BeatmapKey? beatmapKey) => beatmapKey.HasValue && ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey.Value);
 
         public void Initialize() => _customLeaderboardManager.Register(this);
 

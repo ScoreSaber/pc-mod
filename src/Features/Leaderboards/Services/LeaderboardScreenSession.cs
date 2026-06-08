@@ -23,7 +23,7 @@ namespace ScoreSaber.Features.Leaderboards.Services {
         }
 
         internal void SetBeatmap(BeatmapKey beatmapKey) {
-            if (!ScoreSaberBeatmapKey.IsSupported(beatmapKey)) {
+            if (!ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey)) {
                 ClearBeatmap();
                 return;
             }

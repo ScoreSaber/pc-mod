@@ -8,11 +8,16 @@ using Zenject;
 
 namespace ScoreSaber.Features.Replays.Playback {
     internal class EnergyPlayer : TimeSynchronizer, IScroller {
+        private const float EnergyIconPositionX = 59f;
+
         private GameEnergyCounter _gameEnergyCounter;
         private GameEnergyUIPanel _gameEnergyUIPanel;
         private PlayerDataModel _playerDataModel;
         private readonly List<EnergyEvent> _energyEvents;
         private readonly Dictionary<RectTransform, Vector3> _initialEnergyIconPositions = new Dictionary<RectTransform, Vector3>();
+        private bool _energyBarIconsResolved;
+        private Transform _energyIconFull;
+        private Transform _energyIconEmpty;
 
         public EnergyPlayer(ReplayFile file, GameEnergyCounter gameEnergyCounter, PlayerDataModel playerDataModel, DiContainer container) {
 
@@ -72,6 +77,7 @@ namespace ScoreSaber.Features.Replays.Playback {
 
                 UpdateEnergyIcons(energy);
                 RestoreInitialEnergyIconPositions();
+                RestoreEnergyBarIconPositions(energy);
             }
         }
 
@@ -138,6 +144,29 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             foreach (var initialPosition in _initialEnergyIconPositions)
                 initialPosition.Key.anchoredPosition3D = initialPosition.Value;
+        }
+
+        private void RestoreEnergyBarIconPositions(float energy) {
+
+            if (_gameEnergyCounter.energyType == GameplayModifiers.EnergyType.Battery || energy <= Mathf.Epsilon)
+                return;
+
+            if (!_energyBarIconsResolved) {
+                foreach (Transform transform in _gameEnergyUIPanel.GetComponentsInChildren<Transform>(true)) {
+                    if (transform.name == "EnergyIconFull")
+                        _energyIconFull = transform;
+                    else if (transform.name == "EnergyIconEmpty")
+                        _energyIconEmpty = transform;
+                }
+
+                _energyBarIconsResolved = true;
+            }
+
+            if (_energyIconFull != null)
+                _energyIconFull.localPosition = new Vector3(EnergyIconPositionX, 0f, _energyIconFull.localPosition.z);
+
+            if (_energyIconEmpty != null)
+                _energyIconEmpty.localPosition = new Vector3(-EnergyIconPositionX, 0f, _energyIconEmpty.localPosition.z);
         }
     }
 }
