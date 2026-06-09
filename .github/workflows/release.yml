@@ -47,6 +47,7 @@ jobs:
 
   Build:
     needs: Plan
+    name: Build (${{ matrix.base }})
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -57,7 +58,7 @@ jobs:
       uses: actions/checkout@v5
       
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.x
       
@@ -183,7 +184,22 @@ jobs:
           -p:ScoreSaberUseLocalRefs=true \
           -p:LocalRefsDir="${{ github.workspace }}/Refs" \
           -p:GameReferences="${{ github.workspace }}/Refs" \
-          -p:DisableCopyToGame=True
+          -p:DisableCopyToGame=True \
+          -p:DisableZipRelease=False
+
+    - name: Find artifact
+      id: artifact
+      run: |
+        artifact_dir="src/bin/${{ steps.read-json.outputs.base_version }}/Release"
+        artifact_path="$(find "$artifact_dir" -path '*/zip/*.zip' -type f | sort | head -n 1)"
+        if [ -z "$artifact_path" ]; then
+          echo "No release zip found under $artifact_dir" >&2
+          find "$artifact_dir" -maxdepth 4 -type f | sort >&2
+          exit 1
+        fi
+
+        echo "Artifact: $artifact_path"
+        echo "path=$artifact_path" >> "$GITHUB_OUTPUT"
 
     - name: Check formatting
       run: dotnet format whitespace ScoreSaber.sln --verify-no-changes --no-restore --exclude src/Core/Api/Generated src/Libraries/SevenZip
@@ -192,7 +208,8 @@ jobs:
       run: git status
       
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ScoreSaber-${{ steps.read-json.outputs.base_version }}
-        path: src/bin/${{ steps.read-json.outputs.base_version }}/Release/zip/*.zip
+        path: ${{ steps.artifact.outputs.path }}
+        if-no-files-found: error
