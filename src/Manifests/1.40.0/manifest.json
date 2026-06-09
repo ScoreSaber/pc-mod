@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://raw.githubusercontent.com/nike4613/ModSaber-MetadataFileSchema/master/Schema.json",
   "author": "Umbranox",
   "description": "Allows you to upload scores to an online leaderboard, earn PP from ranked maps and compare scores with others.",

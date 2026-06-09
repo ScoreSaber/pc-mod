@@ -1,17 +1,17 @@
-﻿{
+{
   "$schema": "https://raw.githubusercontent.com/nike4613/ModSaber-MetadataFileSchema/master/Schema.json",
   "author": "Umbranox",
   "description": "Allows you to upload scores to an online leaderboard, earn PP from ranked maps and compare scores with others.",
-  "gameVersion": "1.40.0",
+  "gameVersion": "1.29.0",
   "icon": "ScoreSaber.logo.png",
   "id": "ScoreSaber",
   "name": "ScoreSaber",
   "version": "3.3.18",
   "dependsOn": {
-    "BSIPA": "^4.3.6",
-    "BeatSaberMarkupLanguage": "^1.12.5",
-    "SiraUtil": "^3.2.1",
-    "SongCore": "^3.15.2"
+    "BSIPA": "^4.3.6+1.29.1",
+    "BeatSaberMarkupLanguage": "^1.6.10",
+    "SiraUtil": "^3.1.2",
+    "SongCore": "^3.11.1"
   },
   "loadBefore": [
     "LeaderboardCore"

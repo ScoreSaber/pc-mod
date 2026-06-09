@@ -6,7 +6,7 @@
   </PropertyGroup>
   -->
 
-  <!-- Used by ./build.sh -->
+  <!-- (Optional) Used by ./build.sh -->
   <!--
   <PropertyGroup>
     <ScoreSaberSshTarget>user@host</ScoreSaberSshTarget>
@@ -14,7 +14,29 @@
   </PropertyGroup>
   -->
 
-  <!-- Admin only auth override settings -->
+  <!-- (Optional) per target local/remote installs. These are selected by ScoreSaberTargetVersion or VS -->
+  <!--
+  <PropertyGroup>
+    <ScoreSaberGameDirectory1_29_0>C:\Path\To\Beat Saber 1.29.1</ScoreSaberGameDirectory1_29_0>
+    <ScoreSaberGameDirectory1_38_0>C:\Path\To\Beat Saber 1.38.0</ScoreSaberGameDirectory1_38_0>
+    <ScoreSaberGameDirectory1_40_0>C:\Path\To\Beat Saber 1.40.8</ScoreSaberGameDirectory1_40_0>
+    <ScoreSaberGameDirectory1_42_0>C:\Path\To\Beat Saber 1.42.0</ScoreSaberGameDirectory1_42_0>
+
+    <ScoreSaberSshBeatSaberDir1_29_0>C:\Path\To\Beat Saber 1.29.1</ScoreSaberSshBeatSaberDir1_29_0>
+    <ScoreSaberSshBeatSaberDir1_38_0>C:\Path\To\Beat Saber 1.38.0</ScoreSaberSshBeatSaberDir1_38_0>
+    <ScoreSaberSshBeatSaberDir1_40_0>C:\Path\To\Beat Saber 1.40.8</ScoreSaberSshBeatSaberDir1_40_0>
+    <ScoreSaberSshBeatSaberDir1_42_0>C:\Path\To\Beat Saber 1.42.0</ScoreSaberSshBeatSaberDir1_42_0>
+  </PropertyGroup>
+  -->
+
+  <!-- (Optional) use stripped refs. Normal Visual Studio + BSMT builds should use BeatSaberDir instead -->
+  <!--
+  <PropertyGroup>
+    <ScoreSaberUseLocalRefs>true</ScoreSaberUseLocalRefs>
+  </PropertyGroup>
+  -->
+
+  <!-- (Optional) Admin only auth override settings -->
   <!--
   <PropertyGroup>
     <ScoreSaberDevelopmentAuthNonce></ScoreSaberDevelopmentAuthNonce>
