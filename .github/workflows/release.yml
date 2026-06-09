@@ -74,7 +74,11 @@ jobs:
 
         json_content=$(cat "$manifest")
         game_version=$(echo "$json_content" | jq -r .gameVersion)
-        plugin_version=$(echo "$json_content" | jq -r .version)
+        manifest_plugin_version=$(echo "$json_content" | jq -r .version)
+        plugin_version="$manifest_plugin_version"
+        if [[ "$plugin_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          plugin_version="$plugin_version.0"
+        fi
         upload_version_hash=$(printf "%s%s" "$plugin_version" "$game_version" | md5sum | awk '{print $1}')
 
         supported_versions="[]"
@@ -88,10 +92,12 @@ jobs:
 
         echo "Base Version: $base_version"
         echo "Game Version: $game_version"
-        echo "Plugin Version: $plugin_version"
+        echo "Manifest Plugin Version: $manifest_plugin_version"
+        echo "Upload Plugin Version: $plugin_version"
         echo "Supported Versions: $supported_versions"
         echo "base_version=$base_version" >> "$GITHUB_OUTPUT"
         echo "game_version=$game_version" >> "$GITHUB_OUTPUT"
+        echo "manifest_plugin_version=$manifest_plugin_version" >> "$GITHUB_OUTPUT"
         echo "plugin_version=$plugin_version" >> "$GITHUB_OUTPUT"
         echo "upload_version_hash=$upload_version_hash" >> "$GITHUB_OUTPUT"
         echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
@@ -184,6 +190,9 @@ jobs:
           -p:ScoreSaberUseLocalRefs=true \
           -p:LocalRefsDir="${{ github.workspace }}/Refs" \
           -p:GameReferences="${{ github.workspace }}/Refs" \
+          -p:Version="${{ steps.read-json.outputs.manifest_plugin_version }}" \
+          -p:AssemblyVersion="${{ steps.read-json.outputs.plugin_version }}" \
+          -p:FileVersion="${{ steps.read-json.outputs.plugin_version }}" \
           -p:DisableCopyToGame=True \
           -p:DisableZipRelease=False
 
