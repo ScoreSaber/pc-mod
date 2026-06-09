@@ -80,6 +80,9 @@ jobs:
           plugin_version="$plugin_version.0"
         fi
         upload_version_hash=$(printf "%s%s" "$plugin_version" "$game_version" | md5sum | awk '{print $1}')
+        artifact_game_version=$(echo "$compatible_versions" | jq -r '.[0] + "-to-" + .[-1]')
+        short_sha=$(echo "${{ github.sha }}" | cut -c1-7)
+        artifact_name="ScoreSaber-v$manifest_plugin_version-bs$artifact_game_version-$short_sha"
 
         supported_versions="[]"
         for version in $(echo "$compatible_versions" | jq -r '.[]'); do
@@ -94,11 +97,13 @@ jobs:
         echo "Game Version: $game_version"
         echo "Manifest Plugin Version: $manifest_plugin_version"
         echo "Upload Plugin Version: $plugin_version"
+        echo "Artifact Name: $artifact_name.zip"
         echo "Supported Versions: $supported_versions"
         echo "base_version=$base_version" >> "$GITHUB_OUTPUT"
         echo "game_version=$game_version" >> "$GITHUB_OUTPUT"
         echo "manifest_plugin_version=$manifest_plugin_version" >> "$GITHUB_OUTPUT"
         echo "plugin_version=$plugin_version" >> "$GITHUB_OUTPUT"
+        echo "artifact_name=$artifact_name" >> "$GITHUB_OUTPUT"
         echo "upload_version_hash=$upload_version_hash" >> "$GITHUB_OUTPUT"
         echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
         echo "supported_versions=$supported_versions" >> "$GITHUB_OUTPUT"
@@ -208,7 +213,13 @@ jobs:
         fi
 
         echo "Artifact: $artifact_path"
-        echo "path=$artifact_path" >> "$GITHUB_OUTPUT"
+        staging_dir="${{ runner.temp }}/${{ steps.read-json.outputs.artifact_name }}"
+        rm -rf "$staging_dir"
+        mkdir -p "$staging_dir"
+        unzip -q "$artifact_path" -d "$staging_dir"
+
+        echo "Staged artifact contents: $staging_dir"
+        echo "path=$staging_dir" >> "$GITHUB_OUTPUT"
 
     - name: Check formatting
       run: dotnet format whitespace ScoreSaber.sln --verify-no-changes --no-restore --exclude src/Core/Api/Generated src/Libraries/SevenZip
@@ -219,6 +230,6 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
-        name: ScoreSaber-${{ steps.read-json.outputs.base_version }}
-        path: ${{ steps.artifact.outputs.path }}
+        name: ${{ steps.read-json.outputs.artifact_name }}
+        path: ${{ steps.artifact.outputs.path }}/*
         if-no-files-found: error
