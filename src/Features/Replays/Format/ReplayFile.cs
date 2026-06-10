@@ -113,6 +113,7 @@ namespace ScoreSaber.Features.Replays.Format {
 
     internal static class RelevantGameVersions {
         public static readonly Hive.Versioning.Version Version_1_40 = new Hive.Versioning.Version("1.40.0");
+        public static readonly Hive.Versioning.Version Version_1_40_9 = new Hive.Versioning.Version("1.40.9");
     }
 
     internal struct NoteID : IEquatable<NoteID> {
@@ -148,8 +149,7 @@ namespace ScoreSaber.Features.Replays.Format {
 
         internal bool MatchesScoringType(NoteData.ScoringType comparedScoringType, Hive.Versioning.Version gameVersion) {
             if (ScoringType is int scoringType) {
-                bool storedUses1_40Values = gameVersion != null && gameVersion >= RelevantGameVersions.Version_1_40;
-                return ReplayScoringTypes.Matches(scoringType, storedUses1_40Values, comparedScoringType);
+                return ReplayScoringTypes.Matches(scoringType, ReplayScoringTypes.EraOf(gameVersion), comparedScoringType);
             }
             return true;
         }

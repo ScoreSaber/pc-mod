@@ -21,16 +21,24 @@ namespace ScoreSaber.Features.Replays.Format {
         ArcHeadArcTail,
         ChainHeadArcTail,
         ChainLinkArcHead,
-        ChainHeadArcHead,
+        ChainHeadArcHead, // 1.40.9+
         ChainHeadArcHeadArcTail
+    }
+
+    internal enum ScoringTypeEra {
+        Pre1_40,
+        From1_40_0,
+        From1_40_9
     }
 
     // replays keep values from the game that recorded them, so compare by note parts
     internal static class ReplayScoringTypes {
-#if BEAT_SABER_1_29_0 || BEAT_SABER_1_38_0
-        private const bool GameUses1_40Values = false;
+#if BEAT_SABER_1_29_0 || BEAT_SABER_1_37_1 || BEAT_SABER_1_38_0
+        private const ScoringTypeEra GameEra = ScoringTypeEra.Pre1_40;
+#elif BEAT_SABER_1_40_0
+        private const ScoringTypeEra GameEra = ScoringTypeEra.From1_40_0; // bucket ends at 1.40.8
 #else
-        private const bool GameUses1_40Values = true;
+        private const ScoringTypeEra GameEra = ScoringTypeEra.From1_40_9;
 #endif
 
         [Flags]
@@ -42,16 +50,28 @@ namespace ScoreSaber.Features.Replays.Format {
             ChainLink = 8
         }
 
-        internal static bool Matches(int storedScoringType, bool storedUses1_40Values, NoteData.ScoringType gameScoringType) {
-            if (storedUses1_40Values == GameUses1_40Values) {
+        internal static ScoringTypeEra EraOf(Hive.Versioning.Version gameVersion) {
+            if (gameVersion == null || gameVersion < RelevantGameVersions.Version_1_40) {
+                return ScoringTypeEra.Pre1_40;
+            }
+            return gameVersion < RelevantGameVersions.Version_1_40_9 ? ScoringTypeEra.From1_40_0 : ScoringTypeEra.From1_40_9;
+        }
+
+        internal static bool Matches(int storedScoringType, ScoringTypeEra storedEra, NoteData.ScoringType gameScoringType) {
+            if (storedEra == GameEra) {
                 return storedScoringType == (int)gameScoringType;
             }
 
-            int legacy = storedUses1_40Values ? (int)gameScoringType : storedScoringType;
-            int modern = storedUses1_40Values ? storedScoringType : (int)gameScoringType;
-            NoteParts legacyParts = LegacyParts((ScoringType_pre1_40)legacy);
-            // these values line up in both eras
-            return legacyParts == NoteParts.None ? legacy == modern : (legacyParts & ModernParts((ScoringType_1_40)modern)) != 0;
+            NoteParts storedParts = Parts(storedScoringType, storedEra);
+            NoteParts gameParts = Parts((int)gameScoringType, GameEra);
+            // partless values line up in every era
+            return storedParts == NoteParts.None || gameParts == NoteParts.None
+                ? storedScoringType == (int)gameScoringType
+                : (storedParts & gameParts) != 0;
+        }
+
+        private static NoteParts Parts(int scoringType, ScoringTypeEra era) {
+            return era == ScoringTypeEra.Pre1_40 ? LegacyParts((ScoringType_pre1_40)scoringType) : ModernParts((ScoringType_1_40)scoringType);
         }
 
         private static NoteParts LegacyParts(ScoringType_pre1_40 scoringType) {
