@@ -67,6 +67,10 @@ jobs:
       id: read-json
       run: |
         base_version="${{ matrix.base }}"
+        stripped_refs_version="$base_version"
+        if [ "$base_version" = "1.29.0" ]; then
+          stripped_refs_version="1.29.1"
+        fi
         compatible_versions='${{ toJson(matrix.compatible) }}'
         manifest="${{ github.workspace }}/src/Manifests/$base_version/manifest.json"
         if [ ! -f "$manifest" ]; then
@@ -95,12 +99,14 @@ jobs:
         done
 
         echo "Base Version: $base_version"
+        echo "Stripped Refs Version: $stripped_refs_version"
         echo "Game Version: $game_version"
         echo "Manifest Plugin Version: $manifest_plugin_version"
         echo "Upload Plugin Version: $plugin_version"
         echo "Artifact Name: $artifact_name.zip"
         echo "Supported Versions: $supported_versions"
         echo "base_version=$base_version" >> "$GITHUB_OUTPUT"
+        echo "stripped_refs_version=$stripped_refs_version" >> "$GITHUB_OUTPUT"
         echo "game_version=$game_version" >> "$GITHUB_OUTPUT"
         echo "manifest_plugin_version=$manifest_plugin_version" >> "$GITHUB_OUTPUT"
         echo "plugin_version=$plugin_version" >> "$GITHUB_OUTPUT"
@@ -151,18 +157,18 @@ jobs:
         token: ${{ secrets.CI_PAT }}
         path: Stripped
         sparse-checkout: |
-          Versions/${{ steps.read-json.outputs.base_version }}
+          Versions/${{ steps.read-json.outputs.stripped_refs_version }}
         sparse-checkout-cone-mode: false
         
     - name: Verify that stripped dlls actually exist
       run: |
-        if [ -z "$(ls -A Stripped/Versions/${{ steps.read-json.outputs.base_version }})" ]; then
+        if [ -z "$(ls -A Stripped/Versions/${{ steps.read-json.outputs.stripped_refs_version }})" ]; then
           echo "Error: Stripped dependencies folder is empty!"
           exit 1
         fi
         
     - name: Move stripped dlls to refs
-      run: mv Stripped/Versions/${{ steps.read-json.outputs.base_version }} Refs
+      run: mv Stripped/Versions/${{ steps.read-json.outputs.stripped_refs_version }} Refs
       
     - name: Acquire mod references
       uses: Goobwabber/download-beatmods-deps@1.3
