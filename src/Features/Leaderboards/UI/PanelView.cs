@@ -3,13 +3,13 @@ using BeatSaberMarkupLanguage.Components;
 using HMUI;
 using IPA.Utilities;
 using LeaderboardCore.Models.UI.ViewControllers;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Presentation;
 using System;
 using System.Reflection;
 using UnityEngine;
 using Zenject;
-using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace ScoreSaber.Features.Leaderboards.UI {
     internal class PanelView : BasicDoubleTextPanelViewController {
@@ -23,10 +23,17 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         private Sprite _denyahSprite;
         private ImageView _background;
         private SettingsService _settings;
-        private RectTransform _promptRoot;
-        private CurvedTextMeshPro _promptTextComponent;
-        private GameObject _promptLoaderSlot;
-        private RectTransform _contentRoot;
+
+        // bsml binds [UIComponent]/[UIObject] to fields only on old versions (1.11.4 and earlier), so keep these as fields
+        [UIComponent("prompt-root")]
+        protected readonly RectTransform _promptRoot = null;
+        [UIComponent("prompt-text-component")]
+        protected readonly CurvedTextMeshPro _promptTextComponent = null;
+        [UIObject("prompt-loader-slot")]
+        protected readonly GameObject _promptLoaderSlot = null;
+        [UIComponent("content-root")]
+        protected readonly RectTransform _contentRoot = null;
+
         private string _promptText = string.Empty;
         private bool _promptActive;
         private bool _promptLoading;
@@ -96,30 +103,6 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             }
         }
 
-        [UIComponent("prompt-root")]
-        protected RectTransform promptRoot {
-            get => _promptRoot;
-            set => _promptRoot = value;
-        }
-
-        [UIComponent("prompt-text-component")]
-        protected CurvedTextMeshPro promptTextComponent {
-            get => _promptTextComponent;
-            set => _promptTextComponent = value;
-        }
-
-        [UIObject("prompt-loader-slot")]
-        protected GameObject promptLoaderSlot {
-            get => _promptLoaderSlot;
-            set => _promptLoaderSlot = value;
-        }
-
-        [UIComponent("content-root")]
-        protected RectTransform contentRoot {
-            get => _contentRoot;
-            set => _contentRoot = value;
-        }
-
         [Inject]
         protected void Construct(SettingsService settings) {
             _settings = settings;
@@ -137,7 +120,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             base.Parsed();
             IsReady = true;
 
-            _background = outer.Background as ImageView;
+            _background = outer.GetBackground() as ImageView;
             if (_background != null) {
                 _background.color0 = Color.white;
                 _background.color1 = new Color(1f, 1f, 1f, 0f);
@@ -227,9 +210,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             }
 
             if (_denyahSprite == null) {
-#pragma warning disable CS0618 // Type or member is obsolete
-                _denyahSprite = BSMLUtilities.LoadSpriteRaw(BSMLUtilities.GetResource(Assembly.GetExecutingAssembly(), "ScoreSaber.Resources.bri-ish.png"));
-#pragma warning restore CS0618 // Type or member is obsolete
+                _denyahSprite = BsmlCompat.LoadSpriteRaw(BsmlCompat.GetResource(Assembly.GetExecutingAssembly(), "ScoreSaber.Resources.bri-ish.png"));
             }
             _background.overrideSprite = _denyahSprite;
         }

@@ -1,4 +1,5 @@
 ﻿using ScoreSaber.Core.Configuration;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Features.Replays.Playback;
 using System.Linq;
@@ -41,8 +42,8 @@ namespace ScoreSaber.Features.Replays.UI {
         private void PosePlayer_DidUpdatePose(VRPoseGroup pose) {
 
             _fps = pose.FPS;
-            _leftSaberSpeed = $"{_saberManager.leftSaber.movementDataForLogic.bladeSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale):0.0} m/s";
-            _rightSaberSpeed = $"{_saberManager.rightSaber.movementDataForLogic.bladeSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale):0.0} m/s";
+            _leftSaberSpeed = $"{_saberManager.leftSaber.GetMovementDataForLogic().bladeSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale):0.0} m/s";
+            _rightSaberSpeed = $"{_saberManager.rightSaber.GetMovementDataForLogic().bladeSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale):0.0} m/s";
         }
 
         protected void OnGUI() {

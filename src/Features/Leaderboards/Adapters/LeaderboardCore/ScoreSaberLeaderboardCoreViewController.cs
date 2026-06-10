@@ -3,6 +3,7 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using IPA.Utilities;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Leaderboards.Domain;
 using System;
@@ -36,11 +37,16 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         private PlatformLeaderboardViewController _platformLeaderboardViewController;
         private SettingsService _settings;
-        private IconSegmentedControl _scopeControl;
         private List<DataItem> _scopes;
         private Sprite _countryIcon;
-        private LeaderboardTableView _leaderboard;
         private TableView _innerTable;
+
+        // bsml binds [UIComponent] to fields only on old versions (1.11.4 and earlier), so keep these as fields
+        [UIComponent("leaderboard")]
+        private readonly LeaderboardTableView _leaderboard = null;
+        [UIComponent("scopes-segmented-control")]
+        private readonly IconSegmentedControl _scopeControl = null;
+
         private LeaderboardScreenState _pendingState;
         private LeaderboardScreenScope _scope = LeaderboardScreenScope.Global;
         private int _selectedScopeCell = -1;
@@ -129,18 +135,6 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
                 return _scopes;
             }
-        }
-
-        [UIComponent("leaderboard")]
-        private LeaderboardTableView Leaderboard {
-            get => _leaderboard;
-            set => _leaderboard = value;
-        }
-
-        [UIComponent("scopes-segmented-control")]
-        private IconSegmentedControl ScopeControl {
-            get => _scopeControl;
-            set => _scopeControl = value;
         }
 
         [UIAction("#post-parse")]
@@ -264,7 +258,8 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
             }
 
             if (_innerTable == null) {
-                _innerTable = InnerTable(ref _leaderboard);
+                LeaderboardTableView leaderboard = _leaderboard;
+                _innerTable = InnerTable(ref leaderboard);
             }
 
             if (_innerTable == null) {
@@ -420,7 +415,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private Sprite CountryIcon() {
             if (_countryIcon == null) {
                 Texture2D countryTexture = new Texture2D(64, 64);
-                countryTexture.LoadImage(BeatSaberMarkupLanguage.Utilities.GetResource(Assembly.GetExecutingAssembly(), CountryIconResource));
+                countryTexture.LoadImage(BsmlCompat.GetResource(Assembly.GetExecutingAssembly(), CountryIconResource));
                 countryTexture.Apply();
                 _countryIcon = Sprite.Create(countryTexture, new Rect(0, 0, countryTexture.width, countryTexture.height), Vector2.zero);
             }

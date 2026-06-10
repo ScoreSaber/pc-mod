@@ -1,6 +1,7 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.TypeHandlers;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core;
 using System;
 using System.Collections.Generic;
@@ -36,16 +37,16 @@ namespace ScoreSaber.Features.Players.Profile {
         public override void HandleTypeAfterParse(BSMLParser.ComponentTypeWithData componentType, BSMLParserParams parserParams) {
             base.HandleTypeAfterParse(componentType, parserParams);
             try {
-                var profile = componentType.Component as ProfileDetailView;
+                var profile = componentType.GetComponent() as ProfileDetailView;
                 var parent = profile.profileModalRoot.transform.parent;
                 void Reparent() { profile.profileModalRoot.transform.SetParent(parent, true); }
 
-                if (componentType.Data.TryGetValue("showEvent", out string showEvent)) {
+                if (componentType.GetData().TryGetValue("showEvent", out string showEvent)) {
                     parserParams.AddEvent(showEvent, delegate {
                         profile.profileModalRoot.Show(true, true); // by Design™
                     });
                 }
-                if (componentType.Data.TryGetValue("hideEvent", out string hideEvent)) {
+                if (componentType.GetData().TryGetValue("hideEvent", out string hideEvent)) {
                     parserParams.AddEvent(hideEvent, delegate {
                         profile.profileModalRoot.Hide(true, Reparent);
                     });

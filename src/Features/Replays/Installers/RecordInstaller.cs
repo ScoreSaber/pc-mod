@@ -1,4 +1,5 @@
 ﻿using Zenject;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Replays.Recorders;
 
 namespace ScoreSaber.Features.Replays.Installers {
@@ -13,6 +14,7 @@ namespace ScoreSaber.Features.Replays.Installers {
 
             if (!_replayState.IsPlaybackEnabled) {
                 Plugin.Log.Debug("Installing replay recorders");
+                Container.Bind<RoomSettings>().AsSingle();
                 Container.BindInterfacesAndSelfTo<Recorder>().AsSingle();
                 Container.BindInterfacesAndSelfTo<MetadataRecorder>().AsSingle();
                 Container.BindInterfacesAndSelfTo<HeightEventRecorder>().AsSingle();

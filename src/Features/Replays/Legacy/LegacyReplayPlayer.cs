@@ -5,9 +5,9 @@ using Zenject;
 using SiraUtil.Tools.FPFC;
 using UnityEngine;
 using IPA.Utilities;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Gameplay;
-using UnityEngine.SpatialTracking;
 
 namespace ScoreSaber.Features.Replays.Legacy {
 
@@ -19,7 +19,7 @@ namespace ScoreSaber.Features.Replays.Legacy {
         private readonly AudioTimeSyncController _audioTimeSyncController;
         private readonly MainCamera _mainCamera;
         private readonly SaberManager _saberManager;
-        private readonly SettingsManager _settingsManager;
+        private readonly RoomSettings _roomSettings;
         private readonly SettingsService _settings;
         private PlayerTransforms _playerTransforms;
         private readonly IFPFCSettings _fpfcSettings;
@@ -40,7 +40,7 @@ namespace ScoreSaber.Features.Replays.Legacy {
 
         internal LegacyReplayPlayer(List<Z.Keyframe> keyframes, ScoreController scoreController,
             RelativeScoreAndImmediateRankCounter relativeScoreAndImmediateRankCounter, AudioTimeSyncController audioTimeSyncController,
-            MainCamera mainCamera, SaberManager saberManager, PlayerTransforms playerTransforms, IFPFCSettings fpfcSettings, ComboController comboController, SettingsManager settingsManager, SettingsService settings) {
+            MainCamera mainCamera, SaberManager saberManager, PlayerTransforms playerTransforms, IFPFCSettings fpfcSettings, ComboController comboController, RoomSettings roomSettings, SettingsService settings) {
 
             _fpfcSettings = fpfcSettings;
             _comboController = comboController;
@@ -55,14 +55,14 @@ namespace ScoreSaber.Features.Replays.Legacy {
             _mainCamera = mainCamera;
             _saberManager = saberManager;
             _playerTransforms = playerTransforms;
-            _settingsManager = settingsManager;
+            _roomSettings = roomSettings;
             _settings = settings;
             _scoreUIController = Resources.FindObjectsOfTypeAll<ScoreUIController>().FirstOrDefault();
         }
 
         public void Initialize() {
             SetupCameras();
-            _fpfcSettings.Changed += fpfcSettings_Changed;
+            _fpfcSettings.AddChangedListener(fpfcSettings_Changed);
             ScoreUIController.InitData data = new ScoreUIController.InitData(scoreDisplayType: ScoreUIController.ScoreDisplayType.MultipliedScore);
             _scoreUIController.SetField("_initData", data);
         }
@@ -89,15 +89,16 @@ namespace ScoreSaber.Features.Replays.Legacy {
             _mainCamera.SetField("_camera", _desktopCamera);
 
 
+            // camera2 finds these cameras by object path, so keep the names and hierarchy stable
             GameObject spectatorObject = new GameObject("SpectatorParent");
             _spectatorCamera = UnityEngine.Object.Instantiate(_desktopCamera);
-            spectatorObject.transform.position = new Vector3(_settingsManager.settings.room.center.x, _settingsManager.settings.room.center.y, _settingsManager.settings.room.center.z);
+            spectatorObject.transform.position = _roomSettings.Center;
             Quaternion rotation = new Quaternion {
-                eulerAngles = new Vector3(0.0f, _settingsManager.settings.room.rotation, 0.0f)
+                eulerAngles = new Vector3(0.0f, _roomSettings.Rotation, 0.0f)
             };
             spectatorObject.transform.rotation = rotation;
             _spectatorCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            _mainCamera.gameObject.GetComponent<TrackedPoseDriver>().CopyComponent<TrackedPoseDriver>(_spectatorCamera.gameObject);
+            ReplayCameraCompat.CopyTrackedPoseDriver(_mainCamera, _spectatorCamera);
             _spectatorCamera.gameObject.SetActive(true);
             _spectatorCamera.depth = 0;
             _spectatorCamera.transform.SetParent(spectatorObject.transform);
@@ -252,7 +253,7 @@ namespace ScoreSaber.Features.Replays.Legacy {
         }
 
         public void Dispose() {
-            _fpfcSettings.Changed -= fpfcSettings_Changed;
+            _fpfcSettings.RemoveChangedListener(fpfcSettings_Changed);
             _fpfcSettings.Enabled = _initialFPFCState;
         }
     }

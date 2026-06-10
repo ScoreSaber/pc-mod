@@ -1,4 +1,5 @@
 using ScoreSaber.Core;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.Services;
@@ -45,11 +46,11 @@ namespace ScoreSaber.Features.ScoreSubmission {
         }
 
         private void HandleStandardLevelFinished(StandardLevelScenesTransitionSetupDataSO transition, LevelCompletionResults results) {
-            HandleLevelFinished(new ScoreSubmissionRequest(transition.gameMode, transition.beatmapLevel, transition.beatmapKey, results, transition.practiceSettings != null, GetCurrentSongTime()));
+            HandleLevelFinished(new ScoreSubmissionRequest(transition.gameMode, transition.GetBeatmapLevel(), transition.GetBeatmapKey(), results, transition.practiceSettings != null, GetCurrentSongTime()));
         }
 
         private void HandleMultiplayerLevelFinished(MultiplayerLevelScenesTransitionSetupDataSO transition, MultiplayerResultsData resultsData) {
-            if (transition.beatmapLevel == null) {
+            if (transition.GetBeatmapLevel() == null) {
                 return;
             }
 
@@ -62,7 +63,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
                 return;
             }
 
-            HandleLevelFinished(new ScoreSubmissionRequest(transition.gameMode, transition.beatmapLevel, transition.beatmapKey, multiplayerResults.levelCompletionResults, false, GetCurrentSongTime()));
+            HandleLevelFinished(new ScoreSubmissionRequest(transition.gameMode, transition.GetBeatmapLevel(), transition.GetBeatmapKey(), multiplayerResults.levelCompletionResults, false, GetCurrentSongTime()));
         }
 
         private void HandleLevelFinished(ScoreSubmissionRequest request) {
@@ -179,6 +180,10 @@ namespace ScoreSaber.Features.ScoreSubmission {
 
             if (request.Practicing || IsPracticeViewActive()) {
                 return ScoreSubmissionDecision.WriteReplayOnly("practice run");
+            }
+
+            if (request.Results.multipliedScore <= 0) {
+                return ScoreSubmissionDecision.Ignore("score is 0, server would reject it");
             }
 
             if (request.Results.levelEndStateType == LevelCompletionResults.LevelEndStateType.Failed) {

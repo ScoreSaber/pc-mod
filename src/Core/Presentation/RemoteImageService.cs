@@ -1,3 +1,4 @@
+using ScoreSaber.Core.Compat;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,6 +29,11 @@ namespace ScoreSaber.Core.Presentation {
                     return;
                 }
 
+                if (_coroutineStarter == null) {
+                    onFailure?.Invoke("Coroutine starter unavailable");
+                    return;
+                }
+
                 _coroutineStarter.StartCoroutine(GetSprite(url, onSuccess, onFailure, cancellationToken));
             } catch (OperationCanceledException) {
                 onFailure?.Invoke("Cancelled");
@@ -50,7 +56,7 @@ namespace ScoreSaber.Core.Presentation {
                 yield return null;
             }
 
-            if (request.result == UnityWebRequest.Result.ProtocolError || request.result == UnityWebRequest.Result.ConnectionError) {
+            if (request.IsProtocolError() || request.IsConnectionError()) {
                 onFailure?.Invoke(request.error);
                 yield break;
             }

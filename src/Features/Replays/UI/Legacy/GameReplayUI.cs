@@ -1,4 +1,5 @@
 using HMUI;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using System;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace ScoreSaber.Features.Replays.Legacy.UI {
             }
             GameObject _watermarkCanvas = new GameObject("InGameReplayUI");
 
-            if (_gameplayCoreSceneSetupData.targetEnvironmentInfo.environmentName == "Interscope") {
+            if (_gameplayCoreSceneSetupData.GetTargetEnvironmentInfo().environmentName == "Interscope") {
                 _watermarkCanvas.transform.position = new Vector3(0f, 3.5f, 12.0f);
             } else {
                 _watermarkCanvas.transform.position = new Vector3(0f, 4f, 12.0f);

@@ -1,4 +1,5 @@
 ﻿using IPA.Utilities.Async;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Replays.Format;
@@ -62,26 +63,7 @@ namespace ScoreSaber.Features.Replays {
             }
 
             _scoreSubmissionService.SuspendForReplay();
-            _menuTransitionsHelper.StartStandardLevel(
-                gameMode: "Replay",
-                beatmapKey: beatmapKey,
-                beatmapLevel: beatmapLevel,
-                overrideEnvironmentSettings: playerData.overrideEnvironmentSettings,
-                playerOverrideColorScheme: playerData.colorSchemesSettings.GetOverrideColorScheme(),
-                playerOverrideLightshowColors: playerData.colorSchemesSettings.ShouldOverrideLightshowColors(),
-                beatmapOverrideColorScheme: beatmapLevel.GetColorScheme(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty),
-                gameplayModifiers: gameplayModifiers,
-                playerSpecificSettings: playerSettings,
-                practiceSettings: null,
-                environmentsListModel: _environmentsListModel,
-                backButtonText: "Exit Replay",
-                useTestNoteCutSoundEffects: false,
-                startPaused: false,
-                beforeSceneSwitchToGameplayCallback: null,
-                afterSceneSwitchToGameplayCallback: null,
-                levelFinishedCallback: ReplayEnd,
-                levelRestartedCallback: null
-            );
+            _menuTransitionsHelper.StartReplayLevel(beatmapKey, beatmapLevel, playerData, gameplayModifiers, playerSettings, _environmentsListModel, ReplayEnd);
         }
 
         private static Z.SavedData DeserializeLegacyReplay(byte[] decompressed) {
@@ -132,37 +114,13 @@ namespace ScoreSaber.Features.Replays {
                 replay.Mirror();
             }
 
-            PlayerSpecificSettings playerSettings = new PlayerSpecificSettings(replay.metadata.LeftHanded, replay.metadata.InitialHeight,
-                replay.heightKeyframes.Count > 0, localPlayerSettings.sfxVolume, localPlayerSettings.reduceDebris,
-                localPlayerSettings.noTextsAndHuds, localPlayerSettings.noFailEffects, localPlayerSettings.advancedHud,
-                localPlayerSettings.autoRestart, localPlayerSettings.saberTrailIntensity, localPlayerSettings.noteJumpDurationTypeSettings,
-                localPlayerSettings.noteJumpFixedDuration, localPlayerSettings.noteJumpStartBeatOffset, localPlayerSettings.hideNoteSpawnEffect,
-                localPlayerSettings.adaptiveSfx, localPlayerSettings.arcsHapticFeedback, localPlayerSettings.arcVisibility,
-                localPlayerSettings.environmentEffectsFilterDefaultPreset,
-                localPlayerSettings.environmentEffectsFilterExpertPlusPreset,
-                localPlayerSettings.headsetHapticIntensity);
+            PlayerSpecificSettings playerSettings = PlayerSettingsCompat.ForReplay(localPlayerSettings,
+                replay.metadata.LeftHanded, replay.metadata.InitialHeight, replay.heightKeyframes.Count > 0);
 
             _scoreSubmissionService.SuspendForReplay();
-            _menuTransitionsHelper.StartStandardLevel(
-                gameMode: "Replay",
-                beatmapKey: beatmapKey,
-                beatmapLevel: beatmapLevel,
-                overrideEnvironmentSettings: playerData.overrideEnvironmentSettings,
-                playerOverrideColorScheme: playerData.colorSchemesSettings.GetOverrideColorScheme(),
-                playerOverrideLightshowColors: playerData.colorSchemesSettings.ShouldOverrideLightshowColors(),
-                beatmapOverrideColorScheme: beatmapLevel.GetColorScheme(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty),
-                gameplayModifiers: ScoreSaberGameplayModifiers.FromCodes(replay.metadata.Modifiers, false).GameplayModifiers,
-                playerSpecificSettings: playerSettings,
-                practiceSettings: null,
-                environmentsListModel: _environmentsListModel,
-                backButtonText: "Exit Replay",
-                useTestNoteCutSoundEffects: false,
-                startPaused: false,
-                beforeSceneSwitchToGameplayCallback: null,
-                afterSceneSwitchToGameplayCallback: null,
-                levelFinishedCallback: ReplayEnd,
-                levelRestartedCallback: null
-            );
+            _menuTransitionsHelper.StartReplayLevel(beatmapKey, beatmapLevel, playerData,
+                ScoreSaberGameplayModifiers.FromCodes(replay.metadata.Modifiers, false).GameplayModifiers,
+                playerSettings, _environmentsListModel, ReplayEnd);
         }
 
         private void ReplayEnd(StandardLevelScenesTransitionSetupDataSO standardLevelSceneSetupData, LevelCompletionResults levelCompletionResults) {

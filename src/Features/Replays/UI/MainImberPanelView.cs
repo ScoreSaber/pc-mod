@@ -3,6 +3,7 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.FloatingScreen;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
+using ScoreSaber.Core.Compat;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -133,7 +134,7 @@ namespace ScoreSaber.Features.Replays.UI {
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 
             base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
-            tabSelector.TextSegmentedControl.didSelectCellEvent += DidSelect;
+            tabSelector.GetTextSegmentedControl().didSelectCellEvent += DidSelect;
             didParse = true;
             if (firstActivation) {
                 tabSelector.transform.localScale *= .9f;
@@ -150,7 +151,7 @@ namespace ScoreSaber.Features.Replays.UI {
 
         protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling) {
 
-            tabSelector.TextSegmentedControl.didSelectCellEvent -= DidSelect;
+            tabSelector.GetTextSegmentedControl().didSelectCellEvent -= DidSelect;
             base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
         }
 

@@ -1,4 +1,5 @@
 ﻿using ScoreSaber.Core.Api;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Features.Leaderboards;
 using ScoreSaber.Features.MainMenu;
@@ -15,6 +16,7 @@ namespace ScoreSaber.Core {
             Container.BindInstance(new object()).WithId("ScoreSaberUIBindings").AsCached();
             Container.Bind<IScoreSaberApiClient>().To<ScoreSaberApiClient>().AsSingle();
             Container.Bind<RemoteImageService>().AsSingle();
+            Container.Install<CompatInstaller>();
             Container.Install<PlayersFeatureInstaller>();
             Container.Install<ReplayFeatureInstaller>();
             Container.Install<ScoreSubmissionFeatureInstaller>();

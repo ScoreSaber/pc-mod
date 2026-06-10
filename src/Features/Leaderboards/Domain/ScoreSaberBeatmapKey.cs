@@ -8,7 +8,9 @@ namespace ScoreSaber.Features.Leaderboards.Domain {
 
         internal static bool IsSupported(BeatmapKey beatmapKey) => TryGetSongHash(beatmapKey, out _);
 
-        internal static bool IsCustomLevel(BeatmapKey beatmapKey) => !string.IsNullOrEmpty(beatmapKey.levelId) && beatmapKey.levelId.StartsWith(CustomLevelPrefix, StringComparison.Ordinal);
+        internal static bool IsCustomLevel(BeatmapKey beatmapKey) => IsCustomLevelId(beatmapKey.levelId);
+
+        internal static bool IsCustomLevelId(string levelId) => !string.IsNullOrEmpty(levelId) && levelId.StartsWith(CustomLevelPrefix, StringComparison.Ordinal);
 
         internal static bool IsWip(BeatmapKey beatmapKey) => IsCustomLevel(beatmapKey) && IsWipLevelId(beatmapKey.levelId);
 

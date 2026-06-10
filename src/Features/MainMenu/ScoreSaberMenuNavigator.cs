@@ -1,4 +1,5 @@
 using HMUI;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.MainMenu.MainFlow;
 using ScoreSaber.Features.MainMenu.Settings;
 
@@ -24,7 +25,7 @@ namespace ScoreSaber.Features.MainMenu {
 
         private void Present(IScoreSaberFlowCoordinator flowCoordinator) {
             FlowCoordinator activeFlow = DeepestChildFlowCoordinator(_mainFlowCoordinator);
-            activeFlow.PresentFlowCoordinator(flowCoordinator.FlowCoordinator);
+            activeFlow.Present(flowCoordinator.FlowCoordinator);
             flowCoordinator.SetPresentingFlowCoordinator(activeFlow);
         }
 

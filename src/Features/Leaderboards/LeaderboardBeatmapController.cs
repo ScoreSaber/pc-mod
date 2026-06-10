@@ -6,7 +6,7 @@ using ScoreSaber.Features.Leaderboards.UI.Avatars;
 using ScoreSaber.Features.Players.Services;
 
 namespace ScoreSaber.Features.Leaderboards {
-    internal class LeaderboardBeatmapController : INotifyLeaderboardSet {
+    internal partial class LeaderboardBeatmapController : INotifyLeaderboardSet {
         private readonly ScoreSaberLeaderboardOverlayController _overlayController;
         private readonly LeaderboardAvatarHost _avatarHost;
         private readonly GameSessionService _gameSessionService;

@@ -1,4 +1,5 @@
 ﻿using IPA.Utilities;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Replays.Format;
 using SiraUtil.Affinity;
 using SiraUtil.Logging;
@@ -113,7 +114,7 @@ namespace ScoreSaber.Features.Replays.Playback {
                     noteTransform.rotation,
                     noteTransform.position,
 
-                    correctSaber.movementDataForLogic
+                    correctSaber.GetMovementDataForLogic()
                 );
 
                 _recognizedNoteCutInfos.Add(noteCutInfo, activeEvent);

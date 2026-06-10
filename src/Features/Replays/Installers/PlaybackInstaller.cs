@@ -1,4 +1,5 @@
-﻿using ScoreSaber.Features.Replays.HarmonyPatches;
+﻿using ScoreSaber.Core.Compat;
+using ScoreSaber.Features.Replays.HarmonyPatches;
 using ScoreSaber.Features.Replays.Legacy;
 using ScoreSaber.Features.Replays.Legacy.UI;
 using ScoreSaber.Features.Replays.Playback;
@@ -22,6 +23,7 @@ namespace ScoreSaber.Features.Replays.Installers {
         public override void InstallBindings() {
 
             if (_replayState.IsPlaybackEnabled) {
+                Container.Bind<RoomSettings>().AsSingle();
                 Container.BindInstance(new object()).WithId("ScoreSaberReplay").AsCached();
                 if (!_replayState.IsLegacyReplay) {
                     Container.BindInstance(_replayState.LoadedReplayFile).AsSingle();

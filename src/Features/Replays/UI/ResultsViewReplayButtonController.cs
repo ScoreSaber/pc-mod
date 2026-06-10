@@ -3,6 +3,7 @@ using BeatSaberMarkupLanguage.Attributes;
 using IPA.Utilities.Async;
 using ScoreSaber.Features.Players.Services;
 using ScoreSaber.Core;
+using ScoreSaber.Core.Compat;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -44,7 +45,7 @@ namespace ScoreSaber.Features.Replays.UI {
         private void ResultsViewController_didActivateEvent(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 
             if (firstActivation) {
-                BSMLParser.Instance.Parse(
+                BsmlCompat.Parser.Parse(
                     "<button-with-icon id=\"watch-replay-button\" icon=\"ScoreSaber.Resources.replay.png\" hover-hint=\"Watch Replay\" pref-width=\"15\" pref-height=\"13\" interactable=\"false\" on-click=\"replay-click\" />",
                     _resultsViewController.gameObject,
                     this
@@ -53,8 +54,8 @@ namespace ScoreSaber.Features.Replays.UI {
                 watchReplayButton.transform.localPosition = new Vector2(42.5f, 27f);
             }
             watchReplayButton.interactable = _serializedReplay != null;
-            _beatmapLevel = _resultsViewController._beatmapLevel;
-            _beatmapKey = _resultsViewController._beatmapKey;
+            _beatmapLevel = _resultsViewController.GetBeatmapLevel();
+            _beatmapKey = _resultsViewController.GetBeatmapKey();
             _levelCompletionResults = _resultsViewController._levelCompletionResults;
             WaitForReplay(++_waitForReplayVersion).RunTask();
         }

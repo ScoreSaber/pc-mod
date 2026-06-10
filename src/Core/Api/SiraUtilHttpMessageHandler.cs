@@ -1,3 +1,4 @@
+using ScoreSaber.Core.Compat;
 using SiraUtil.Web;
 using System;
 using System.Collections.Generic;
@@ -21,13 +22,12 @@ namespace ScoreSaber.Core.Api {
             var headers = GetHeaders(request);
 
             Plugin.Log.Debug($"ScoreSaber API {request.Method} {request.RequestUri.AbsolutePath}");
-            IHttpResponse siraResponse = await _httpService.SendAsync(
+            IHttpResponse siraResponse = await _httpService.SendWithTimeoutAsync(
                 ToMethod(request.Method),
                 request.RequestUri.ToString(),
                 RequestTimeoutSeconds,
                 body,
                 headers,
-                null,
                 cancellationToken);
 
             if (siraResponse == null) {
@@ -55,6 +55,9 @@ namespace ScoreSaber.Core.Api {
         }
 
         private static void CopyHeaders(HttpResponseMessage response, IHttpResponse siraResponse) {
+#if BEAT_SABER_1_29_0
+            // 1.29 has no response headers here
+#else
             if (siraResponse.Headers != null) {
                 foreach (var header in siraResponse.Headers) {
                     if (string.IsNullOrEmpty(header.Key) || header.Value == null) {
@@ -70,6 +73,7 @@ namespace ScoreSaber.Core.Api {
                     }
                 }
             }
+#endif
         }
 
         private static async Task<byte[]> ReadResponseBody(IHttpResponse response) {

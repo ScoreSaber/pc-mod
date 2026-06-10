@@ -1,4 +1,5 @@
 ﻿using ScoreSaber.Core.Api;
+using ScoreSaber.Core.Platform;
 using ScoreSaber.Core.Api.UploadTrust;
 using ScoreSaber.Features.Players.Domain;
 using ScoreSaber.Core.Presentation;
@@ -19,7 +20,7 @@ namespace ScoreSaber.Features.Players.Services {
         internal bool CanUseUploadProtocolV2 => _buildMetadata.IsOfficial || _buildMetadata.IsDevelopment;
         public event Action<LoginStatus, string> LoginStatusChanged;
         private readonly IScoreSaberApiClient _apiClient;
-        private readonly IPlatformUserModel _platformUserModel;
+        private readonly PlatformUserService _platformUser;
         private readonly UploadTrustBuildMetadata _buildMetadata;
         private Task<bool> _signInTask;
 
@@ -30,9 +31,9 @@ namespace ScoreSaber.Features.Players.Services {
             Success = 3
         }
 
-        public GameSessionService(IScoreSaberApiClient apiClient, IPlatformUserModel platformUserModel) {
+        public GameSessionService(IScoreSaberApiClient apiClient, PlatformUserService platformUser) {
             _apiClient = apiClient;
-            _platformUserModel = platformUserModel;
+            _platformUser = platformUser;
             _buildMetadata = UploadTrustBuildMetadata.FromAssembly(typeof(Plugin).Assembly);
             Plugin.Log.Debug("GameSessionService Setup!");
         }
@@ -124,26 +125,26 @@ namespace ScoreSaber.Features.Players.Services {
         private Task<bool> RefreshUploadTrustSession(CancellationToken cancellationToken) => AuthenticateWithScoreSaber(LocalPlayerInfo);
 
         private async Task<LocalPlayerInfo> CreatePlatformPlayerInfo(CancellationToken cancellationToken) {
-            var authToken = await _platformUserModel.GetUserAuthToken();
-            var userInfo = await _platformUserModel.GetUserInfo(cancellationToken);
+            var authToken = await _platformUser.GetAuthToken();
+            var userInfo = await _platformUser.GetUserInfo(cancellationToken);
 
             var nonce = string.Empty;
             var platform = string.Empty;
 
             switch (userInfo.platform) {
                 case UserInfo.Platform.Steam:
-                    nonce = authToken.token;
+                    nonce = authToken;
                     platform = "0";
                     break;
                 case UserInfo.Platform.Oculus:
-                    nonce = authToken.token + "," + (await _platformUserModel.RequestXPlatformAccessToken(cancellationToken)).token;
+                    nonce = authToken + "," + await _platformUser.GetXPlatformAccessToken(cancellationToken);
                     platform = "1";
                     break;
             }
 
             var playerId = userInfo.platformUserId;
             var playerName = userInfo.userName;
-            var friendIds = await _platformUserModel.GetUserFriendsUserIds(false);
+            var friendIds = await _platformUser.GetFriendsUserIds();
             var friends = string.Join(",", friendIds.Where(x => x != "0"));
 
             return new LocalPlayerInfo(playerId, playerName, friends, platform, nonce);
@@ -155,7 +156,7 @@ namespace ScoreSaber.Features.Players.Services {
             string friends = string.Empty;
 
             if (string.IsNullOrEmpty(playerId) || string.IsNullOrEmpty(playerName)) {
-                var userInfo = await _platformUserModel.GetUserInfo(cancellationToken);
+                var userInfo = await _platformUser.GetUserInfo(cancellationToken);
                 if (string.IsNullOrEmpty(playerId)) {
                     playerId = userInfo.platformUserId;
                 }

@@ -2,6 +2,7 @@
 using HarmonyLib;
 using IPA;
 using IPA.Loader;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core;
 using ScoreSaber.Core.Api;
 using ScoreSaber.Core.Configuration;
@@ -44,8 +45,8 @@ namespace ScoreSaber {
             ReplayStateRegistry.Use(ReplayState);
 
             zenjector.UseLogger(logger);
-            zenjector.Expose<ComboUIController>("Environment");
-            zenjector.Expose<GameEnergyUIPanel>("Environment");
+            zenjector.ExposeFromContract<ComboUIController>("Environment");
+            zenjector.ExposeFromContract<GameEnergyUIPanel>("Environment");
             zenjector.Install<AppInstaller>(Location.App);
             zenjector.Install<MainInstaller>(Location.Menu);
             zenjector.Install<ImberInstaller>(Location.StandardPlayer);
@@ -63,7 +64,7 @@ namespace ScoreSaber {
 
         [OnEnable]
         public void OnEnable() {
-            BeatSaberMarkupLanguage.Util.MainMenuAwaiter.MainMenuInitializing += MainMenuInit;
+            BsmlCompat.OnMainMenuInitializing(MainMenuInit);
             SettingsService.Load();
             ReplayState.Reset();
             if (!SettingsService.Current.disableScoreSaber) {
@@ -74,10 +75,11 @@ namespace ScoreSaber {
         }
 
         private void MainMenuInit() {
-            BSMLParser.Instance.RegisterTypeHandler(new ProfileDetailViewTypeHandler());
-            BSMLParser.Instance.RegisterTag(new ProfileDetailViewTag(Metadata.Assembly));
+            BsmlCompat.Parser.RegisterTypeHandler(new ProfileDetailViewTypeHandler());
+            BsmlCompat.Parser.RegisterTag(new ProfileDetailViewTag(Metadata.Assembly));
         }
 
+        // BS Utils and SiraUtil reflect this property and call SetValue on it, no touchy!
         public static bool ScoreSubmission {
             get => ScoreSubmissionRegistry.IsEnabled;
             set {

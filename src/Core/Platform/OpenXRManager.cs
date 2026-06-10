@@ -70,7 +70,11 @@ namespace ScoreSaber.Core.Platform {
 
         internal static string HMDName = null;
 
-        internal const string xrGetCurrentInstancePattern = "48 83 EC 28 65 48 8B 04 25 ? ? ? ? 8B 0D ? ? ? ? BA ? ? ? ? 48 8B 0C C8 8B 04 0A 39 05 ? ? ? ? 7F 0C 48 8D 05 ? ? ? ? 48 83 C4 28 C3 48 8D 0D ? ? ? ?";
+        // 1.40.9 rebuilt openxr_loader.dll, so scan for both patterns
+        internal static readonly string[] xrGetCurrentInstancePatterns = {
+            "48 83 EC 28 65 48 8B 04 25 ? ? ? ? 8B 0D ? ? ? ? BA ? ? ? ? 48 8B 0C C8 8B 04 0A 39 05 ? ? ? ? 7F 0C 48 8D 05 ? ? ? ? 48 83 C4 28 C3 48 8D 0D ? ? ? ?",
+            "48 83 EC 28 8B 0D ? ? ? ? 65 48 8B 04 25 ? ? ? ? BA ? ? ? ? 48 8B 04 C8 8B 04 02 39 05 ? ? ? ? 7F 0C 48 8D 05 ? ? ? ? 48 83 C4 28 C3 48 8D 0D ? ? ? ?"
+        };
 
         internal static void Initialize() {
             HMDName = AttemptGetHMD();
@@ -86,7 +90,13 @@ namespace ScoreSaber.Core.Platform {
                 }
 
                 // Get our xrInstance
-                var xrGetCurrentInstanceOffset = PatternScan(Process.GetCurrentProcess(), openXRLoaderModule, xrGetCurrentInstancePattern);
+                var xrGetCurrentInstanceOffset = IntPtr.Zero;
+                foreach (var pattern in xrGetCurrentInstancePatterns) {
+                    xrGetCurrentInstanceOffset = PatternScan(Process.GetCurrentProcess(), openXRLoaderModule, pattern);
+                    if (xrGetCurrentInstanceOffset != IntPtr.Zero) {
+                        break;
+                    }
+                }
 
                 if (xrGetCurrentInstanceOffset == IntPtr.Zero) {
                     throw new Exception("xrGetCurrentInstance not found");

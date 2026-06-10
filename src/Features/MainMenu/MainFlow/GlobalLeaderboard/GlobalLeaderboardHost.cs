@@ -1,5 +1,6 @@
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
+using ScoreSaber.Core.Compat;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -34,11 +35,11 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
 
         internal void SetCells(IEnumerable<GlobalCell> cells) {
             _rankCells.Clear();
-            _leaderboard.Data.Clear();
+            _leaderboard.GetData().Clear();
             _rankCells.AddRange(cells);
 
             globalSet = true;
-            _leaderboard.TableView.ReloadData();
+            _leaderboard.GetTableView().ReloadData();
         }
 
         protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

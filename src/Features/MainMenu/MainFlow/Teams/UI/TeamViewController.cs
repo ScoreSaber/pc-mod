@@ -3,6 +3,7 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using Newtonsoft.Json;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Features.MainMenu.MainFlow.Teams;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.Teams.UI {
 
             base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
 
-            _tabSelector.TextSegmentedControl.didSelectCellEvent += DidSelect;
+            _tabSelector.GetTextSegmentedControl().didSelectCellEvent += DidSelect;
             if (_teamHosts.Count > 0) {
                 TeamHost host = (TeamHost)_teamHosts[0];
                 host.Init();
@@ -66,7 +67,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.Teams.UI {
 
         protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling) {
             base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
-            _tabSelector.TextSegmentedControl.didSelectCellEvent -= DidSelect;
+            _tabSelector.GetTextSegmentedControl().didSelectCellEvent -= DidSelect;
         }
 
         private void DidSelect(SegmentedControl segmentedControl, int pos) {

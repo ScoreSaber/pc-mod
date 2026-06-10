@@ -1,5 +1,6 @@
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Tags;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using System.Reflection;
 using UnityEngine;
@@ -32,7 +33,7 @@ namespace ScoreSaber.Features.Players.Profile {
         }
 
         private void Parse(GameObject gameObj, ProfileDetailView host) {
-            BSMLParser.Instance.Parse(BSMLHotReload.ResourceContent(_assembly, ProfileResource, ProfileLayout), gameObj, host);
+            BsmlCompat.Parser.Parse(BSMLHotReload.ResourceContent(_assembly, ProfileResource, ProfileLayout), gameObj, host);
             host.SetProfileBadges(null);
         }
     }

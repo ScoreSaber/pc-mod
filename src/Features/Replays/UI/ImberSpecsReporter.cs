@@ -1,4 +1,5 @@
 ﻿using ScoreSaber.Features.Replays.Format;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Replays.Playback;
 using System;
 using Zenject;
@@ -22,7 +23,7 @@ namespace ScoreSaber.Features.Replays.UI {
 
         private void PosePlayer_DidUpdatePose(VRPoseGroup pose) {
 
-            DidReport?.Invoke(pose.FPS, _saberManager.leftSaber.movementDataForLogic.bladeSpeed, _saberManager.rightSaber.movementDataForLogic.bladeSpeed);
+            DidReport?.Invoke(pose.FPS, _saberManager.leftSaber.GetMovementDataForLogic().bladeSpeed, _saberManager.rightSaber.GetMovementDataForLogic().bladeSpeed);
         }
 
         public void Dispose() {

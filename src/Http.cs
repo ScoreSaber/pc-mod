@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ScoreSaber.Core.Compat;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -53,7 +54,7 @@ namespace ScoreSaber {
             using (UnityWebRequest request = UnityWebRequest.Get(url)) {
                 request.timeout = 5;
                 await SendHttpAsyncRequest(request);
-                if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError) {
+                if (request.IsConnectionError() || request.IsProtocolError()) {
                     throw ThrowHttpException(request);
                 }
 
@@ -66,7 +67,7 @@ namespace ScoreSaber {
             using (UnityWebRequest request = UnityWebRequest.Get(url)) {
                 request.timeout = 5;
                 await SendHttpAsyncRequest(request);
-                if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError) {
+                if (request.IsConnectionError() || request.IsProtocolError()) {
                     throw ThrowHttpException(request);
                 }
 
@@ -78,7 +79,7 @@ namespace ScoreSaber {
             url = $"{options.baseURL}{url}";
             using (UnityWebRequest request = UnityWebRequest.Get(url)) {
                 await SendHttpAsyncRequest(request);
-                if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError) {
+                if (request.IsConnectionError() || request.IsProtocolError()) {
                     throw ThrowHttpException(request);
                 }
 
@@ -99,7 +100,7 @@ namespace ScoreSaber {
 
                 request.timeout = 120;
                 await SendHttpAsyncRequest(request);
-                if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError) {
+                if (request.IsConnectionError() || request.IsProtocolError()) {
                     throw ThrowHttpException(request);
                 }
 
@@ -110,8 +111,8 @@ namespace ScoreSaber {
         internal HttpErrorException ThrowHttpException(UnityWebRequest request) {
             string errorBody = request.downloadHandler.data == null ? string.Empty : Encoding.UTF8.GetString(request.downloadHandler.data);
             return new HttpErrorException(
-                request.result == UnityWebRequest.Result.ConnectionError,
-                request.result == UnityWebRequest.Result.ProtocolError,
+                request.IsConnectionError(),
+                request.IsProtocolError(),
                 (int)request.responseCode,
                 errorBody
             );

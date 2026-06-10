@@ -1,15 +1,38 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScoreSaber.Features.Leaderboards.Services {
     internal class MaxScoreCache {
+
+        private readonly Dictionary<BeatmapKey, int> _cache = new Dictionary<BeatmapKey, int>();
+
+        public async Task<int> GetMaxScore(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey) {
+            if (_cache.TryGetValue(beatmapKey, out int cachedScore)) {
+                return cachedScore;
+            }
+
+            int maxScore = await ComputeMaxScore(beatmapLevel, beatmapKey);
+            _cache[beatmapKey] = maxScore;
+            return maxScore;
+        }
+
+#if BEAT_SABER_1_29_0
+        private readonly PlayerDataModel _playerDataModel;
+
+        public MaxScoreCache(PlayerDataModel playerDataModel) {
+            _playerDataModel = playerDataModel;
+        }
+
+        private async Task<int> ComputeMaxScore(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey) {
+            IDifficultyBeatmap difficultyBeatmap = beatmapKey.difficultyBeatmap;
+            var beatmapData = await difficultyBeatmap.GetBeatmapDataAsync(difficultyBeatmap.GetEnvironmentInfo(), _playerDataModel.playerData.playerSpecificSettings);
+            return ScoreModel.ComputeMaxMultipliedScoreForBeatmap(beatmapData);
+        }
+#else
         private readonly BeatmapLevelLoader _beatmapLevelLoader;
         private readonly BeatmapDataLoader _beatmapDataLoader;
         private readonly BeatmapLevelsEntitlementModel _beatmapLevelsEntitlementModel;
-
-
-        private readonly Dictionary<BeatmapKey, int> _cache = new Dictionary<BeatmapKey, int>();
 
         public MaxScoreCache(BeatmapLevelLoader beatmapLevelLoader, BeatmapDataLoader beatmapDataLoader, BeatmapLevelsEntitlementModel beatmapLevelsEntitlementModel) {
             _beatmapLevelLoader = beatmapLevelLoader;
@@ -17,27 +40,25 @@ namespace ScoreSaber.Features.Leaderboards.Services {
             _beatmapLevelsEntitlementModel = beatmapLevelsEntitlementModel;
         }
 
-        public async Task<int> GetMaxScore(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey) {
-            if (_cache.TryGetValue(beatmapKey, out int cachedScore)) {
-                return cachedScore;
-            }
-
+        private async Task<int> ComputeMaxScore(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey) {
             var beatmapLevelDataVersion = await _beatmapLevelsEntitlementModel.GetLevelDataVersionAsync(beatmapKey.levelId, CancellationToken.None);
             var beatmapLevelData = (await _beatmapLevelLoader.LoadBeatmapLevelDataAsync(beatmapLevel, beatmapLevelDataVersion, CancellationToken.None)).beatmapLevelData;
             var beatmapData = await _beatmapDataLoader.LoadBeatmapDataAsync(beatmapLevelData: beatmapLevelData,
                                                                             beatmapKey: beatmapKey,
                                                                             startBpm: beatmapLevel.beatsPerMinute,
                                                                             loadingForDesignatedEnvironment: false,
+#if BEAT_SABER_1_37_1
+                                                                            environmentInfo: null,
+#else
                                                                             originalEnvironmentInfo: null,
                                                                             targetEnvironmentInfo: null,
+#endif
                                                                             beatmapLevelDataVersion: beatmapLevelDataVersion,
                                                                             gameplayModifiers: null,
                                                                             playerSpecificSettings: null,
                                                                             enableBeatmapDataCaching: false);
-            int maxScore = ScoreModel.ComputeMaxMultipliedScoreForBeatmap(beatmapData);
-
-            _cache[beatmapKey] = maxScore;
-            return maxScore;
+            return ScoreModel.ComputeMaxMultipliedScoreForBeatmap(beatmapData);
         }
+#endif
     }
 }

@@ -1,4 +1,5 @@
 ﻿using IPA.Utilities;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Replays.Format;
 using SiraUtil.Tools.FPFC;
@@ -6,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SpatialTracking;
 using Zenject;
 
 namespace ScoreSaber.Features.Replays.Playback {
@@ -16,7 +16,7 @@ namespace ScoreSaber.Features.Replays.Playback {
         private readonly SaberManager _saberManager;
         private readonly List<VRPoseGroup> _poses;
         private readonly IFPFCSettings _fpfcSettings;
-        private readonly SettingsManager _settingsManager;
+        private readonly RoomSettings _roomSettings;
         private readonly SettingsService _settings;
         private readonly IReturnToMenuController _returnToMenuController;
         public event Action<VRPoseGroup> DidUpdatePose;
@@ -28,7 +28,7 @@ namespace ScoreSaber.Features.Replays.Playback {
 
         private bool initialFPFCState;
 
-        public PosePlayer(ReplayFile file, MainCamera mainCamera, SaberManager saberManager, IReturnToMenuController returnToMenuController, IFPFCSettings fpfcSettings, PlayerTransforms playerTransforms, SettingsManager settingsManager, SettingsService settings) {
+        public PosePlayer(ReplayFile file, MainCamera mainCamera, SaberManager saberManager, IReturnToMenuController returnToMenuController, IFPFCSettings fpfcSettings, PlayerTransforms playerTransforms, RoomSettings roomSettings, SettingsService settings) {
 
             _fpfcSettings = fpfcSettings;
             initialFPFCState = fpfcSettings.Enabled;
@@ -39,7 +39,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             _poses = file.poseKeyframes;
             _returnToMenuController = returnToMenuController;
             _spectatorOffset = new Vector3(0f, 0f, -2f);
-            _settingsManager = settingsManager;
+            _roomSettings = roomSettings;
             _settings = settings;
             _playerTransforms = playerTransforms;
         }
@@ -49,7 +49,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             SetupCameras();
             _saberManager.leftSaber.transform.GetComponentInParent<VRController>().enabled = false;
             _saberManager.rightSaber.transform.GetComponentInParent<VRController>().enabled = false;
-            _fpfcSettings.Changed += fpfcSettings_Changed;
+            _fpfcSettings.AddChangedListener(fpfcSettings_Changed);
         }
 
         private void fpfcSettings_Changed(IFPFCSettings fpfcSettings) {
@@ -73,19 +73,17 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             _mainCamera.SetField("_camera", _desktopCamera);
 
+            // camera2 finds these cameras by object path, so keep the names and hierarchy stable
             GameObject spectatorObject = new GameObject("SpectatorParent");
             _spectatorCamera = UnityEngine.Object.Instantiate(_desktopCamera);
-            spectatorObject.transform.position = new Vector3(_settingsManager.settings.room.center.x + _spectatorOffset.x, _settingsManager.settings.room.center.y + _spectatorOffset.y, _settingsManager.settings.room.center.z + _spectatorOffset.z);
+            spectatorObject.transform.position = _roomSettings.Center + _spectatorOffset;
             Quaternion rotation = new Quaternion {
-                eulerAngles = new Vector3(0.0f, _settingsManager.settings.room.rotation, 0.0f)
+                eulerAngles = new Vector3(0.0f, _roomSettings.Rotation, 0.0f)
             };
             spectatorObject.transform.rotation = rotation;
             _spectatorCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            _mainCamera.gameObject.GetComponent<TrackedPoseDriver>().CopyComponent<TrackedPoseDriver>(_spectatorCamera.gameObject);
-
-            // recreate the DepthTextureController since Instantiate seems to leave it wrongly initialized (i.e. without Zenject objects)
-            Component.Destroy(_spectatorCamera.gameObject.GetComponent<DepthTextureController>());
-            _mainCamera.gameObject.GetComponent<DepthTextureController>().CopyComponent<DepthTextureController>(_spectatorCamera.gameObject);
+            ReplayCameraCompat.CopyTrackedPoseDriver(_mainCamera, _spectatorCamera);
+            ReplayCameraCompat.RebuildDepthTextureController(_mainCamera, _spectatorCamera);
 
             _spectatorCamera.gameObject.SetActive(true);
             _spectatorCamera.depth = 0;
@@ -186,13 +184,13 @@ namespace ScoreSaber.Features.Replays.Playback {
 
         public void SetSpectatorOffset(Vector3 value) {
 
-            _spectatorCamera.transform.parent.position = new Vector3(_settingsManager.settings.room.center.x + value.x, _settingsManager.settings.room.center.y + value.y, _settingsManager.settings.room.center.z + value.z);
+            _spectatorCamera.transform.parent.position = _roomSettings.Center + value;
 
             _spectatorOffset = value;
         }
 
         public void Dispose() {
-            _fpfcSettings.Changed -= fpfcSettings_Changed;
+            _fpfcSettings.RemoveChangedListener(fpfcSettings_Changed);
             _fpfcSettings.Enabled = initialFPFCState;
         }
     }

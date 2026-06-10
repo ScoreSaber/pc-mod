@@ -111,16 +111,6 @@ namespace ScoreSaber.Features.Replays.Format {
         Bomb
     }
 
-    internal enum ScoringType_pre1_40 {
-        Ignore = -1,
-        NoScore,
-        Normal,
-        SliderHead,
-        SliderTail,
-        BurstSliderHead,
-        BurstSliderElement
-    }
-
     internal static class RelevantGameVersions {
         public static readonly Hive.Versioning.Version Version_1_40 = new Hive.Versioning.Version("1.40.0");
     }
@@ -158,30 +148,8 @@ namespace ScoreSaber.Features.Replays.Format {
 
         internal bool MatchesScoringType(NoteData.ScoringType comparedScoringType, Hive.Versioning.Version gameVersion) {
             if (ScoringType is int scoringType) {
-                if (gameVersion == null || gameVersion < RelevantGameVersions.Version_1_40) {
-                    switch ((ScoringType_pre1_40)scoringType) {
-                        case ScoringType_pre1_40.Ignore: return comparedScoringType == NoteData.ScoringType.Ignore;
-                        case ScoringType_pre1_40.NoScore: return comparedScoringType == NoteData.ScoringType.NoScore;
-                        case ScoringType_pre1_40.Normal: return comparedScoringType == NoteData.ScoringType.Normal;
-                        case ScoringType_pre1_40.SliderHead:
-                            if (comparedScoringType == NoteData.ScoringType.ArcHeadArcTail) return true;
-                            if (comparedScoringType == NoteData.ScoringType.ChainLinkArcHead) return true;
-                            return comparedScoringType == NoteData.ScoringType.ArcHead;
-                        case ScoringType_pre1_40.SliderTail:
-                            if (comparedScoringType == NoteData.ScoringType.ArcHeadArcTail) return true;
-                            if (comparedScoringType == NoteData.ScoringType.ChainHeadArcTail) return true;
-                            return comparedScoringType == NoteData.ScoringType.ArcTail;
-                        case ScoringType_pre1_40.BurstSliderHead:
-                            if (comparedScoringType == NoteData.ScoringType.ChainHeadArcTail) return true;
-                            return comparedScoringType == NoteData.ScoringType.ChainHead;
-                        case ScoringType_pre1_40.BurstSliderElement:
-                            if (comparedScoringType == NoteData.ScoringType.ChainLinkArcHead) return true;
-                            return comparedScoringType == NoteData.ScoringType.ChainLink;
-                    }
-                }
-
-                // if it's none of the special versions handled above the scoring types should be compatible to our current scoring type.
-                return scoringType == (int)comparedScoringType;
+                bool storedUses1_40Values = gameVersion != null && gameVersion >= RelevantGameVersions.Version_1_40;
+                return ReplayScoringTypes.Matches(scoringType, storedUses1_40Values, comparedScoringType);
             }
             return true;
         }

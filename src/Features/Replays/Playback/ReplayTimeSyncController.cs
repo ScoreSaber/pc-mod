@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+#if BEAT_SABER_1_42_0
+using AudioTimeSourceState = IAudioTimeSource.State;
+#else
+// older versions use AudioManagerSO and AudioTimeSyncController.State here
+using AudioManager = AudioManagerSO;
+using AudioTimeSourceState = AudioTimeSyncController.State;
+#endif
 
 namespace ScoreSaber.Features.Replays.Playback {
     internal class ReplayTimeSyncController : TimeSynchronizer, ITickable {
@@ -24,7 +31,7 @@ namespace ScoreSaber.Features.Replays.Playback {
         };
 
         private readonly List<IScroller> _scrollers;
-        private readonly AudioManagerSO _audioManagerSO;
+        private readonly AudioManager _audioManager;
         private AudioTimeSyncController.InitData _audioInitData;
         private BasicBeatmapObjectManager _basicBeatmapObjectManager;
         private NoteCutSoundEffectManager _noteCutSoundEffectManager;
@@ -41,7 +48,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             _noteCutSoundEffectManager = noteCutSoundEffectManager;
             _beatmapObjectSpawnController = beatmapObjectSpawnController;
             _beatmapObjectCallbackController = beatmapObjectCallbackController;
-            _audioManagerSO = noteCutSoundEffectManager._audioManager;
+            _audioManager = noteCutSoundEffectManager._audioManager;
         }
 
         public void Tick() {
@@ -110,7 +117,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             audioTimeSyncController.Pause();
             audioTimeSyncController.SeekTo(time / audioTimeSyncController.timeScale);
 
-            if (previousState == AudioTimeSyncController.State.Playing)
+            if (previousState == AudioTimeSourceState.Playing)
                 audioTimeSyncController.Resume();
 
             InitialStartFilterTime(ref _callbackInitData) = time;
@@ -148,7 +155,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             _audioTimeSyncController._audioStartTimeOffsetSinceStart
                 = (Time.timeSinceLevelLoad * _audioTimeSyncController.timeScale) - (_audioTimeSyncController.songTime + _audioInitData.songTimeOffset);
 
-            _audioManagerSO.musicPitch = 1f / newScale;
+            _audioManager.musicPitch = 1f / newScale;
             _audioTimeSyncController.Update();
         }
 

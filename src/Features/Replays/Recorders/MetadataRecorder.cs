@@ -1,5 +1,6 @@
 ﻿using System;
 using ScoreSaber.Core;
+using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Replays.Format;
 using Zenject;
@@ -8,17 +9,17 @@ namespace ScoreSaber.Features.Replays.Recorders {
     internal class MetadataRecorder : TimeSynchronizer, IInitializable, IDisposable {
         BeatmapObjectSpawnController.InitData _beatmapObjectSpawnControllerInitData;
         private readonly GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
-        private readonly SettingsManager _settingsManager;
+        private readonly RoomSettings _roomSettings;
         private readonly IGameEnergyCounter _gameEnergyCounter;
         private readonly ScoreSaberRuntimeInfo _runtimeInfo;
         private float _failTime;
 
-        public MetadataRecorder(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData beatmapObjectSpawnControllerInitData, IGameEnergyCounter gameEnergyCounter, SettingsManager settingsManager, ScoreSaberRuntimeInfo runtimeInfo) {
+        public MetadataRecorder(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData beatmapObjectSpawnControllerInitData, IGameEnergyCounter gameEnergyCounter, RoomSettings roomSettings, ScoreSaberRuntimeInfo runtimeInfo) {
 
             _beatmapObjectSpawnControllerInitData = beatmapObjectSpawnControllerInitData;
             _gameEnergyCounter = gameEnergyCounter;
             _gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
-            _settingsManager = settingsManager;
+            _roomSettings = roomSettings;
             _runtimeInfo = runtimeInfo;
         }
 
@@ -31,22 +32,22 @@ namespace ScoreSaber.Features.Replays.Recorders {
         public Metadata Export() {
 
             VRPosition roomCenter = new VRPosition() {
-                X = _settingsManager.settings.room.center.x,
-                Y = _settingsManager.settings.room.center.y,
-                Z = _settingsManager.settings.room.center.z
+                X = _roomSettings.Center.x,
+                Y = _roomSettings.Center.y,
+                Z = _roomSettings.Center.z
             };
 
             return new Metadata() {
                 Version = new Version("3.1.0"),
-                LevelID = _gameplayCoreSceneSetupData.beatmapLevel.levelID,
-                Difficulty = BeatmapDifficultyMethods.DefaultRating(_gameplayCoreSceneSetupData.beatmapKey.difficulty),
-                Characteristic = _gameplayCoreSceneSetupData.beatmapKey.beatmapCharacteristic.serializedName,
-                Environment = _gameplayCoreSceneSetupData.targetEnvironmentInfo.serializedName,
+                LevelID = _gameplayCoreSceneSetupData.GetBeatmapLevel().levelID,
+                Difficulty = BeatmapDifficultyMethods.DefaultRating(_gameplayCoreSceneSetupData.GetBeatmapKey().difficulty),
+                Characteristic = _gameplayCoreSceneSetupData.GetBeatmapKey().beatmapCharacteristic.serializedName,
+                Environment = _gameplayCoreSceneSetupData.GetEnvironmentSerializedName(),
                 Modifiers = GetModifierList(_gameplayCoreSceneSetupData.gameplayModifiers),
                 NoteSpawnOffset = _beatmapObjectSpawnControllerInitData.noteJumpValue,
                 LeftHanded = _gameplayCoreSceneSetupData.playerSpecificSettings.leftHanded,
                 InitialHeight = _gameplayCoreSceneSetupData.playerSpecificSettings.playerHeight,
-                RoomRotation = _settingsManager.settings.room.rotation,
+                RoomRotation = _roomSettings.Rotation,
                 RoomCenter = roomCenter,
                 FailTime = _failTime,
                 GameVersion = _runtimeInfo.GameVersion,

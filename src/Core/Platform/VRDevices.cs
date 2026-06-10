@@ -3,6 +3,28 @@ using UnityEngine.XR;
 
 namespace ScoreSaber.Core.Platform {
     internal static class VRDevices {
+#if BEAT_SABER_1_29_0
+        // 1.29 uses legacy VR plugins, not OpenXR
+        internal static string GetDeviceHMD() {
+
+            var HMD = GetDeviceName(XRNode.Head);
+
+            if (XRSettings.loadedDeviceName.ToLower().Contains("openvr")) {
+                if (SteamSettings.HMDName != null)
+                    HMD = $"{HMD}:(steamcfg):{SteamSettings.HMDName}";
+            }
+
+            return $"{XRSettings.loadedDeviceName}:{HMD}";
+        }
+
+        internal static string GetDeviceControllerLeft() {
+            return $"{XRSettings.loadedDeviceName}:{GetDeviceName(XRNode.LeftHand)}";
+        }
+
+        internal static string GetDeviceControllerRight() {
+            return $"{XRSettings.loadedDeviceName}:{GetDeviceName(XRNode.RightHand)}";
+        }
+#else
         internal static string GetDeviceHMD() {
 
             var currentRuntime = UnityEngine.XR.OpenXR.OpenXRRuntime.name.ToLower();
@@ -27,6 +49,7 @@ namespace ScoreSaber.Core.Platform {
         internal static string GetDeviceControllerRight() {
             return $"{UnityEngine.XR.OpenXR.OpenXRRuntime.name}:{GetDeviceName(XRNode.RightHand)}";
         }
+#endif
 
         private static string GetDeviceName(XRNode node) {
             var devices = new List<InputDevice>();

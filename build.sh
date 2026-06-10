@@ -24,7 +24,7 @@ while (( $# )); do
       deploy=true
       shift
       ;;
-    1.29.0|1.38.0|1.40.0|1.42.0)
+    1.29.0|1.37.1|1.38.0|1.40.0|1.42.0)
       target_version="$1"
       target_version_set=true
       shift
@@ -36,7 +36,7 @@ while (( $# )); do
 done
 
 case "$target_version" in
-  1.29.0|1.38.0|1.40.0|1.42.0) ;;
+  1.29.0|1.37.1|1.38.0|1.40.0|1.42.0) ;;
   *)
     echo "Unsupported target version '$target_version'." >&2
     usage
