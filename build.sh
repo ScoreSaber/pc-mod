@@ -2,7 +2,8 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-target_version="1.40.0"
+default_target_version="1.42.0"
+target_version="$default_target_version"
 target_version_set=false
 deploy=false
 
@@ -46,7 +47,7 @@ esac
 refs_root="$root/refs"
 [[ -d "$refs_root" ]] || refs_root="$root/Refs"
 refs="$refs_root/$target_version"
-if [[ ! -d "$refs/Beat Saber_Data/Managed" && "$target_version" == "1.40.0" && -d "$refs_root/Beat Saber_Data/Managed" ]]; then
+if [[ ! -d "$refs/Beat Saber_Data/Managed" && "$target_version" == "$default_target_version" && -d "$refs_root/Beat Saber_Data/Managed" ]]; then
   refs="$refs_root"
 fi
 build_platform="Any CPU"
