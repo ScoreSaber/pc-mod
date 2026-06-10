@@ -171,23 +171,24 @@ jobs:
       run: mv Stripped/Versions/${{ steps.read-json.outputs.stripped_refs_version }} Refs
       
     - name: Acquire mod references
-      uses: Goobwabber/download-beatmods-deps@1.3
-      with:
-        manifest: ${{ steps.read-json.outputs.manifest }}
-
-    - name: Acquire LeaderboardCore reference
       shell: pwsh
       run: |
-        $mods = Invoke-RestMethod -Uri "https://beatmods.com/api/v1/mod?gameVersion=${{ steps.read-json.outputs.game_version }}"
-        $leaderboardCore = $mods | Where-Object { $_.name -eq "LeaderboardCore" } | Select-Object -First 1
-        if ($null -eq $leaderboardCore) {
-          throw "LeaderboardCore was not found on BeatMods for ${{ steps.read-json.outputs.game_version }}"
-        }
+        $gameVersion = "${{ steps.read-json.outputs.game_version }}"
+        $manifest = Get-Content "${{ steps.read-json.outputs.manifest }}" -Raw | ConvertFrom-Json
+        $deps = @($manifest.dependsOn.PSObject.Properties.Name) + "LeaderboardCore"
 
-        $download = $leaderboardCore.downloads | Select-Object -First 1
-        $url = "https://beatmods.com$($download.url)"
-        Invoke-WebRequest -Uri $url -OutFile LeaderboardCore.zip
-        Expand-Archive -LiteralPath LeaderboardCore.zip -DestinationPath Refs -Force
+        $response = Invoke-RestMethod -Uri "https://beatmods.com/api/mods?gameVersion=$gameVersion&status=verified"
+        foreach ($name in $deps) {
+          $entry = $response.mods | Where-Object { $_.mod.name -eq $name } | Select-Object -First 1
+          if ($null -eq $entry) {
+            throw "No verified version of '$name' on BeatMods for $gameVersion"
+          }
+
+          $version = $entry.latest
+          Write-Output "Downloading $name $($version.modVersion)..."
+          Invoke-WebRequest -Uri "https://beatmods.com/cdn/mod/$($version.zipHash).zip" -OutFile "$name.zip"
+          Expand-Archive -LiteralPath "$name.zip" -DestinationPath Refs -Force
+        }
         
     - name: Build
       env:
