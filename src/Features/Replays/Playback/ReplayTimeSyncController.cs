@@ -78,6 +78,13 @@ namespace ScoreSaber.Features.Replays.Playback {
                 }
                 _paused = !_paused;
             }
+
+            if(Input.GetKeyDown(KeyCode.LeftArrow)) {
+                OverrideTime(Mathf.Max(0f, audioTimeSyncController.songTime - 5f));
+            }
+            if(Input.GetKeyDown(KeyCode.RightArrow)) {
+                OverrideTime(Mathf.Min(audioTimeSyncController.songLength, audioTimeSyncController.songTime + 5f));
+            }
         }
 
         private static int TimeJumpKeyIndex() {
