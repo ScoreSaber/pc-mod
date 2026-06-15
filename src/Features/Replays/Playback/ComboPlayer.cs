@@ -3,6 +3,7 @@ using ScoreSaber.Features.Replays.Format;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace ScoreSaber.Features.Replays.Playback {
     internal class ComboPlayer : TimeSynchronizer, IScroller {
@@ -11,6 +12,8 @@ namespace ScoreSaber.Features.Replays.Playback {
         private readonly List<ComboEvent> _comboEvents;
         private readonly float[] _scoringNoteEventTimes;
         private readonly float[] _comboLossTimes;
+        private readonly AnimationClip _comboLostClip;
+        private const string FullComboLostClipName = "FullComboLost";
 
         public ComboPlayer(ReplayFile file, ComboController comboController, ComboUIController comboUIController) {
 
@@ -27,6 +30,7 @@ namespace ScoreSaber.Features.Replays.Playback {
                 .Select(ce => ce.Time)
                 .OrderBy(time => time)
                 .ToArray();
+            _comboLostClip = comboUIController._animator.runtimeAnimatorController.animationClips.FirstOrDefault(ac => ac.name == FullComboLostClipName);
         }
 
         public void TimeUpdate(float newTime) {
@@ -48,12 +52,15 @@ namespace ScoreSaber.Features.Replays.Playback {
             var animator = _comboUIController._animator;
             int comboLostId = _comboUIController._comboLostId;
             if ((combo == 0 && cutOrMissRecorded == 0) || !didLoseCombo) {
+                animator.enabled = true;
                 animator.Rebind();
                 _comboUIController._fullComboLost = false;
             } else {
                 animator.ResetTrigger(comboLostId);
-                animator.Play(comboLostId, 0, 1f);
-                animator.Update(0f);
+                animator.enabled = false;
+                if (_comboLostClip != null) {
+                    _comboLostClip.SampleAnimation(animator.gameObject, Mathf.Max(0f, _comboLostClip.length - Mathf.Epsilon));
+                }
                 _comboUIController._fullComboLost = true;
             }
         }
