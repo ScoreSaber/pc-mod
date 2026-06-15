@@ -405,7 +405,7 @@ namespace ScoreSaber.Core.Api {
 
         private static DateTime ParseDate(string value) {
             DateTime parsed;
-            return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out parsed)
+            return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsed)
                 ? parsed
                 : default(DateTime);
         }
