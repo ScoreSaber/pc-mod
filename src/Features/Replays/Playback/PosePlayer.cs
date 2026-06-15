@@ -56,6 +56,9 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             if (fpfcSettings.Enabled) {
                 _desktopCamera.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            } else {
+                _desktopCamera.fieldOfView = _settings.Current.replayCameraFOV;
+
             }
         }
 
