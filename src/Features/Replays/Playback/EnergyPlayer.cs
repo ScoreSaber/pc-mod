@@ -9,6 +9,7 @@ using Zenject;
 namespace ScoreSaber.Features.Replays.Playback {
     internal class EnergyPlayer : TimeSynchronizer, IScroller {
         private const float EnergyIconPositionX = 59f;
+        private const string LaserCloudName = "Laser";
 
         private GameEnergyCounter _gameEnergyCounter;
         private GameEnergyUIPanel _gameEnergyUIPanel;
@@ -100,6 +101,9 @@ namespace ScoreSaber.Features.Replays.Playback {
             energyBar.gameObject.SetActive(true);
             energyBar.enabled = true;
             energyBar.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(energy), 1f);
+            if(energy >= Mathf.Epsilon) {
+                _gameEnergyUIPanel.transform.Find(LaserCloudName)?.gameObject.SetActive(false);
+            }
         }
 
         private void UpdateBatteryEnergyIcons() {
