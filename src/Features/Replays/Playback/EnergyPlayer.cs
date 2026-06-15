@@ -92,6 +92,9 @@ namespace ScoreSaber.Features.Replays.Playback {
 
         private void UpdateEnergyIcons(float energy) {
 
+            if (energy >= Mathf.Epsilon) {
+                _gameEnergyUIPanel.transform.Find(LaserCloudName)?.gameObject.SetActive(false);
+            }
             if (_gameEnergyCounter.energyType == GameplayModifiers.EnergyType.Battery) {
                 UpdateBatteryEnergyIcons();
                 return;
@@ -101,9 +104,6 @@ namespace ScoreSaber.Features.Replays.Playback {
             energyBar.gameObject.SetActive(true);
             energyBar.enabled = true;
             energyBar.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(energy), 1f);
-            if(energy >= Mathf.Epsilon) {
-                _gameEnergyUIPanel.transform.Find(LaserCloudName)?.gameObject.SetActive(false);
-            }
         }
 
         private void UpdateBatteryEnergyIcons() {
@@ -152,7 +152,7 @@ namespace ScoreSaber.Features.Replays.Playback {
 
         private void RestoreEnergyBarIconPositions(float energy) {
 
-            if (_gameEnergyCounter.energyType == GameplayModifiers.EnergyType.Battery || energy <= Mathf.Epsilon)
+            if (energy <= Mathf.Epsilon)
                 return;
 
             if (!_energyBarIconsResolved) {
