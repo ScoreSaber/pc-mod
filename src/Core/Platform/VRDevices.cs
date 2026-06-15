@@ -6,23 +6,36 @@ namespace ScoreSaber.Core.Platform {
 #if BEAT_SABER_1_29_0
         // 1.29 uses legacy VR plugins, not OpenXR
         internal static string GetDeviceHMD() {
-
-            var HMD = GetDeviceName(XRNode.Head);
-
-            if (XRSettings.loadedDeviceName.ToLower().Contains("openvr")) {
-                if (SteamSettings.HMDName != null)
-                    HMD = $"{HMD}:(steamcfg):{SteamSettings.HMDName}";
-            }
-
-            return $"{XRSettings.loadedDeviceName}:{HMD}";
+#pragma warning disable CS0618 // Type or member is obsolete
+            string str = "(xrdevice):" + XRDevice.model;
+#pragma warning restore CS0618 // Type or member is obsolete
+            if (SteamSettings.HMDName != null)
+                str = $"{str}:(steamcfg):{SteamSettings.HMDName}";
+            return "legacy:" + str;
         }
 
         internal static string GetDeviceControllerLeft() {
-            return $"{XRSettings.loadedDeviceName}:{GetDeviceName(XRNode.LeftHand)}";
+            List<InputDevice> inputDevices = new List<InputDevice>();
+            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, inputDevices);
+            string empty = string.Empty;
+            InputDevice inputDevice = inputDevices[0];
+            string str = "(inputdevice):" + inputDevices[0].name;
+            string deviceName = VRDevices.GetDeviceName(XRNode.LeftHand);
+            if (deviceName != null)
+                str = $"{str}:{deviceName}";
+            return str != string.Empty ? "legacy:" + str : "legacy:unknown";
         }
 
         internal static string GetDeviceControllerRight() {
-            return $"{XRSettings.loadedDeviceName}:{GetDeviceName(XRNode.RightHand)}";
+            List<InputDevice> inputDevices = new List<InputDevice>();
+            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, inputDevices);
+            string empty = string.Empty;
+            InputDevice inputDevice = inputDevices[0];
+            string str = "(inputdevice):" + inputDevices[0].name;
+            string deviceName = VRDevices.GetDeviceName(XRNode.RightHand);
+            if (deviceName != null)
+                str = $"{str}:{deviceName}";
+            return str != string.Empty ? "legacy:" + str : "legacy:unknown";
         }
 #else
         internal static string GetDeviceHMD() {
