@@ -1,4 +1,4 @@
-﻿<vertical pref-width="120" spacing="2" child-control-height="false" child-align="MiddleCenter" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+﻿<vertical pref-width="120" spacing="2" child-control-height="false" child-align="MiddleCenter" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd">
 
   <horizontal bg="panel-top" horizontal-fit="PreferredSize" pref-width="120">
     <clickable-text text="Global Leaderboards" on-click="global-click" hover-hint="Opens the global leaderboard in your browser" align="Center" font-size="7" />

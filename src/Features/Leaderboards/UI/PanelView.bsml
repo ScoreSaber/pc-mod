@@ -1,4 +1,4 @@
-<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
   <horizontal id='prompt-root' active='~prompt-active' pref-width='87' anchor-pos-x='-8' anchor-pos-y='10.3' pref-height='7' horizontal-fit='PreferredSize' child-align='UpperLeft' child-expand-width='false' spacing='1'>
     <text id='prompt-text-component' text='~prompt-text' anchor-pos-x='0' anchor-pos-y='10' align='BottomLeft' italics='true' overflow-mode='Ellipsis' font-size='3.5' />
     <vertical id='prompt-loader-slot' active='~prompt-loader-active' pref-width='4' pref-height='4' child-align='MiddleCenter' child-expand-width='false' child-expand-height='false'>

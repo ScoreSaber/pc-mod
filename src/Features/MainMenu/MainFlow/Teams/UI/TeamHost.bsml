@@ -1,4 +1,4 @@
-﻿<vertical size-delta-y="-20" anchor-pos-y="-8.5" bg="round-rect-panel" bg-color="grey" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+﻿<vertical size-delta-y="-20" anchor-pos-y="-8.5" bg="round-rect-panel" bg-color="grey" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd">
   <macro.if value="needs-scroll-view">
     <scroll-view pref-width="115" child-control-height="true" spacing="5">
       <grid id="grid" cell-size-x="30" cell-size-y="15" spacing-x="3" spacing-y="3">

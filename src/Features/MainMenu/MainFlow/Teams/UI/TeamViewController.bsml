@@ -1,4 +1,4 @@
-﻿<bg xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+﻿<bg xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd">
   <vertical child-control-height="false">
     <horizontal bg="panel-top" horizontal-fit="PreferredSize" pad-left="20" pad-right="20">
       <text text="Team And Contributors" align="Center" font-size="7"/>

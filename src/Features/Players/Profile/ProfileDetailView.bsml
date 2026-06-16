@@ -1,4 +1,4 @@
-﻿<modal id="profile-modal-root" show-event="present-profile" clickerino-offerino-closerino="true" hide-event="close-modals" size-delta-x="90" size-delta-y="50"  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+﻿<modal id="profile-modal-root" show-event="present-profile" clickerino-offerino-closerino="true" hide-event="close-modals" size-delta-x="90" size-delta-y="50"  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
   <vertical child-control-height="false" spacing="1" pref-height="50" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" bg="round-rect-panel" bg-color="#69696999">
     <horizontal id="profile-top" bg="round-rect-panel" bg-color="#555EBC" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" anchor-pos-y="1" pref-width="90" size-delta-x="90">
       <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2" child-align="MiddleCenter">
