@@ -119,6 +119,34 @@ namespace ScoreSaber.Features.Leaderboards.Services {
             CreateTween(id, tween, imageView.transform);
         }
 
+        public void CreatePromptTween(string id, float from, float to, float duration, float delay, RectTransform promptRoot, float hiddenY, float visibleY, Action onCompleted = null) {
+            CanvasGroup canvasGroup = promptRoot.GetComponent<CanvasGroup>();
+            if (canvasGroup == null) {
+                canvasGroup = promptRoot.gameObject.AddComponent<CanvasGroup>();
+            }
+
+            var tween = new FloatTween(from, to, update => {
+                canvasGroup.alpha = update;
+                promptRoot.gameObject.SetActive(true);
+                promptRoot.localPosition = new Vector3(promptRoot.localPosition.x, Mathf.Lerp(hiddenY, visibleY, update), promptRoot.localPosition.z);
+            }, duration, EaseType.OutCubic, delay);
+
+            tween.onCompleted += () => {
+                if (activeScoreSaberRotations.ContainsKey(id)) {
+                    activeScoreSaberRotations.Remove(id);
+                }
+                canvasGroup.alpha = to;
+                promptRoot.localPosition = new Vector3(promptRoot.localPosition.x, Mathf.Lerp(hiddenY, visibleY, to), promptRoot.localPosition.z);
+                onCompleted?.Invoke();
+            };
+            tween.onKilled += () => {
+                if (activeScoreSaberRotations.ContainsKey(id)) {
+                    activeScoreSaberRotations.Remove(id);
+                }
+            };
+            CreateTween(id, tween, promptRoot);
+        }
+
         public void CreateFlowTween(string id, Vector3 from, Vector3 to, float duration, Transform transform) {
             var tween = new Vector3Tween(from, to, update => {
                 transform.localPosition = update;
@@ -155,6 +183,13 @@ namespace ScoreSaber.Features.Leaderboards.Services {
                 tween.Kill();
             }
             activeScoreSaberRotations.Clear();
+        }
+
+        public void ClearTweensByPrefix(string prefix) {
+            var keysToRemove = activeScoreSaberRotations.Keys.Where(k => k.StartsWith(prefix)).ToList();
+            foreach (var key in keysToRemove) {
+                KillTween(key);
+            }
         }
     }
 }

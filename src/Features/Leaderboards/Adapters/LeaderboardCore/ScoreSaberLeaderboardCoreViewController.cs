@@ -191,7 +191,8 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         internal void ApplyState(LeaderboardScreenState state) {
             _pendingState = state;
             BindTableSelection();
-            _leaderboardTweeningService.ClearAllTweens();
+            _leaderboardTweeningService.ClearTweensByPrefix("avatar");
+            _leaderboardTweeningService.ClearTweensByPrefix("leaderboard");
             IsLoaded = state.IsLoaded;
             UpEnabled = state.CanPageUp;
             DownEnabled = state.CanPageDown;
