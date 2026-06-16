@@ -11,6 +11,7 @@ namespace ScoreSaber.Features.Leaderboards {
             Container.Bind<LeaderboardPlayerScoreCache>().AsSingle();
             Container.Bind<LeaderboardScreenLoader>().AsSingle();
             Container.BindInterfacesAndSelfTo<LeaderboardScreenSession>().AsSingle();
+            Container.Bind<LeaderboardTweeningService>().AsSingle();
             Container.Bind<LeaderboardQueryService>().AsSingle();
             Container.Bind<LeaderboardAvatarHost>().AsSingle();
             Container.BindInterfacesTo<LeaderboardPanelFlow>().AsSingle().NonLazy();

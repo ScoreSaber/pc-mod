@@ -6,6 +6,7 @@ using IPA.Utilities;
 using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Leaderboards.Domain;
+using ScoreSaber.Features.Leaderboards.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,6 +36,8 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private static LoadingControl _activePlatformLoadingControl;
         private static string _suppressedPlatformCustomLevelWarningText = string.Empty;
 
+        private LeaderboardTweeningService _leaderboardTweeningService;
+
         private PlatformLeaderboardViewController _platformLeaderboardViewController;
         private SettingsService _settings;
         private List<DataItem> _scopes;
@@ -46,6 +49,8 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private readonly LeaderboardTableView _leaderboard = null;
         [UIComponent("scopes-segmented-control")]
         private readonly IconSegmentedControl _scopeControl = null;
+        [UIComponent("main-horizontal")]
+        private readonly HorizontalLayoutGroup _mainHorizontal = null;
 
         private LeaderboardScreenState _pendingState;
         private LeaderboardScreenScope _scope = LeaderboardScreenScope.Global;
@@ -67,9 +72,10 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         internal event Action PageDownRequested;
 
         [Inject]
-        private void Construct(SettingsService settings, PlatformLeaderboardViewController platformLeaderboardViewController) {
+        private void Construct(SettingsService settings, PlatformLeaderboardViewController platformLeaderboardViewController, LeaderboardTweeningService leaderboardTweeningService) {
             _settings = settings;
             _platformLeaderboardViewController = platformLeaderboardViewController;
+            _leaderboardTweeningService = leaderboardTweeningService;
         }
 
         [UIValue("is-loaded")]
@@ -155,12 +161,6 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
             base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
         }
 
-        private void LateUpdate() {
-            ConfigureScopeControl();
-            HidePlatformControls();
-            ConfigureVisibleCells();
-        }
-
         private void SetValue<T>(ref T field, T value, string propertyName) {
             field = value;
             NotifyPropertyChanged(propertyName);
@@ -186,12 +186,12 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         internal void SetRankColumnOffset(float offset) {
             _rankColumnOffset = offset;
-            ConfigureVisibleCells();
         }
 
         internal void ApplyState(LeaderboardScreenState state) {
             _pendingState = state;
             BindTableSelection();
+            _leaderboardTweeningService.ClearAllTweens();
             IsLoaded = state.IsLoaded;
             UpEnabled = state.CanPageUp;
             DownEnabled = state.CanPageDown;
@@ -210,6 +210,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
                 BindTableSelection();
                 ConfigureVisibleCells();
                 IsLoaded = true;
+                ApplyFade();
                 return;
             }
 
@@ -271,7 +272,6 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
             _innerTable.didSelectCellWithIdxEvent += TableDidSelectCellWithIdx;
             _innerTable.didReloadDataEvent -= TableDidReloadData;
             _innerTable.didReloadDataEvent += TableDidReloadData;
-            ConfigureVisibleCells();
         }
 
         private void TableDidSelectCellWithIdx(TableView tableView, int index) {
@@ -342,6 +342,10 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
             }
 
             layout.Apply(nameTransform, _rankColumnOffset);
+        }
+
+        private void ApplyFade() {
+            _leaderboardTweeningService.FadeLayoutGroup($"leaderboard_fade_{_leaderboard.GetInstanceID()}", 0f, 1f, 0.5f, _mainHorizontal);
         }
 
         private void SelectScore(int index) => ScoreSelected?.Invoke(index);

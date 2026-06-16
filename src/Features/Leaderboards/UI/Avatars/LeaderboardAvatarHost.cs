@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ScoreSaber.Features.Leaderboards.Services;
 
 namespace ScoreSaber.Features.Leaderboards.UI.Avatars {
     internal class LeaderboardAvatarHost {
@@ -11,8 +12,8 @@ namespace ScoreSaber.Features.Leaderboards.UI.Avatars {
 
         internal List<LeaderboardAvatarView> Avatars { get; }
 
-        public LeaderboardAvatarHost(RemoteImageService remoteImageService, ScoreSaberUIMaterials materials) {
-            Avatars = Enumerable.Range(0, MaximumAvatars).Select(_ => new LeaderboardAvatarView(remoteImageService, materials)).ToList();
+        public LeaderboardAvatarHost(RemoteImageService remoteImageService, ScoreSaberUIMaterials materials, LeaderboardTweeningService leaderboardTweeningService) {
+            Avatars = Enumerable.Range(0, MaximumAvatars).Select(index => new LeaderboardAvatarView(index, remoteImageService, materials, leaderboardTweeningService)).ToList();
         }
 
         internal void LoadAvatars(LeaderboardMap leaderboard, CancellationToken cancellationToken) {

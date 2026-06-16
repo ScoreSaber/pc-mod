@@ -1,5 +1,5 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
-  <horizontal horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='100' pref-height='70' pad-left='7' pad-top='1'>
+  <horizontal id='main-horizontal' horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='100' pref-height='70' pad-left='7' pad-top='1'>
     <vertical horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='9' pref-height='25' />
     <vertical active='~scores-active' horizontal-fit='PreferredSize' vertical-fit='PreferredSize' pref-width='80' pref-height='70'>
       <leaderboard id='leaderboard' cell-size='5.99' />
