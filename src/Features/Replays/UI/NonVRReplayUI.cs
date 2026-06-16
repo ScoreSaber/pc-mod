@@ -52,7 +52,7 @@ namespace ScoreSaber.Features.Replays.UI {
                 _currentPosition = 0;
                 DrawLabel("Replay Controls -", header: true);
                 DrawLabel("Pause: Space");
-                DrawLabel("Seek: 1-9");
+                DrawLabel("Seek: 1-9 OR Arrow Keys");
                 DrawLabel("Increase Time Scale: +");
                 DrawLabel("Decrease Time Scale: -");
                 DrawLabel("Hide Sabers: H");
