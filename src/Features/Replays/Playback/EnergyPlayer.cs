@@ -1,3 +1,4 @@
+using HMUI;
 using IPA.Utilities;
 using ScoreSaber.Features.Replays.Format;
 using System;
@@ -10,6 +11,9 @@ namespace ScoreSaber.Features.Replays.Playback {
     internal class EnergyPlayer : TimeSynchronizer, IScroller {
         private const float EnergyIconPositionX = 59f;
         private const string LaserCloudName = "Laser";
+        private const string EnergyIconEmptyName = "EnergyIconEmpty";
+        private const string EnergyIconFullName = "EnergyIconFull";
+        private const float EnergyIconTransparentAlpha = 0.251f;
 
         private GameEnergyCounter _gameEnergyCounter;
         private GameEnergyUIPanel _gameEnergyUIPanel;
@@ -157,20 +161,26 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             if (!_energyBarIconsResolved) {
                 foreach (Transform transform in _gameEnergyUIPanel.GetComponentsInChildren<Transform>(true)) {
-                    if (transform.name == "EnergyIconFull")
+                    if (transform.name == EnergyIconFullName)
                         _energyIconFull = transform;
-                    else if (transform.name == "EnergyIconEmpty")
+                    else if (transform.name == EnergyIconEmptyName)
                         _energyIconEmpty = transform;
                 }
 
                 _energyBarIconsResolved = true;
             }
 
-            if (_energyIconFull != null)
+            if (_energyIconFull != null) {
                 _energyIconFull.localPosition = new Vector3(EnergyIconPositionX, 0f, _energyIconFull.localPosition.z);
+                ImageView image = _energyIconFull.GetComponent<ImageView>();
+                image.color = new Color(image.color.r, image.color.g, image.color.b, EnergyIconTransparentAlpha);
+            }
 
-            if (_energyIconEmpty != null)
+            if (_energyIconEmpty != null) {
                 _energyIconEmpty.localPosition = new Vector3(-EnergyIconPositionX, 0f, _energyIconEmpty.localPosition.z);
+                ImageView image = _energyIconEmpty.GetComponent<ImageView>();
+                image.color = new Color(image.color.r, image.color.g, image.color.b, EnergyIconTransparentAlpha);
+            }
         }
     }
 }
