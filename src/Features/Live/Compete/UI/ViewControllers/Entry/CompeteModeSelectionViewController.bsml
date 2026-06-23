@@ -1,0 +1,8 @@
+<bg horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+  <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="4" anchor-pos-y="8">
+    <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="4">
+      <button text="BROWSER" on-click="select-browser" pref-width="30" pref-height="21" font-size="5.5" />
+      <button text="JOIN VIA CODE" on-click="select-join-code" pref-width="30" pref-height="21" font-size="5.5" />
+    </horizontal>
+  </vertical>
+</bg>

@@ -12,15 +12,17 @@ namespace ScoreSaber.Features.Replays.Recorders {
         private readonly RoomSettings _roomSettings;
         private readonly IGameEnergyCounter _gameEnergyCounter;
         private readonly ScoreSaberRuntimeInfo _runtimeInfo;
+        private readonly AudioTimeSyncController.InitData _audioTimeSyncInitData;
         private float _failTime;
 
-        public MetadataRecorder(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData beatmapObjectSpawnControllerInitData, IGameEnergyCounter gameEnergyCounter, RoomSettings roomSettings, ScoreSaberRuntimeInfo runtimeInfo) {
+        public MetadataRecorder(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData beatmapObjectSpawnControllerInitData, IGameEnergyCounter gameEnergyCounter, RoomSettings roomSettings, ScoreSaberRuntimeInfo runtimeInfo, [InjectOptional] AudioTimeSyncController.InitData audioTimeSyncInitData) {
 
             _beatmapObjectSpawnControllerInitData = beatmapObjectSpawnControllerInitData;
             _gameEnergyCounter = gameEnergyCounter;
             _gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             _roomSettings = roomSettings;
             _runtimeInfo = runtimeInfo;
+            _audioTimeSyncInitData = audioTimeSyncInitData;
         }
 
         public void Initialize() => _gameEnergyCounter.gameEnergyDidReach0Event += GameEnergyCounter_gameEnergyDidReach0Event;
@@ -53,11 +55,46 @@ namespace ScoreSaber.Features.Replays.Recorders {
                 GameVersion = _runtimeInfo.GameVersion,
                 PluginVersion = _runtimeInfo.PluginVersion,
                 Platform = "PC",
+                SongSpeed = SongSpeed(),
+                JumpDistance = JumpDistance(),
+                LeftSaberColor = _gameplayCoreSceneSetupData.colorScheme?.saberAColor,
+                RightSaberColor = _gameplayCoreSceneSetupData.colorScheme?.saberBColor,
             };
 
         }
 
         public string[] GetModifierList(GameplayModifiers modifiers) => ScoreSaberGameplayModifiers.ToCodeList(modifiers, true).ToArray();
+
+        private float SongSpeed() {
+            if (_audioTimeSyncInitData != null && _audioTimeSyncInitData.timeScale > 0f) {
+                return _audioTimeSyncInitData.timeScale;
+            }
+
+            return audioTimeSyncController != null ? audioTimeSyncController.timeScale : 1f;
+        }
+
+        private float JumpDistance() {
+            if (_beatmapObjectSpawnControllerInitData.noteJumpValueType == BeatmapObjectSpawnMovementData.NoteJumpValueType.JumpDuration) {
+                return _beatmapObjectSpawnControllerInitData.noteJumpMovementSpeed * _beatmapObjectSpawnControllerInitData.noteJumpValue * 2f;
+            }
+
+            if (_beatmapObjectSpawnControllerInitData.beatsPerMinute <= 0f) {
+                return 0f;
+            }
+
+            float halfJumpDuration = 4f;
+            float beatDuration = 60f / _beatmapObjectSpawnControllerInitData.beatsPerMinute;
+            while (_beatmapObjectSpawnControllerInitData.noteJumpMovementSpeed * beatDuration * halfJumpDuration > 17.999f) {
+                halfJumpDuration /= 2f;
+            }
+
+            halfJumpDuration += _beatmapObjectSpawnControllerInitData.noteJumpValue;
+            if (halfJumpDuration < 0.25f) {
+                halfJumpDuration = 0.25f;
+            }
+
+            return _beatmapObjectSpawnControllerInitData.noteJumpMovementSpeed * beatDuration * halfJumpDuration * 2f;
+        }
 
     }
 }

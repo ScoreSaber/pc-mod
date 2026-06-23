@@ -1,4 +1,5 @@
-﻿using ScoreSaber.Features.Replays.Format;
+﻿using ScoreSaber.Features.Live.Replay;
+using ScoreSaber.Features.Replays.Format;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -8,12 +9,14 @@ namespace ScoreSaber.Features.Replays.Recorders {
         private const int ExpectedPoseFramesPerSecond = 144;
 
         private readonly PlayerTransforms _playerTransforms;
+        private readonly LiveReplayStreamingService _liveReplayStreamingService;
         private readonly List<VRPoseGroup> _vrPoseGroup;
         private bool _recording;
 
-        public PoseRecorder(PlayerTransforms playerTransforms) {
+        public PoseRecorder(PlayerTransforms playerTransforms, LiveReplayStreamingService liveReplayStreamingService) {
 
             _playerTransforms = playerTransforms;
+            _liveReplayStreamingService = liveReplayStreamingService;
             _vrPoseGroup = new List<VRPoseGroup>();
             _recording = true;
         }
@@ -48,7 +51,7 @@ namespace ScoreSaber.Features.Replays.Recorders {
             float songTime = audioTimeSyncController.songTime;
             float deltaTime = Time.unscaledDeltaTime;
 
-            _vrPoseGroup.Add(new VRPoseGroup() {
+            var frame = new VRPoseGroup() {
                 Head = new VRPose() {
                     Position = new VRPosition() {
                         X = headPosition.x, Y = headPosition.y, Z = headPosition.z
@@ -75,7 +78,9 @@ namespace ScoreSaber.Features.Replays.Recorders {
                 },
                 Time = songTime,
                 FPS = (int)(1f / deltaTime)
-            });
+            };
+            _vrPoseGroup.Add(frame);
+            _liveReplayStreamingService.RecordPose(frame);
         }
 
         public List<VRPoseGroup> Export() {

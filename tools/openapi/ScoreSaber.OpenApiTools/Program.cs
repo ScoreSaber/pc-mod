@@ -292,6 +292,8 @@ internal static class Operations {
         new("/api/v2/game/upload", "post", "UploadScore", "GameUploadRequest", "GameUploadResponse"),
         new("/api/v2/leaderboards/hash/{hash}/{mode}/{difficulty}", "get", "GetLeaderboard", null, "LeaderboardResponse"),
         new("/api/v2/leaderboards/hash/{hash}/{mode}/{difficulty}/scores", "get", "GetLeaderboardScores", null, "LeaderboardScoresResponse", injectGameSessionHeaders: true),
+        new("/api/v2/maps/{id}", "get", "GetMapById", null, "MapDetailsResponse"),
+        new("/api/v2/maps/hash/{hash}", "get", "GetMapByHash", null, "MapDetailsResponse"),
         new("/api/v2/players", "get", "GetPlayers", null, "PlayerListResponse", injectGameSessionHeaders: true),
         new("/api/v2/players/{id}", "get", "GetPlayer", null, "PlayerProfileResponse"),
         new("/api/v2/players/{id}/basic", "get", "GetPlayerBasic", null, "PlayerBasicProfileResponse"),
@@ -299,6 +301,10 @@ internal static class Operations {
         new("/api/v2/players/{id}/global-history", "get", "GetGlobalPlayerHistory", null, "GlobalPlayerHistoryEntry"),
         new("/api/v2/realms", "get", "GetRealms", null, "RealmSummary"),
         new("/api/v2/realms/{id}", "get", "GetRealm", null, "RealmDetailsResponse"),
+        new("/api/v2/live/player/tournaments", "get", "ListLivePlayerTournaments", null, "LivePlayerTournamentSummary", injectGameSessionHeaders: true),
+        new("/api/v2/live/player/tournaments/{tournamentId}/rooms", "get", "ListLivePlayerRooms", null, "LivePlayerRoomSummary", injectGameSessionHeaders: true),
+        new("/api/v2/live/player/tournaments/{tournamentId}/rooms/{matchId}", "get", "GetLivePlayerRoom", null, "LivePlayerRoomDetails", injectGameSessionHeaders: true),
+        new("/api/v2/live/player/rooms/by-invite-code/{inviteCode}", "get", "GetLivePlayerRoomByInviteCode", null, "LivePlayerRoomDetails", injectGameSessionHeaders: true),
         new("/api/v2/scores/{id}/replay", "get", "DownloadReplay", null, null),
     };
 }

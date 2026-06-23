@@ -1,4 +1,5 @@
-﻿using ScoreSaber.Features.Replays.Format;
+﻿using ScoreSaber.Features.Live.Replay;
+using ScoreSaber.Features.Replays.Format;
 using System;
 using System.Collections.Generic;
 using Zenject;
@@ -9,10 +10,12 @@ namespace ScoreSaber.Features.Replays.Recorders {
 
         private readonly List<EnergyEvent> _energyKeyframes;
         private readonly IGameEnergyCounter _gameEnergyCounter;
+        private readonly LiveReplayStreamingService _liveReplayStreamingService;
 
-        public EnergyEventRecorder(IGameEnergyCounter gameEnergyCounter) {
+        public EnergyEventRecorder(IGameEnergyCounter gameEnergyCounter, LiveReplayStreamingService liveReplayStreamingService) {
 
             _gameEnergyCounter = gameEnergyCounter;
+            _liveReplayStreamingService = liveReplayStreamingService;
             _energyKeyframes = new List<EnergyEvent>(InitialEnergyEventCapacity);
         }
 
@@ -32,7 +35,9 @@ namespace ScoreSaber.Features.Replays.Recorders {
 
         private void GameEnergyCounter_gameEnergyDidChangeEvent(float energy) {
 
-            _energyKeyframes.Add(new EnergyEvent() { Energy = energy, Time = audioTimeSyncController.songTime });
+            var energyEvent = new EnergyEvent() { Energy = energy, Time = audioTimeSyncController.songTime };
+            _energyKeyframes.Add(energyEvent);
+            _liveReplayStreamingService.RecordEnergy(energyEvent);
         }
 
         public List<EnergyEvent> Export() {

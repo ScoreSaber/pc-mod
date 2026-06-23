@@ -1,4 +1,5 @@
-﻿using ScoreSaber.Features.Replays.Format;
+﻿using ScoreSaber.Features.Live.Replay;
+using ScoreSaber.Features.Replays.Format;
 using System;
 using System.Collections.Generic;
 using Zenject;
@@ -14,11 +15,13 @@ namespace ScoreSaber.Features.Replays.Recorders {
         private readonly List<ComboEvent> _comboKeyframes;
         private readonly IComboController _comboController;
         private readonly List<MultiplierEvent> _multiplierKeyframes;
+        private readonly LiveReplayStreamingService _liveReplayStreamingService;
 
-        public ScoreEventRecorder(ScoreController scoreController, IComboController comboController) {
+        public ScoreEventRecorder(ScoreController scoreController, IComboController comboController, LiveReplayStreamingService liveReplayStreamingService) {
 
             _scoreController = scoreController;
             _comboController = comboController;
+            _liveReplayStreamingService = liveReplayStreamingService;
             _scoreKeyframes = new List<ScoreEvent>(InitialScoreEventCapacity);
             _comboKeyframes = new List<ComboEvent>(InitialComboEventCapacity);
             _multiplierKeyframes = new List<MultiplierEvent>(InitialMultiplierEventCapacity);
@@ -42,25 +45,31 @@ namespace ScoreSaber.Features.Replays.Recorders {
 
             var scoreController = _scoreController;
 
-            _scoreKeyframes.Add(new ScoreEvent() {
+            var scoreEvent = new ScoreEvent() {
                 Score = rawScore,
                 Time = audioTimeSyncController.songTime,
                 ImmediateMaxPossibleScore = scoreController._immediateMaxPossibleMultipliedScore
-            });
+            };
+            _scoreKeyframes.Add(scoreEvent);
+            _liveReplayStreamingService.RecordScore(scoreEvent);
         }
 
         private void ComboController_comboDidChangeEvent(int combo) {
 
-            _comboKeyframes.Add(new ComboEvent() { Combo = combo, Time = audioTimeSyncController.songTime });
+            var comboEvent = new ComboEvent() { Combo = combo, Time = audioTimeSyncController.songTime };
+            _comboKeyframes.Add(comboEvent);
+            _liveReplayStreamingService.RecordCombo(comboEvent);
         }
 
         private void ScoreController_multiplierDidChangeEvent(int multiplier, float nextMultiplierProgress) {
 
-            _multiplierKeyframes.Add(new MultiplierEvent() {
+            var multiplierEvent = new MultiplierEvent() {
                 Multiplier = multiplier,
                 NextMultiplierProgress = nextMultiplierProgress,
                 Time = audioTimeSyncController.songTime
-            });
+            };
+            _multiplierKeyframes.Add(multiplierEvent);
+            _liveReplayStreamingService.RecordMultiplier(multiplierEvent);
         }
 
         public List<ScoreEvent> ExportScoreKeyframes() {

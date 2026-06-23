@@ -62,6 +62,17 @@ namespace ScoreSaber {
             }
         }
 
+        internal async Task<byte[]> DownloadRawAsync(string url) {
+            using (UnityWebRequest request = UnityWebRequest.Get(url)) {
+                await SendHttpAsyncRequest(request);
+                if (request.IsConnectionError() || request.IsProtocolError()) {
+                    throw ThrowHttpException(request);
+                }
+
+                return request.downloadHandler.data;
+            }
+        }
+
         internal async Task<string> GetAsync(string url) {
             url = $"{options.baseURL}{url}";
             using (UnityWebRequest request = UnityWebRequest.Get(url)) {
@@ -77,14 +88,7 @@ namespace ScoreSaber {
 
         internal async Task<byte[]> DownloadAsync(string url) {
             url = $"{options.baseURL}{url}";
-            using (UnityWebRequest request = UnityWebRequest.Get(url)) {
-                await SendHttpAsyncRequest(request);
-                if (request.IsConnectionError() || request.IsProtocolError()) {
-                    throw ThrowHttpException(request);
-                }
-
-                return request.downloadHandler.data;
-            }
+            return await DownloadRawAsync(url);
         }
 
         internal Task<string> PostAsync(string url, WWWForm form) => PostAsync(url, form, null);

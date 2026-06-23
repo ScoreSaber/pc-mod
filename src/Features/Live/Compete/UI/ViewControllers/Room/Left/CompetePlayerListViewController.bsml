@@ -1,0 +1,71 @@
+<bg horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+  <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2">
+    <horizontal bg="panel-top" horizontal-fit="PreferredSize" pref-width="54">
+      <text text="Players" align="Center" font-size="6.2" />
+    </horizontal>
+
+    <vertical pref-width="54" pref-height="50" pad-left="0" pad-right="1" pad-top="1" pad-bottom="1">
+      <custom-list active="~regular-players-visible" id="player-list" list-width="52" visible-cells="5" cell-size="10" contents="players" show-scrollbar="true">
+        <stack pref-width="52" pref-height="10" min-width="52">
+          <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="52" pref-height="10" min-width="52" spacing="0" pad-top="1">
+            <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="52" pref-height="8.4" min-width="52" spacing="1">
+              <clickable-image id="profile-image" src="~avatar-url" preserve-aspect="true" pref-width="6.8" pref-height="6.8" on-click="profile-clicked" hover-hint="View Profile" />
+              <vertical pref-width="28" pref-height="8.2" min-width="28" spacing="0" child-align="MiddleLeft">
+                <clickable-text text="~row-title" on-click="profile-clicked" hover-hint="View Profile" align="Left" font-size="2.85" pref-width="28" min-width="28" pref-height="4.2" overflow-mode="Ellipsis" />
+                <text text="~row-detail" align="Left" font-size="2.15" pref-width="28" min-width="28" pref-height="3.4" overflow-mode="Ellipsis" />
+              </vertical>
+              <vertical pref-width="14" pref-height="8" min-width="14" child-align="MiddleRight">
+                <text text="~row-status" align="Right" font-size="2.45" pref-width="14" min-width="14" pref-height="4" overflow-mode="Ellipsis" />
+              </vertical>
+            </horizontal>
+            <image id="row-separator" src="#WhitePixel" image-color="#FFFFFF22" pref-width="52" min-width="52" pref-height="0.3" />
+          </vertical>
+        </stack>
+      </custom-list>
+
+      <horizontal active="~team-players-visible" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="54" pref-height="48" spacing="2">
+        <vertical pref-width="26" pref-height="48" spacing="1">
+          <text text="~team-one-name" align="Center" font-size="2.6" pref-width="26" pref-height="4" />
+          <custom-list id="team-one-player-list" list-width="26" visible-cells="5" cell-size="8.8" contents="team-one-players" show-scrollbar="true">
+            <stack pref-width="26" pref-height="8.8" min-width="26">
+              <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="26" pref-height="8.8" min-width="26" spacing="0" pad-top="1">
+                <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="26" pref-height="7.2" min-width="26" spacing="0.5">
+                  <clickable-image id="profile-image" src="~avatar-url" preserve-aspect="true" pref-width="4.6" pref-height="4.6" on-click="profile-clicked" hover-hint="View Profile" />
+                  <vertical pref-width="20" pref-height="7.2" spacing="0" child-align="MiddleLeft">
+                    <clickable-text text="~row-title" on-click="profile-clicked" hover-hint="View Profile" align="Left" font-size="2.15" pref-width="20" min-width="20" pref-height="3.4" overflow-mode="Ellipsis" />
+                    <text text="~row-status" align="Left" font-size="1.75" pref-width="20" min-width="20" pref-height="3.2" overflow-mode="Ellipsis" />
+                  </vertical>
+                </horizontal>
+                <image id="row-separator" src="#WhitePixel" image-color="#FFFFFF22" pref-width="26" min-width="26" pref-height="0.3" />
+              </vertical>
+            </stack>
+          </custom-list>
+        </vertical>
+
+        <vertical pref-width="26" pref-height="48" spacing="1">
+          <text text="~team-two-name" align="Center" font-size="2.6" pref-width="26" pref-height="4" />
+          <custom-list id="team-two-player-list" list-width="26" visible-cells="5" cell-size="8.8" contents="team-two-players" show-scrollbar="true">
+            <stack pref-width="26" pref-height="8.8" min-width="26">
+              <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="26" pref-height="8.8" min-width="26" spacing="0" pad-top="1">
+                <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="26" pref-height="7.2" min-width="26" spacing="0.5">
+                  <clickable-image id="profile-image" src="~avatar-url" preserve-aspect="true" pref-width="4.6" pref-height="4.6" on-click="profile-clicked" hover-hint="View Profile" />
+                  <vertical pref-width="20" pref-height="7.2" spacing="0" child-align="MiddleLeft">
+                    <clickable-text text="~row-title" on-click="profile-clicked" hover-hint="View Profile" align="Left" font-size="2.15" pref-width="20" min-width="20" pref-height="3.4" overflow-mode="Ellipsis" />
+                    <text text="~row-status" align="Left" font-size="1.75" pref-width="20" min-width="20" pref-height="3.2" overflow-mode="Ellipsis" />
+                  </vertical>
+                </horizontal>
+                <image id="row-separator" src="#WhitePixel" image-color="#FFFFFF22" pref-width="26" min-width="26" pref-height="0.3" />
+              </vertical>
+            </stack>
+          </custom-list>
+        </vertical>
+      </horizontal>
+
+      <vertical active="~players-empty" pref-width="44" pref-height="32" child-align="MiddleCenter">
+        <text text="No players are in this room yet." align="Center" font-size="3.5" word-wrapping="true" />
+      </vertical>
+    </vertical>
+  </vertical>
+
+  <ss-profile id="profile-modal" show-event="show-profile" loading="false" />
+</bg>

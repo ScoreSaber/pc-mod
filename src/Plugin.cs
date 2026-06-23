@@ -4,9 +4,9 @@ using IPA;
 using IPA.Loader;
 using ScoreSaber.Core.Compat;
 using ScoreSaber.Core;
-using ScoreSaber.Core.Api;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Platform;
+using ScoreSaber.Features.Live;
 using ScoreSaber.Features.Replays;
 using ScoreSaber.Features.Replays.Installers;
 using ScoreSaber.Features.ScoreSubmission.Services;
@@ -53,11 +53,13 @@ namespace ScoreSaber {
             zenjector.Install<PlaybackInstaller>(Location.StandardPlayer);
             zenjector.Install<RecordInstaller, StandardGameplayInstaller>();
             zenjector.Install<RecordInstaller, MultiplayerLocalActivePlayerInstaller>();
+            zenjector.Install<LiveGameplayInstaller, StandardGameplayInstaller>();
+            zenjector.Install<LiveGameplayInstaller, MultiplayerLocalActivePlayerInstaller>();
             zenjector.UseHttpService(HttpServiceType.UnityWebRequests);
             zenjector.UseAutoBinder();
 
             LibVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            HttpInstance = new Http(new HttpOptions() { baseURL = ScoreSaberUrls.ApiBaseUrl, applicationName = "ScoreSaber-PC", version = LibVersion });
+            HttpInstance = new Http(new HttpOptions() { baseURL = ScoreSaberEndpoints.ApiBaseUrl, applicationName = "ScoreSaber-PC", version = LibVersion });
             OpenXRManager.Initialize();
             SteamSettings.Initialize();
         }

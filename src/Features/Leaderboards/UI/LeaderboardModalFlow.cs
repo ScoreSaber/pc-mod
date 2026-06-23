@@ -6,7 +6,6 @@ using ScoreSaber.Features.Leaderboards.Services;
 using ScoreSaber.Features.Players.Services;
 using ScoreSaber.Features.Replays;
 using ScoreSaber.Features.Replays.Format;
-using ScoreSaber.Core.Api;
 using ScoreSaber.Core;
 using ScoreSaber.Features.Leaderboards.UI.ScoreDetails;
 using ScoreSaber.Features.Players.Profile;
@@ -81,7 +80,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             }
 
             CloseModals();
-            Application.OpenURL(ScoreSaberUrls.Leaderboard(leaderboard.LeaderboardInfo.Leaderboard.Id));
+            Application.OpenURL(ScoreSaberEndpoints.Leaderboard(leaderboard.LeaderboardInfo.Leaderboard.Id));
         }
 
         internal void ShowLocalPlayerProfile() {

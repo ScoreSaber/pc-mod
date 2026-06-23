@@ -56,11 +56,15 @@ if $target_version_set; then
   build_platform="BS$target_version"
   output_dll="$root/src/bin/$target_version/Release/ScoreSaber.dll"
 fi
+output_dir="$(dirname "$output_dll")"
+output_pdb="${output_dll%.dll}.pdb"
 
 [[ -d "$refs/Beat Saber_Data/Managed" && -d "$refs/Plugins" && -f "$refs/Plugins/LeaderboardCore.dll" ]] || {
   echo "Refs for $target_version are incomplete at $refs; expected Beat Saber_Data/Managed and Plugins/LeaderboardCore.dll." >&2
   exit 1
 }
+
+rm -rf "$output_dir/Artifact" "$output_dir/zip"
 
 dotnet build "$root/ScoreSaber.sln" -c Release \
   -p:Platform="$build_platform" \
@@ -86,11 +90,22 @@ game="${game:-$(prop ScoreSaberSshBeatSaberDir)}"
 
 remote_dir="${game}\\Plugins"
 remote_dll="${remote_dir}\\ScoreSaber.dll"
-mkdir_command="\$ProgressPreference = 'SilentlyContinue'; New-Item -ItemType Directory -Force -Path '$remote_dir' | Out-Null"
+remote_pdb="${remote_dir}\\ScoreSaber.pdb"
+remote_staging_dll="ScoreSaber.deploy.dll"
+remote_staging_pdb="ScoreSaber.deploy.pdb"
+mkdir_command="\$ErrorActionPreference = 'Stop'; \$ProgressPreference = 'SilentlyContinue'; New-Item -ItemType Directory -Force -Path '$remote_dir' | Out-Null; [void]0"
+ps_encode() { printf "%s" "$1" | iconv -f UTF-8 -t UTF-16LE | base64 | tr -d '\n'; }
 
-ssh "$target" powershell -NoProfile -NonInteractive -EncodedCommand "$(printf "%s" "$mkdir_command" | iconv -f UTF-8 -t UTF-16LE | base64)"
+ssh "$target" powershell -NoProfile -NonInteractive -EncodedCommand "$(ps_encode "$mkdir_command")"
 [[ -f "$output_dll" ]] || {
   echo "Build output missing: $output_dll" >&2
   exit 1
 }
-scp "$output_dll" "$target:${remote_dll//\\//}"
+scp "$output_dll" "$target:$remote_staging_dll"
+copy_command="\$ErrorActionPreference = 'Stop'; \$ProgressPreference = 'SilentlyContinue'; Copy-Item -Force -Path (Join-Path \$env:USERPROFILE '$remote_staging_dll') -Destination '$remote_dll'; Remove-Item -Force -ErrorAction SilentlyContinue -Path (Join-Path \$env:USERPROFILE '$remote_staging_dll')"
+if [[ -f "$output_pdb" ]]; then
+  scp "$output_pdb" "$target:$remote_staging_pdb"
+  copy_command="$copy_command; Copy-Item -Force -Path (Join-Path \$env:USERPROFILE '$remote_staging_pdb') -Destination '$remote_pdb'; Remove-Item -Force -ErrorAction SilentlyContinue -Path (Join-Path \$env:USERPROFILE '$remote_staging_pdb')"
+fi
+copy_command="$copy_command; [void]0"
+ssh "$target" powershell -NoProfile -NonInteractive -EncodedCommand "$(ps_encode "$copy_command")"

@@ -1,5 +1,6 @@
 ﻿using Zenject;
 using ScoreSaber.Core.Compat;
+using ScoreSaber.Features.Live.Compete.Services;
 using ScoreSaber.Features.Replays.Recorders;
 
 namespace ScoreSaber.Features.Replays.Installers {
@@ -22,6 +23,7 @@ namespace ScoreSaber.Features.Replays.Installers {
                 Container.BindInterfacesAndSelfTo<PoseRecorder>().AsSingle();
                 Container.BindInterfacesAndSelfTo<ScoreEventRecorder>().AsSingle();
                 Container.BindInterfacesAndSelfTo<EnergyEventRecorder>().AsSingle();
+                Container.BindInterfacesTo<CompetePauseGuard>().AsSingle();
                 Plugin.Log.Debug("Replay recorders installed");
             }
         }

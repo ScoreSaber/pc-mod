@@ -47,6 +47,22 @@
   </PropertyGroup>
   -->
 
+  <!-- (Optional) Ludus ludus URL. Host-only, http(s), and ws(s) values are normalized at runtime -->
+  <!--
+  <PropertyGroup>
+    <ScoreSaberLudusUrl>wss://brutus-ludus.scoresaber.com/v1/connect</ScoreSaberLudusUrl>
+  </PropertyGroup>
+  -->
+
+  <!-- (Optional) ScoreSaber endpoint overrides. Defaults use production -->
+  <!--
+  <PropertyGroup>
+    <ScoreSaberWebsiteBaseUrl>https://scoresaber.com</ScoreSaberWebsiteBaseUrl>
+    <ScoreSaberApiBaseUrl>https://api.scoresaber.local</ScoreSaberApiBaseUrl>
+    <ScoreSaberCdnBaseUrl>https://cdn.scoresaber.com</ScoreSaberCdnBaseUrl>
+  </PropertyGroup>
+  -->
+
   <!-- Official build metadata. Used for CI -->
   <!--
   <PropertyGroup>

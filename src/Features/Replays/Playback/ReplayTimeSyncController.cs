@@ -16,6 +16,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             FieldAccessor<BeatmapCallbacksController.InitData, float>.GetAccessor("startFilterTime");
         private static readonly FieldAccessor<BeatmapCallbacksController, float>.Accessor CallbackStartFilterTime =
             FieldAccessor<BeatmapCallbacksController, float>.GetAccessor("_startFilterTime");
+        private const float KeyboardSeekSeconds = 5f;
 
         private static readonly KeyCode[] TimeJumpKeys = {
             KeyCode.Alpha1,
@@ -79,11 +80,11 @@ namespace ScoreSaber.Features.Replays.Playback {
                 _paused = !_paused;
             }
 
-            if(Input.GetKeyDown(KeyCode.LeftArrow)) {
-                OverrideTime(Mathf.Max(0f, audioTimeSyncController.songTime - 5f));
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+                OverrideTime(Mathf.Max(0f, audioTimeSyncController.songTime - KeyboardSeekSeconds));
             }
-            if(Input.GetKeyDown(KeyCode.RightArrow)) {
-                OverrideTime(Mathf.Min(audioTimeSyncController.songLength, audioTimeSyncController.songTime + 5f));
+            if (Input.GetKeyDown(KeyCode.RightArrow)) {
+                OverrideTime(Mathf.Min(audioTimeSyncController.songLength, audioTimeSyncController.songTime + KeyboardSeekSeconds));
             }
         }
 

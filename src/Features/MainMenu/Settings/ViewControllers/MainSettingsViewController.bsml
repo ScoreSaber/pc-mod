@@ -10,6 +10,15 @@
 				<dropdown-list-setting preferred-width='30' text="Location Filter" options="locationFilterOptions" value="locationFilterMode" bind-value='true' apply-on-change='true'/>
 			</modifier-container>
 		</tab>
+		<tab tab-name='Live' tags='tabs'>
+			<modifier-container child-expand-width='true' horizontal-fit='PreferredSize'>
+				<toggle-setting text='Public Live Presence' id='publicLivePresenceSetting' value='publicLivePresenceEnabled' bind-value='true' apply-on-change='true' hover-hint='Publish your public live presence.' />
+				<toggle-setting text='Spectator Chat Overlay' id='liveChatOverlaySetting' value='liveChatOverlayEnabled' bind-value='true' apply-on-change='true' hover-hint='Show spectator chat after messages arrive.' />
+				<toggle-setting text='Spectator Chat In Gameplay' id='liveChatOverlayGameplaySetting' value='liveChatOverlayGameplayEnabled' bind-value='true' apply-on-change='true' hover-hint='Show spectator chat while playing after messages arrive.' />
+				<slider-setting preferred-width='70' size-delta-x='70' show-buttons='true' increment='0.05' min='0.85' max='1.75' text='Chat Window Scale' value='liveChatOverlayScale' bind-value='true' apply-on-change='true' hover-hint='Resize the floating spectator chat window.' />
+				<slider-setting preferred-width='70' size-delta-x='70' show-buttons='true' increment='0.05' min='0.9' max='1.8' text='Chat Text Scale' value='liveChatOverlayTextScale' bind-value='true' apply-on-change='true' hover-hint='Resize the floating spectator chat text.' />
+			</modifier-container>
+		</tab>
 		<tab tab-name='Replays' tags='tabs'>
 			<vertical>
 				<modifier-container child-expand-width='true' horizontal-fit='PreferredSize'>

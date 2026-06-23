@@ -24,7 +24,10 @@ namespace ScoreSaber.Features.MainMenu.MainFlow {
         }
 
         [Inject]
-        internal void Construct(FAQViewController faqViewController, TeamViewController teamViewController, GlobalViewController globalViewController) {
+        internal void Construct(
+            FAQViewController faqViewController,
+            TeamViewController teamViewController,
+            GlobalViewController globalViewController) {
 
             _faqViewController = faqViewController;
             _teamViewController = teamViewController;

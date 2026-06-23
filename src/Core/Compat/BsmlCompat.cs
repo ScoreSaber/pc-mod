@@ -1,5 +1,6 @@
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Components;
+using BeatSaberMarkupLanguage.FloatingScreen;
 using HMUI;
 using System;
 using System.Collections.Generic;
@@ -42,6 +43,15 @@ namespace ScoreSaber.Core.Compat {
 
         internal static System.Collections.IList GetData(this CustomCellListTableData tableData) => tableData.data;
 
+        internal static void SetData(this CustomCellListTableData tableData, System.Collections.IList data) {
+            var list = new List<object>();
+            foreach (object item in data) {
+                list.Add(item);
+            }
+
+            tableData.data = list;
+        }
+
         internal static TableView GetTableView(this CustomCellListTableData tableData) => tableData.tableView;
 
         internal static TextSegmentedControl GetTextSegmentedControl(this TabSelector tabSelector) => tabSelector.textSegmentedControl;
@@ -49,12 +59,16 @@ namespace ScoreSaber.Core.Compat {
         internal static Component GetComponent(this BSMLParser.ComponentTypeWithData componentType) => componentType.component;
 
         internal static Dictionary<string, string> GetData(this BSMLParser.ComponentTypeWithData componentType) => componentType.data;
+
+        internal static GameObject GetHandle(this FloatingScreen screen) => screen.handle;
 #else
         internal static BSMLParser Parser => BSMLParser.Instance;
 
         internal static Image GetBackground(this Backgroundable backgroundable) => backgroundable.Background;
 
         internal static System.Collections.IList GetData(this CustomCellListTableData tableData) => tableData.Data;
+
+        internal static void SetData(this CustomCellListTableData tableData, System.Collections.IList data) => tableData.Data = data;
 
         internal static TableView GetTableView(this CustomCellListTableData tableData) => tableData.TableView;
 
@@ -63,6 +77,8 @@ namespace ScoreSaber.Core.Compat {
         internal static Component GetComponent(this BSMLParser.ComponentTypeWithData componentType) => componentType.Component;
 
         internal static Dictionary<string, string> GetData(this BSMLParser.ComponentTypeWithData componentType) => componentType.Data;
+
+        internal static GameObject GetHandle(this FloatingScreen screen) => screen.Handle;
 #endif
     }
 }

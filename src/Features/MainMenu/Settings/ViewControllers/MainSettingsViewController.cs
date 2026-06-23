@@ -1,6 +1,7 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using ScoreSaber.Core.Configuration;
+using ScoreSaber.Features.Live.Ludus.Services;
 using System.Collections.Generic;
 using System.Linq;
 using Zenject;
@@ -9,10 +10,12 @@ namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
     [HotReload(RelativePathToLayout = @"./MainSettingsViewController.bsml")]
     internal class MainSettingsViewController : BSMLAutomaticViewController {
         private SettingsService _settings;
+        private LudusSessionService _ludusSession;
 
         [Inject]
-        internal void Construct(SettingsService settings) {
+        internal void Construct(SettingsService settings, LudusSessionService ludusSession) {
             _settings = settings;
+            _ludusSession = ludusSession;
         }
 
         // NORMAL SETTINGS
@@ -44,6 +47,66 @@ namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
         public bool EnableCountryLeaderboards {
             get => _settings.Current.enableCountryLeaderboards;
             set => _settings.Current.enableCountryLeaderboards = value;
+        }
+
+        // LIVE SETTINGS
+        [UIValue("publicLivePresenceEnabled")]
+        public bool PublicLivePresenceEnabled {
+            get => !_settings.Current.publicLivePresenceOptOut;
+            set {
+                bool optOut = !value;
+                if (_settings.Current.publicLivePresenceOptOut == optOut) {
+                    return;
+                }
+
+                _settings.Current.publicLivePresenceOptOut = optOut;
+                _settings.Save();
+                _ludusSession.ApplyPublicLivePresencePreference();
+            }
+        }
+
+        [UIValue("liveChatOverlayEnabled")]
+        public bool LiveChatOverlayEnabled {
+            get => _settings.Current.liveChatOverlayEnabled;
+            set {
+                if (_settings.Current.liveChatOverlayEnabled == value) {
+                    return;
+                }
+
+                _settings.Current.liveChatOverlayEnabled = value;
+                _settings.Save();
+            }
+        }
+
+        [UIValue("liveChatOverlayGameplayEnabled")]
+        public bool LiveChatOverlayGameplayEnabled {
+            get => _settings.Current.liveChatOverlayGameplayEnabled;
+            set {
+                if (_settings.Current.liveChatOverlayGameplayEnabled == value) {
+                    return;
+                }
+
+                _settings.Current.liveChatOverlayGameplayEnabled = value;
+                _settings.Save();
+            }
+        }
+
+        [UIValue("liveChatOverlayScale")]
+        public float LiveChatOverlayScale {
+            get => _settings.Current.liveChatOverlayScale;
+            set {
+                _settings.Current.liveChatOverlayScale = Clamp(value, 0.85f, 1.75f);
+                _settings.Save();
+            }
+        }
+
+        [UIValue("liveChatOverlayTextScale")]
+        public float LiveChatOverlayTextScale {
+            get => _settings.Current.liveChatOverlayTextScale;
+            set {
+                _settings.Current.liveChatOverlayTextScale = Clamp(value, 0.9f, 1.8f);
+                _settings.Save();
+            }
         }
 
         [UIValue("locationFilterOptions")]
@@ -114,6 +177,18 @@ namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
         public float currentZValueOffset {
             get => _settings.Current.replayCameraZOffset;
             set => _settings.Current.replayCameraZOffset = value;
+        }
+
+        private static float Clamp(float value, float min, float max) {
+            if (value < min) {
+                return min;
+            }
+
+            if (value > max) {
+                return max;
+            }
+
+            return value;
         }
     }
 }

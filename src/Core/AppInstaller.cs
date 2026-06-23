@@ -1,4 +1,6 @@
 ﻿using ScoreSaber.Core.Presentation;
+using ScoreSaber.Features.Live.Compete.Services;
+using ScoreSaber.Features.Live.Replay;
 using ScoreSaber.Features.Replays;
 using Zenject;
 
@@ -14,6 +16,9 @@ namespace ScoreSaber.Core {
             Container.Bind<ScoreSaberUIMaterials>().AsSingle();
             Container.Bind<ReplayFileCodec>().AsSingle();
             Container.Bind<ReplayService>().AsSingle().NonLazy();
+            Container.Bind<CompeteGameplayState>().AsSingle();
+            Container.Bind<CompeteGameplayControl>().AsSingle();
+            Container.BindInterfacesAndSelfTo<LiveReplayStreamingService>().AsSingle().NonLazy();
         }
     }
 }

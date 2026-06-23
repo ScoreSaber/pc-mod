@@ -24,7 +24,7 @@ namespace ScoreSaber.Features.Players.Profile {
                 Avatar = player.Avatar,
                 RankText = $"#{string.Format("{0:n0}", player.Stats.Rank)}",
                 PPText = $"<color=#6772E5>{string.Format("{0:n0}", player.Stats.TotalPP)}pp</color>",
-                RankedAccuracyText = $"{Math.Round(player.Stats.WeightedAverageAccuracy, 2)}%",
+                RankedAccuracyText = $"{Math.Round(player.Stats.AverageAccuracy, 2)}%",
                 TotalScoreText = string.Format("{0:n0}", player.Stats.TotalScore),
                 UsesFurryFont = PlayerPresentation.UsesFurryFont(player.Id),
                 Crown = new ProfileCrownData {

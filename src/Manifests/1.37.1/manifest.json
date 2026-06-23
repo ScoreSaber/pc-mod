@@ -11,7 +11,8 @@
     "BSIPA": "^4.3.6",
     "BeatSaberMarkupLanguage": "^1.11.4",
     "SiraUtil": "^3.1.11",
-    "SongCore": "^3.14.11"
+    "SongCore": "^3.14.11",
+    "protobuf-net": "^3.0.102"
   },
   "loadBefore": [
     "LeaderboardCore"

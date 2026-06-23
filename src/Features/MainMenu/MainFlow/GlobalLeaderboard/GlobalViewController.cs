@@ -3,7 +3,6 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
-using ScoreSaber.Core.Api;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core;
 using ScoreSaber.Core.Presentation;
@@ -61,7 +60,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
         #region Handlers
         [UIAction("global-up")] private void GlobalUpClicked() => PageButtonClicked(false);
         [UIAction("global-down")] private void GlobalDownClicked() => PageButtonClicked(true);
-        [UIAction("global-click")] private void GlobalTextClicked() => Application.OpenURL(ScoreSaberUrls.GlobalLeaderboard());
+        [UIAction("global-click")] private void GlobalTextClicked() => Application.OpenURL(ScoreSaberEndpoints.GlobalLeaderboard());
 
         [UIAction("global-scope-click")] private void GlobalScopeClicked() => ScopeClicked(GlobalPlayerScope.Global);
         [UIAction("player-scope-click")] private void PlayerScopeClicked() => ScopeClicked(GlobalPlayerScope.AroundPlayer);

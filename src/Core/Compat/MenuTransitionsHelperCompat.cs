@@ -12,9 +12,55 @@ namespace ScoreSaber.Core.Compat {
             PlayerSpecificSettings playerSpecificSettings,
             EnvironmentsListModel environmentsListModel,
             Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> levelFinishedCallback) {
+            StartStandardLevelCompat(
+                menuTransitionsHelper,
+                beatmapKey,
+                beatmapLevel,
+                playerData,
+                gameplayModifiers,
+                playerSpecificSettings,
+                environmentsListModel,
+                "Replay",
+                "Exit Replay",
+                levelFinishedCallback);
+        }
+
+        internal static void StartLiveLevel(
+            this MenuTransitionsHelper menuTransitionsHelper,
+            in BeatmapKey beatmapKey,
+            BeatmapLevel beatmapLevel,
+            PlayerData playerData,
+            GameplayModifiers gameplayModifiers,
+            PlayerSpecificSettings playerSpecificSettings,
+            EnvironmentsListModel environmentsListModel,
+            Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> levelFinishedCallback) {
+            StartStandardLevelCompat(
+                menuTransitionsHelper,
+                beatmapKey,
+                beatmapLevel,
+                playerData,
+                gameplayModifiers,
+                playerSpecificSettings,
+                environmentsListModel,
+                "Solo",
+                "Menu",
+                levelFinishedCallback);
+        }
+
+        private static void StartStandardLevelCompat(
+            MenuTransitionsHelper menuTransitionsHelper,
+            in BeatmapKey beatmapKey,
+            BeatmapLevel beatmapLevel,
+            PlayerData playerData,
+            GameplayModifiers gameplayModifiers,
+            PlayerSpecificSettings playerSpecificSettings,
+            EnvironmentsListModel environmentsListModel,
+            string gameMode,
+            string backButtonText,
+            Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> levelFinishedCallback) {
 #if BEAT_SABER_1_29_0
             menuTransitionsHelper.StartStandardLevel(
-                gameMode: "Replay",
+                gameMode: gameMode,
                 difficultyBeatmap: beatmapKey.difficultyBeatmap,
                 previewBeatmapLevel: beatmapKey.difficultyBeatmap.level,
                 overrideEnvironmentSettings: playerData.overrideEnvironmentSettings,
@@ -22,7 +68,7 @@ namespace ScoreSaber.Core.Compat {
                 gameplayModifiers: gameplayModifiers,
                 playerSpecificSettings: playerSpecificSettings,
                 practiceSettings: null,
-                backButtonText: "Exit Replay",
+                backButtonText: backButtonText,
                 useTestNoteCutSoundEffects: false,
                 startPaused: false,
                 beforeSceneSwitchCallback: null,
@@ -33,7 +79,7 @@ namespace ScoreSaber.Core.Compat {
 #elif BEAT_SABER_1_37_1
             // same shape as 1.38, but the scene switch callbacks still use the older names
             menuTransitionsHelper.StartStandardLevel(
-                gameMode: "Replay",
+                gameMode: gameMode,
                 beatmapKey: beatmapKey,
                 beatmapLevel: beatmapLevel,
                 overrideEnvironmentSettings: playerData.overrideEnvironmentSettings,
@@ -43,7 +89,7 @@ namespace ScoreSaber.Core.Compat {
                 playerSpecificSettings: playerSpecificSettings,
                 practiceSettings: null,
                 environmentsListModel: environmentsListModel,
-                backButtonText: "Exit Replay",
+                backButtonText: backButtonText,
                 useTestNoteCutSoundEffects: false,
                 startPaused: false,
                 beforeSceneSwitchCallback: null,
@@ -53,7 +99,7 @@ namespace ScoreSaber.Core.Compat {
             );
 #elif BEAT_SABER_1_38_0
             menuTransitionsHelper.StartStandardLevel(
-                gameMode: "Replay",
+                gameMode: gameMode,
                 beatmapKey: beatmapKey,
                 beatmapLevel: beatmapLevel,
                 overrideEnvironmentSettings: playerData.overrideEnvironmentSettings,
@@ -63,7 +109,7 @@ namespace ScoreSaber.Core.Compat {
                 playerSpecificSettings: playerSpecificSettings,
                 practiceSettings: null,
                 environmentsListModel: environmentsListModel,
-                backButtonText: "Exit Replay",
+                backButtonText: backButtonText,
                 useTestNoteCutSoundEffects: false,
                 startPaused: false,
                 beforeSceneSwitchToGameplayCallback: null,
@@ -73,7 +119,7 @@ namespace ScoreSaber.Core.Compat {
             );
 #elif BEAT_SABER_1_40_0
             menuTransitionsHelper.StartStandardLevel(
-                gameMode: "Replay",
+                gameMode: gameMode,
                 beatmapKey: beatmapKey,
                 beatmapLevel: beatmapLevel,
                 overrideEnvironmentSettings: playerData.overrideEnvironmentSettings,
@@ -84,7 +130,7 @@ namespace ScoreSaber.Core.Compat {
                 playerSpecificSettings: playerSpecificSettings,
                 practiceSettings: null,
                 environmentsListModel: environmentsListModel,
-                backButtonText: "Exit Replay",
+                backButtonText: backButtonText,
                 useTestNoteCutSoundEffects: false,
                 startPaused: false,
                 beforeSceneSwitchToGameplayCallback: null,
@@ -94,7 +140,7 @@ namespace ScoreSaber.Core.Compat {
             );
 #else
             menuTransitionsHelper.StartStandardLevel(
-                gameMode: "Replay",
+                gameMode: gameMode,
                 beatmapKey: beatmapKey,
                 beatmapLevel: beatmapLevel,
                 overrideEnvironmentSettings: playerData.overrideEnvironmentSettings,
@@ -104,7 +150,7 @@ namespace ScoreSaber.Core.Compat {
                 playerSpecificSettings: playerSpecificSettings,
                 practiceSettings: null,
                 environmentsListModel: environmentsListModel,
-                gameplayAdditionalInformation: new GameplayAdditionalInformation(backButtonText: "Exit Replay"),
+                gameplayAdditionalInformation: new GameplayAdditionalInformation(backButtonText: backButtonText),
                 beforeSceneSwitchToGameplayCallback: null,
                 afterSceneSwitchToGameplayCallback: null,
                 levelFinishedCallback: levelFinishedCallback,
