@@ -1,6 +1,6 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using HMUI;
-using ScoreSaber.Core.Api;
+using ScoreSaber.Core;
 using ScoreSaber.Core.Presentation;
 using System;
 
@@ -46,7 +46,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.GlobalLeaderboard {
             _globalRank = rank;
             _profileClicked = onActivateProfile;
             _countryText = $"{country}";
-            _flagUrl = ScoreSaberUrls.Flag(country);
+            _flagUrl = ScoreSaberEndpoints.Flag(country);
         }
 
         [UIAction("profile-clicked")]

@@ -3,6 +3,7 @@ using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.Services;
+using ScoreSaber.Features.Live.Replay;
 using ScoreSaber.Features.Players.Services;
 using ScoreSaber.Features.Replays;
 using ScoreSaber.Features.ScoreSubmission.Domain;
@@ -30,14 +31,16 @@ namespace ScoreSaber.Features.ScoreSubmission {
         private readonly LeaderboardPlayerScoreCache _playerScoreCache;
         private readonly GameSessionService _gameSessionService;
         private readonly ReplayState _replayState;
+        private readonly LiveReplayStreamingService _liveReplayStreamingService;
         private int _visibleUploadCount;
 
-        public ScoreSubmissionController(ScoreSubmissionWorkflow submissionWorkflow, ScoreSubmissionService scoreSubmissionService, LeaderboardPlayerScoreCache playerScoreCache, GameSessionService gameSessionService, ReplayState replayState) {
+        public ScoreSubmissionController(ScoreSubmissionWorkflow submissionWorkflow, ScoreSubmissionService scoreSubmissionService, LeaderboardPlayerScoreCache playerScoreCache, GameSessionService gameSessionService, ReplayState replayState, LiveReplayStreamingService liveReplayStreamingService) {
             _submissionWorkflow = submissionWorkflow;
             _scoreSubmissionService = scoreSubmissionService;
             _playerScoreCache = playerScoreCache;
             _gameSessionService = gameSessionService;
             _replayState = replayState;
+            _liveReplayStreamingService = liveReplayStreamingService;
             Plugin.Log.Debug("Upload service setup!");
         }
 
@@ -68,6 +71,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
 
         private void HandleLevelFinished(ScoreSubmissionRequest request) {
             try {
+                _liveReplayStreamingService.Complete(request.Results, request.PlayOutcomeTime);
                 ScoreSubmissionDecision decision = Decide(request);
                 Plugin.Log.Debug($"Score submission decision: {decision.Action} {decision.Reason}");
 

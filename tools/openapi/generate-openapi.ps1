@@ -1,3 +1,7 @@
+param(
+    [string]$Input = "https://scoresaber.com/api/openapi.json"
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -11,6 +15,7 @@ try {
     New-Item -ItemType Directory -Path $generatedDir -Force | Out-Null
 
     dotnet run --project (Join-Path $repoRoot "tools/openapi/ScoreSaber.OpenApiTools/ScoreSaber.OpenApiTools.csproj") -- `
+        --input $Input `
         --output $specFile
 
     dotnet nswag openapi2csclient `

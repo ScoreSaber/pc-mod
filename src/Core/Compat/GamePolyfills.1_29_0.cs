@@ -1,5 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ScoreSaber {
@@ -30,9 +34,18 @@ namespace ScoreSaber {
 
     internal class BeatmapLevel {
         internal readonly IPreviewBeatmapLevel previewBeatmapLevel;
+        private readonly IBeatmapLevel _beatmapLevel;
 
         internal BeatmapLevel(IPreviewBeatmapLevel previewBeatmapLevel) {
             this.previewBeatmapLevel = previewBeatmapLevel;
+            _beatmapLevel = previewBeatmapLevel as IBeatmapLevel;
+            previewMediaData = new PreviewMediaDataCompat(previewBeatmapLevel);
+        }
+
+        internal BeatmapLevel(IBeatmapLevel beatmapLevel) {
+            previewBeatmapLevel = beatmapLevel;
+            _beatmapLevel = beatmapLevel;
+            previewMediaData = new PreviewMediaDataCompat(beatmapLevel);
         }
 
         public string levelID => previewBeatmapLevel.levelID;
@@ -40,8 +53,30 @@ namespace ScoreSaber {
         public string songSubName => previewBeatmapLevel.songSubName;
         public string songAuthorName => previewBeatmapLevel.songAuthorName;
         public float beatsPerMinute => previewBeatmapLevel.beatsPerMinute;
+        public float songDuration => previewBeatmapLevel.songDuration;
         public string[] allMappers => string.IsNullOrEmpty(previewBeatmapLevel.levelAuthorName) ? new string[0] : new[] { previewBeatmapLevel.levelAuthorName };
         public string[] allLighters => new string[0];
+        public PreviewMediaDataCompat previewMediaData { get; }
+
+        public IEnumerable<BeatmapKey> GetBeatmapKeys() {
+            return _beatmapLevel?.beatmapLevelData?.difficultyBeatmapSets == null
+                ? Enumerable.Empty<BeatmapKey>()
+                : _beatmapLevel.beatmapLevelData.difficultyBeatmapSets
+                    .SelectMany(set => set.difficultyBeatmaps)
+                    .Select(difficultyBeatmap => new BeatmapKey(difficultyBeatmap));
+        }
+    }
+
+    internal class PreviewMediaDataCompat {
+        private readonly IPreviewBeatmapLevel _level;
+
+        internal PreviewMediaDataCompat(IPreviewBeatmapLevel level) {
+            _level = level;
+        }
+
+        public Task<Sprite> GetCoverSpriteAsync() {
+            return _level.GetCoverImageAsync(CancellationToken.None);
+        }
     }
 
     // 1.29 doesn't have this so we're just sneaking it in for DI reasons

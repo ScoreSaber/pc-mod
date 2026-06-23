@@ -1,4 +1,5 @@
-﻿using ScoreSaber.Features.Replays.Format;
+﻿using ScoreSaber.Features.Live.Replay;
+using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Features.Replays.Recorders;
 using System;
 using Zenject;
@@ -13,8 +14,11 @@ namespace ScoreSaber.Features.Replays {
         private readonly ScoreEventRecorder _scoreEventRecorder;
         private readonly HeightEventRecorder _heightEventRecorder;
         private readonly EnergyEventRecorder _energyEventRecorder;
+        private readonly LiveReplayStreamingService _liveReplayStreamingService;
+        private readonly IGamePause _gamePause;
+        private readonly AudioTimeSyncController _audioTimeSyncController;
 
-        public Recorder(PoseRecorder poseRecorder, MetadataRecorder metadataRecorder, NoteEventRecorder noteEventRecorder, ScoreEventRecorder scoreEventRecorder, HeightEventRecorder heightEventRecorder, EnergyEventRecorder energyEventRecorder, ReplayService replayService) {
+        public Recorder(PoseRecorder poseRecorder, MetadataRecorder metadataRecorder, NoteEventRecorder noteEventRecorder, ScoreEventRecorder scoreEventRecorder, HeightEventRecorder heightEventRecorder, EnergyEventRecorder energyEventRecorder, ReplayService replayService, LiveReplayStreamingService liveReplayStreamingService, [InjectOptional] IGamePause gamePause, [InjectOptional] AudioTimeSyncController audioTimeSyncController) {
 
             _poseRecorder = poseRecorder;
             _replayService = replayService;
@@ -23,6 +27,9 @@ namespace ScoreSaber.Features.Replays {
             _scoreEventRecorder = scoreEventRecorder;
             _heightEventRecorder = heightEventRecorder;
             _energyEventRecorder = energyEventRecorder;
+            _liveReplayStreamingService = liveReplayStreamingService;
+            _gamePause = gamePause;
+            _audioTimeSyncController = audioTimeSyncController;
 
             _id = Guid.NewGuid().ToString();
             Plugin.Log.Debug("Main replay recorder installed");
@@ -31,6 +38,11 @@ namespace ScoreSaber.Features.Replays {
         public void Initialize() {
 
             _replayService.NewPlayStarted(_id, this);
+            _liveReplayStreamingService.Begin(_metadataRecorder.Export());
+            if (_gamePause != null) {
+                _gamePause.didPauseEvent += GamePauseDidPauseEvent;
+                _gamePause.didResumeEvent += GamePauseDidResumeEvent;
+            }
         }
 
         public void StopRecording() {
@@ -52,6 +64,16 @@ namespace ScoreSaber.Features.Replays {
         }
 
         public void Dispose() {
+            if (_gamePause != null) {
+                _gamePause.didPauseEvent -= GamePauseDidPauseEvent;
+                _gamePause.didResumeEvent -= GamePauseDidResumeEvent;
+            }
         }
+
+        private void GamePauseDidPauseEvent() => _liveReplayStreamingService.SetPaused(true, CurrentSongTime());
+
+        private void GamePauseDidResumeEvent() => _liveReplayStreamingService.SetPaused(false, CurrentSongTime());
+
+        private float CurrentSongTime() => _audioTimeSyncController != null ? _audioTimeSyncController.songTime : 0f;
     }
 }

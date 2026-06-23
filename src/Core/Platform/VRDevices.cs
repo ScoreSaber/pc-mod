@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine.XR;
 
 namespace ScoreSaber.Core.Platform {
@@ -15,36 +16,30 @@ namespace ScoreSaber.Core.Platform {
         }
 
         internal static string GetDeviceControllerLeft() {
-            List<InputDevice> inputDevices = new List<InputDevice>();
-            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, inputDevices);
-            string empty = string.Empty;
-            InputDevice inputDevice = inputDevices[0];
-            string str = "(inputdevice):" + inputDevices[0].name;
-            string deviceName = VRDevices.GetDeviceName(XRNode.LeftHand);
-            if (deviceName != null)
-                str = $"{str}:{deviceName}";
-            return str != string.Empty ? "legacy:" + str : "legacy:unknown";
+            return GetLegacyDeviceController(XRNode.LeftHand, InputDeviceCharacteristics.Left);
         }
 
         internal static string GetDeviceControllerRight() {
+            return GetLegacyDeviceController(XRNode.RightHand, InputDeviceCharacteristics.Right);
+        }
+
+        private static string GetLegacyDeviceController(XRNode node, InputDeviceCharacteristics hand) {
             List<InputDevice> inputDevices = new List<InputDevice>();
-            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, inputDevices);
-            string empty = string.Empty;
-            InputDevice inputDevice = inputDevices[0];
-            string str = "(inputdevice):" + inputDevices[0].name;
-            string deviceName = VRDevices.GetDeviceName(XRNode.RightHand);
+            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | hand, inputDevices);
+            string device = inputDevices.Count > 0 ? "(inputdevice):" + inputDevices[0].name : string.Empty;
+            string deviceName = GetDeviceName(node);
             if (deviceName != null)
-                str = $"{str}:{deviceName}";
-            return str != string.Empty ? "legacy:" + str : "legacy:unknown";
+                device = string.IsNullOrEmpty(device) ? deviceName : $"{device}:{deviceName}";
+            return !string.IsNullOrEmpty(device) ? "legacy:" + device : "legacy:unknown";
         }
 #else
         internal static string GetDeviceHMD() {
 
-            var currentRuntime = UnityEngine.XR.OpenXR.OpenXRRuntime.name.ToLower();
+            string currentRuntime = UnityEngine.XR.OpenXR.OpenXRRuntime.name ?? string.Empty;
 
             var HMD = GetDeviceName(XRNode.Head);
 
-            if (currentRuntime.Contains("steam")) {
+            if (currentRuntime.IndexOf("steam", StringComparison.OrdinalIgnoreCase) >= 0) {
                 if (SteamSettings.HMDName != null)
                     HMD = $"{HMD}:(steamcfg):{SteamSettings.HMDName}";
             }
@@ -52,7 +47,7 @@ namespace ScoreSaber.Core.Platform {
             if (OpenXRManager.HMDName != null)
                 HMD = $"{HMD}:(openxr):{OpenXRManager.HMDName}";
 
-            return $"{UnityEngine.XR.OpenXR.OpenXRRuntime.name}:{HMD}";
+            return $"{currentRuntime}:{HMD}";
         }
 
         internal static string GetDeviceControllerLeft() {

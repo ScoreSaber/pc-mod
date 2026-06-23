@@ -47,7 +47,7 @@ namespace ScoreSaber.Core.Api.UploadTrust {
             }
 
             if (!string.Equals(uploadVersionHash, trust.UploadVersionHash, StringComparison.OrdinalIgnoreCase)) {
-                throw new InvalidOperationException("Upload version hash did not match the authenticated upload trust session.");
+                throw new InvalidOperationException("Upload version hash did not match the authenticated upload trust session");
             }
 
             string dataSha256 = Sha256Hex(encryptedData);

@@ -10,6 +10,7 @@ using ScoreSaber.Features.Leaderboards.Services;
 using System;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace ScoreSaber.Features.Leaderboards.UI {
@@ -32,6 +33,10 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         private LeaderboardTweeningService _leaderboardTweeningService;
 
         // bsml binds [UIComponent]/[UIObject] to fields only on old versions (1.11.4 and earlier), so keep these as fields
+        [UIComponent("tournament-actions-root")]
+        protected readonly RectTransform _tournamentActionsRoot = null;
+        [UIComponent("compete-button")]
+        protected readonly ClickableImage _competeButton = null;
         [UIComponent("prompt-root")]
         protected readonly RectTransform _promptRoot = null;
         [UIComponent("prompt-text-component")]
@@ -40,10 +45,10 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         protected readonly GameObject _promptLoaderSlot = null;
         [UIComponent("content-root")]
         protected readonly RectTransform _contentRoot = null;
-
         private string _promptText = string.Empty;
         private bool _promptActive;
         private bool _promptLoading;
+        private bool _competeButtonActive;
 
         internal bool IsReady { get; private set; }
 
@@ -58,6 +63,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         internal event Action SettingsSelected;
         internal event Action RankingSelected;
         internal event Action StatusSelected;
+        internal event Action CompeteSelected;
 
         protected override string customBSML => BSMLHotReload.ResourceContent(typeof(PanelView).Assembly, PanelViewResource);
 
@@ -109,6 +115,18 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             }
         }
 
+        protected bool competeButtonActive {
+            get => _competeButtonActive;
+            set {
+                if (_competeButtonActive == value) {
+                    return;
+                }
+
+                _competeButtonActive = value;
+                ApplyTournamentActionVisibility();
+            }
+        }
+
         [Inject]
         protected void Construct(SettingsService settings, LeaderboardTweeningService leaderboardTweeningService) {
             _settings = settings;
@@ -121,7 +139,10 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             Plugin.Log.Debug("PanelView Setup!");
         }
 
-        protected void OnDisable() => Disabled?.Invoke();
+        protected void OnDisable() {
+            KillPromptTweens();
+            Disabled?.Invoke();
+        }
 
         public override void Parsed() {
             base.Parsed();
@@ -149,11 +170,19 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             }
 
             ApplyPromptVisibility();
+            ApplyTournamentActionVisibility();
             Ready?.Invoke();
         }
 
         [UIAction("clicked-settings")]
         protected void ClickedSettings() => SettingsSelected?.Invoke();
+
+        [UIAction("clicked-compete")]
+        protected void ClickedCompete() {
+            if (competeButtonActive) {
+                CompeteSelected?.Invoke();
+            }
+        }
 
         protected override void OnLogoClicked() => LogoSelected?.Invoke();
 
@@ -208,6 +237,11 @@ namespace ScoreSaber.Features.Leaderboards.UI {
 
         public void Loaded(bool value) => isLoaded = value;
 
+        internal void SetTournamentActionsVisible(bool canCompete) {
+            competeButtonActive = canCompete;
+            ApplyTournamentActionVisibility();
+        }
+
         internal void SetGlobalLeaderboardRanking(string text) => topText = text;
 
         internal void SetWilliumsMode(bool value) {
@@ -252,7 +286,6 @@ namespace ScoreSaber.Features.Leaderboards.UI {
 
         private void SetPromptState(string text, bool active, bool loading) {
             bool wasActive = _promptActive;
-            string oldText = _promptText;
             _promptText = text;
             _promptActive = active;
             _promptLoading = loading;
@@ -337,6 +370,16 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         private void KillPromptTweens() {
             _leaderboardTweeningService?.KillTween(PanelPromptShowTweenId);
             _leaderboardTweeningService?.KillTween(PanelPromptDismissTweenId);
+        }
+
+        private void ApplyTournamentActionVisibility() {
+            if (_tournamentActionsRoot != null) {
+                _tournamentActionsRoot.gameObject.SetActive(competeButtonActive);
+            }
+
+            if (_competeButton != null) {
+                _competeButton.gameObject.SetActive(competeButtonActive);
+            }
         }
 
         private static string FormatRankedStatus(string rankedStatus) => $"<b><color=#FFDE1A>Ranked Status:</color></b> {rankedStatus}";

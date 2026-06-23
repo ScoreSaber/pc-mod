@@ -10,4 +10,10 @@
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+  <PropertyGroup>
+    <ScoreSaberWebsiteBaseUrl Condition="'$(ScoreSaberWebsiteBaseUrl)' == ''">https://scoresaber.com</ScoreSaberWebsiteBaseUrl>
+    <ScoreSaberApiBaseUrl Condition="'$(ScoreSaberApiBaseUrl)' == ''">https://scoresaber.com</ScoreSaberApiBaseUrl>
+    <ScoreSaberCdnBaseUrl Condition="'$(ScoreSaberCdnBaseUrl)' == ''">https://cdn.scoresaber.com</ScoreSaberCdnBaseUrl>
+    <ScoreSaberLudusUrl Condition="'$(ScoreSaberLudusUrl)' == ''">wss://ludus-1.scoresaber.com/v1/connect</ScoreSaberLudusUrl>
+  </PropertyGroup>
 </Project>

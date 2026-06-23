@@ -1,4 +1,5 @@
-﻿using ScoreSaber.Features.Replays;
+﻿using ScoreSaber.Features.Live.Replay;
+using ScoreSaber.Features.Replays;
 using System;
 using System.Collections.Generic;
 using Zenject;
@@ -13,10 +14,12 @@ namespace ScoreSaber.Features.Replays.Recorders {
         private readonly List<NoteEvent> _noteKeyframes;
         private readonly ScoreController _scoreController;
         private readonly Dictionary<NoteData, NoteCutInfo> _collectedBadCutInfos;
+        private readonly LiveReplayStreamingService _liveReplayStreamingService;
 
-        public NoteEventRecorder(ScoreController scoreController) {
+        public NoteEventRecorder(ScoreController scoreController, LiveReplayStreamingService liveReplayStreamingService) {
 
             _scoreController = scoreController;
+            _liveReplayStreamingService = liveReplayStreamingService;
             _noteKeyframes = new List<NoteEvent>(InitialNoteEventCapacity);
             _collectedBadCutInfos = new Dictionary<NoteData, NoteCutInfo>(InitialCutInfoCapacity);
         }
@@ -46,7 +49,9 @@ namespace ScoreSaber.Features.Replays.Recorders {
                 _collectedBadCutInfos.Remove(noteData);
                 float cutTime = noteData.time - noteCutInfo.timeDeviation;
 
-                _noteKeyframes.Add(CreateCutEvent(noteID, NoteEventType.GoodCut, noteCutInfo, goodCut.cutScoreBuffer.beforeCutSwingRating, goodCut.cutScoreBuffer.afterCutSwingRating, cutTime));
+                NoteEvent noteEvent = CreateCutEvent(noteID, NoteEventType.GoodCut, noteCutInfo, goodCut.cutScoreBuffer.beforeCutSwingRating, goodCut.cutScoreBuffer.afterCutSwingRating, cutTime);
+                _noteKeyframes.Add(noteEvent);
+                _liveReplayStreamingService.RecordNote(noteEvent);
 
             } else if (element is BadCutScoringElement badCut) {
 
@@ -58,11 +63,13 @@ namespace ScoreSaber.Features.Replays.Recorders {
                 _collectedBadCutInfos.Remove(badCut.noteData);
                 float cutTime = noteData.time - noteCutInfo.timeDeviation;
 
-                _noteKeyframes.Add(CreateCutEvent(noteID, badCutEventType, noteCutInfo, 0f, 0f, cutTime));
+                NoteEvent noteEvent = CreateCutEvent(noteID, badCutEventType, noteCutInfo, 0f, 0f, cutTime);
+                _noteKeyframes.Add(noteEvent);
+                _liveReplayStreamingService.RecordNote(noteEvent);
 
             } else if (noteData.colorType != ColorType.None /* not bomb */ && element is MissScoringElement) {
 
-                _noteKeyframes.Add(new NoteEvent() {
+                var noteEvent = new NoteEvent() {
 
                     NoteID = noteID,
                     EventType = NoteEventType.Miss,
@@ -86,7 +93,9 @@ namespace ScoreSaber.Features.Replays.Recorders {
                     InverseWorldRotation = new VRRotation(),
                     NoteRotation = new VRRotation(),
                     NotePosition = new VRPosition(),
-                });
+                };
+                _noteKeyframes.Add(noteEvent);
+                _liveReplayStreamingService.RecordNote(noteEvent);
             }
         }
 

@@ -1,9 +1,6 @@
 ﻿using HMUI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,182 +10,228 @@ namespace ScoreSaber.Features.Leaderboards.Services {
 
         private readonly TimeTweeningManager _timeTweeningManager;
 
-        private readonly Dictionary<string, Tween> activeScoreSaberRotations;
+        private readonly Dictionary<string, Tween> _activeTweens;
 
         public LeaderboardTweeningService(TimeTweeningManager timeTweeningManager) {
             _timeTweeningManager = timeTweeningManager;
-            activeScoreSaberRotations = new Dictionary<string, Tween>();
+            _activeTweens = new Dictionary<string, Tween>();
         }
 
         public void CreateTween<T>(string id, Tween<T> tween, Transform transform) {
-            if(activeScoreSaberRotations.ContainsKey(id)) {
-                KillTween(id);
-            }
-            activeScoreSaberRotations[id] = tween;
-            _timeTweeningManager.AddTween(tween, this);
+            CreateTween(id, (Tween)tween, transform);
         }
 
         public void CreateFadeTween(string id, float from, float to, float duration, Transform transform) {
+            if (transform == null) {
+                return;
+            }
+
+            CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
+            if (canvasGroup == null) {
+                return;
+            }
+
             var tween = new FloatTween(from, to, update => {
-                var canvasGroup = transform.GetComponent<CanvasGroup>();
-                if (canvasGroup != null) {
-                    canvasGroup.alpha = update;
-                }
+                SetCanvasGroupAlpha(canvasGroup, update);
             }, duration, EaseType.Linear);
             tween.onCompleted += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
-                var canvasGroup = transform.GetComponent<CanvasGroup>();
-                if (canvasGroup != null) {
-                    canvasGroup.alpha = to;
-                }
+                ForgetTween(id, tween);
+                SetCanvasGroupAlpha(canvasGroup, to);
             };
             tween.onKilled += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
-                var canvasGroup = transform.GetComponent<CanvasGroup>();
-                if (canvasGroup != null) {
-                    canvasGroup.alpha = to;
-                }
+                ForgetTween(id, tween);
+                SetCanvasGroupAlpha(canvasGroup, to);
             };
             CreateTween(id, tween, transform);
         }
 
         public void FadeLayoutGroup(string id, float from, float to, float time, HorizontalOrVerticalLayoutGroup layoutGroup) {
-            List<CanvasRenderer> canvasRenderers = new List<CanvasRenderer>();
-            canvasRenderers = layoutGroup.transform.GetComponentsInChildren<CanvasRenderer>().ToList();
+            if (layoutGroup == null) {
+                return;
+            }
 
-            float startAlpha = activeScoreSaberRotations.ContainsKey(id) && canvasRenderers.Count > 0 ? canvasRenderers[0].GetAlpha() : from;
+            CanvasRenderer[] canvasRenderers = layoutGroup.transform.GetComponentsInChildren<CanvasRenderer>(true);
+
+            float startAlpha = _activeTweens.ContainsKey(id) && canvasRenderers.Length > 0 ? canvasRenderers[0].GetAlpha() : from;
             float endAlpha = to;
 
-            if (activeScoreSaberRotations.ContainsKey(id)) {
+            if (_activeTweens.ContainsKey(id)) {
                 KillTween(id);
             }
 
             foreach (CanvasRenderer canvasRenderer in canvasRenderers) {
-                canvasRenderer.SetAlpha(startAlpha);
+                SetRendererAlpha(canvasRenderer, startAlpha);
             }
 
-            Tween tween = new Tweening.FloatTween(startAlpha, endAlpha, (float u) => {
+            var tween = new FloatTween(startAlpha, endAlpha, update => {
                 foreach (CanvasRenderer canvasRenderer in canvasRenderers) {
-                    canvasRenderer.SetAlpha(u);
+                    SetRendererAlpha(canvasRenderer, update);
                 }
             }, time, EaseType.Linear, 0f);
 
             tween.onCompleted = () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
+                ForgetTween(id, tween);
+                if (layoutGroup == null) {
+                    return;
                 }
-                if (layoutGroup == null) return;
+
                 layoutGroup.gameObject.SetActive(to > 0);
                 foreach (CanvasRenderer canvasRenderer in canvasRenderers) {
-                    canvasRenderer.SetAlpha(endAlpha);
+                    SetRendererAlpha(canvasRenderer, endAlpha);
                 }
             };
             tween.onKilled = () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
-                if (layoutGroup == null) return;
+                ForgetTween(id, tween);
             };
 
             layoutGroup.gameObject.SetActive(true);
-            activeScoreSaberRotations[id] = tween;
-            _timeTweeningManager.AddTween(tween, layoutGroup);
+            CreateTween(id, tween, layoutGroup);
         }
-    
 
         public void CreateImageViewFade(string id, float from, float to, float duration, ImageView imageView) {
+            if (imageView == null) {
+                return;
+            }
+
             var tween = new FloatTween(from, to, update => {
-                imageView.color = new Color(imageView.color.r, imageView.color.g, imageView.color.b, update);
+                SetImageAlpha(imageView, update);
             }, duration, EaseType.Linear);
             tween.onCompleted += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
-                imageView.color = new Color(imageView.color.r, imageView.color.g, imageView.color.b, to);
+                ForgetTween(id, tween);
+                SetImageAlpha(imageView, to);
             };
             tween.onKilled += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
-                imageView.color = new Color(imageView.color.r, imageView.color.g, imageView.color.b, to);
+                ForgetTween(id, tween);
+                SetImageAlpha(imageView, to);
             };
             CreateTween(id, tween, imageView.transform);
         }
 
         public void CreatePromptTween(string id, float from, float to, float duration, float delay, RectTransform promptRoot, float hiddenY, float visibleY, Action onCompleted = null) {
-            CanvasGroup canvasGroup = promptRoot.GetComponent<CanvasGroup>();
-            if (canvasGroup == null) {
-                canvasGroup = promptRoot.gameObject.AddComponent<CanvasGroup>();
+            if (promptRoot == null) {
+                return;
             }
 
+            CanvasGroup canvasGroup = GetOrAddCanvasGroup(promptRoot);
+            promptRoot.gameObject.SetActive(true);
+
             var tween = new FloatTween(from, to, update => {
-                canvasGroup.alpha = update;
-                promptRoot.gameObject.SetActive(true);
-                promptRoot.localPosition = new Vector3(promptRoot.localPosition.x, Mathf.Lerp(hiddenY, visibleY, update), promptRoot.localPosition.z);
+                SetPromptValue(promptRoot, canvasGroup, hiddenY, visibleY, update);
             }, duration, EaseType.OutCubic, delay);
 
             tween.onCompleted += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
-                canvasGroup.alpha = to;
-                promptRoot.localPosition = new Vector3(promptRoot.localPosition.x, Mathf.Lerp(hiddenY, visibleY, to), promptRoot.localPosition.z);
+                ForgetTween(id, tween);
+                SetPromptValue(promptRoot, canvasGroup, hiddenY, visibleY, to);
                 onCompleted?.Invoke();
             };
             tween.onKilled += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
+                ForgetTween(id, tween);
             };
             CreateTween(id, tween, promptRoot);
         }
 
         public void CreateFlowTween(string id, Vector3 from, Vector3 to, float duration, Transform transform) {
+            if (transform == null) {
+                return;
+            }
+
             var tween = new Vector3Tween(from, to, update => {
                 transform.localPosition = update;
             }, duration, EaseType.OutCubic);
             tween.onCompleted += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
+                ForgetTween(id, tween);
                 transform.localPosition = to;
             };
             tween.onKilled += () => {
-                if (activeScoreSaberRotations.ContainsKey(id)) {
-                    activeScoreSaberRotations.Remove(id);
-                }
+                ForgetTween(id, tween);
                 transform.localPosition = to;
             };
             CreateTween(id, tween, transform);
         }
 
         public void KillTween(string id) {
-            if (activeScoreSaberRotations.TryGetValue(id, out var tween)) {
-                try {
-                    tween.Kill();
-                    tween.onKilled?.Invoke();
-                } catch (Exception ex) {
-                    Plugin.Log.Warn($"Error killing tween {id}: {ex.Message}");
-                }
-                activeScoreSaberRotations.Remove(id);
+            if (!_activeTweens.TryGetValue(id, out Tween tween)) {
+                return;
+            }
+
+            _activeTweens.Remove(id);
+            try {
+                Action onKilled = tween.onKilled;
+                tween.onKilled = null;
+                tween.Kill();
+                onKilled?.Invoke();
+            } catch (Exception ex) {
+                Plugin.Log.Warn($"Error killing tween {id}: {ex.Message}");
             }
         }
 
         public void ClearAllTweens() {
-            foreach (var tween in activeScoreSaberRotations.Values) {
-                tween.Kill();
+            var keysToRemove = new List<string>(_activeTweens.Keys);
+            foreach (string key in keysToRemove) {
+                KillTween(key);
             }
-            activeScoreSaberRotations.Clear();
         }
 
         public void ClearTweensByPrefix(string prefix) {
-            var keysToRemove = activeScoreSaberRotations.Keys.Where(k => k.StartsWith(prefix)).ToList();
-            foreach (var key in keysToRemove) {
+            var keysToRemove = new List<string>();
+            foreach (string key in _activeTweens.Keys) {
+                if (key.StartsWith(prefix, StringComparison.Ordinal)) {
+                    keysToRemove.Add(key);
+                }
+            }
+
+            foreach (string key in keysToRemove) {
                 KillTween(key);
+            }
+        }
+
+        private void CreateTween(string id, Tween tween, object owner) {
+            KillTween(id);
+            _activeTweens[id] = tween;
+            _timeTweeningManager.AddTween(tween, owner ?? this);
+        }
+
+        private void ForgetTween(string id, Tween tween) {
+            if (_activeTweens.TryGetValue(id, out Tween activeTween) && activeTween == tween) {
+                _activeTweens.Remove(id);
+            }
+        }
+
+        private static CanvasGroup GetOrAddCanvasGroup(RectTransform transform) {
+            CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
+            if (canvasGroup == null) {
+                canvasGroup = transform.gameObject.AddComponent<CanvasGroup>();
+            }
+
+            return canvasGroup;
+        }
+
+        private static void SetPromptValue(RectTransform promptRoot, CanvasGroup canvasGroup, float hiddenY, float visibleY, float value) {
+            SetCanvasGroupAlpha(canvasGroup, value);
+            Vector3 position = promptRoot.localPosition;
+            position.y = Mathf.Lerp(hiddenY, visibleY, value);
+            promptRoot.localPosition = position;
+        }
+
+        private static void SetCanvasGroupAlpha(CanvasGroup canvasGroup, float alpha) {
+            if (canvasGroup != null) {
+                canvasGroup.alpha = alpha;
+            }
+        }
+
+        private static void SetImageAlpha(ImageView imageView, float alpha) {
+            if (imageView == null) {
+                return;
+            }
+
+            Color color = imageView.color;
+            color.a = alpha;
+            imageView.color = color;
+        }
+
+        private static void SetRendererAlpha(CanvasRenderer canvasRenderer, float alpha) {
+            if (canvasRenderer != null) {
+                canvasRenderer.SetAlpha(alpha);
             }
         }
     }

@@ -30,7 +30,7 @@ namespace ScoreSaber.Features.Replays.Playback {
                 .Select(ce => ce.Time)
                 .OrderBy(time => time)
                 .ToArray();
-            _comboLostClip = comboUIController._animator.runtimeAnimatorController.animationClips.FirstOrDefault(ac => ac.name == FullComboLostClipName);
+            _comboLostClip = comboUIController._animator.runtimeAnimatorController?.animationClips.FirstOrDefault(ac => ac.name == FullComboLostClipName);
         }
 
         public void TimeUpdate(float newTime) {
@@ -52,14 +52,18 @@ namespace ScoreSaber.Features.Replays.Playback {
             var animator = _comboUIController._animator;
             int comboLostId = _comboUIController._comboLostId;
             if ((combo == 0 && cutOrMissRecorded == 0) || !didLoseCombo) {
-                animator.enabled = true;
-                animator.Rebind();
+                if (_comboUIController._fullComboLost || !animator.enabled) {
+                    animator.enabled = true;
+                    animator.Rebind();
+                }
                 _comboUIController._fullComboLost = false;
             } else {
-                animator.ResetTrigger(comboLostId);
-                animator.enabled = false;
-                if (_comboLostClip != null) {
-                    _comboLostClip.SampleAnimation(animator.gameObject, Mathf.Max(0f, _comboLostClip.length - Mathf.Epsilon));
+                if (!_comboUIController._fullComboLost || animator.enabled) {
+                    animator.ResetTrigger(comboLostId);
+                    animator.enabled = false;
+                    if (_comboLostClip != null) {
+                        _comboLostClip.SampleAnimation(animator.gameObject, Mathf.Max(0f, _comboLostClip.length - Mathf.Epsilon));
+                    }
                 }
                 _comboUIController._fullComboLost = true;
             }

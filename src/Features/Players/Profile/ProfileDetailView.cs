@@ -1,7 +1,6 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using HMUI;
-using ScoreSaber.Core.Api;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Core;
 using ScoreSaber.Features.Leaderboards.UI;
@@ -117,7 +116,7 @@ namespace ScoreSaber.Features.Players.Profile {
                 return;
             }
 
-            Application.OpenURL(ScoreSaberUrls.Player(_profileInfo.Player.Id));
+            Application.OpenURL(ScoreSaberEndpoints.Player(_profileInfo.Player.Id));
         }
 
         [UIAction("#post-parse")]

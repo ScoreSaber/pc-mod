@@ -6,14 +6,17 @@
     </vertical>
   </horizontal>
   <vertical pref-width='70' pref-height='10' child-expand-width='false' child-expand-height='false'>
-    <horizontal id='content-root' pref-width='70' pref-height='10' child-expand-width='false'>
-      <vertical pref-width='60' pref-height='10' spacing='-1'>
+    <horizontal id='content-root' pref-width='70' pref-height='10' child-align='MiddleLeft' child-expand-width='false' child-expand-height='false'>
+      <vertical pref-width='56' pref-height='10' spacing='-1'>
         <clickable-text active='~is-clickable-top' text='~top-text' on-click='clicked-top' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~top-hover-hint' />
         <text active='~not-is-clickable-top' text='~top-text' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~top-hover-hint' />
         <clickable-text active='~is-clickable-bottom' text='~bottom-text' on-click='clicked-bottom' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~bottom-hover-hint' />
         <text active='~not-is-clickable-bottom' text='~bottom-text' font-size='3.5' overflow-mode='Ellipsis' italics='true' align='Left' hover-hint='~bottom-hover-hint' />
       </vertical>
-      <vertical preferred-width='6' anchor-pos-x='35'>
+      <vertical id='tournament-actions-root' pref-width='8' pref-height='10' spacing='-1' child-align='MiddleCenter' child-expand-width='false' child-expand-height='false'>
+        <clickable-image id='compete-button' src='ScoreSaber.Resources.light-sabers.png' on-click='clicked-compete' preserve-aspect='true' size-delta-x='6' size-delta-y='6' pref-width='6' pref-height='6' hover-hint='Enter tournament' />
+      </vertical>
+      <vertical pref-width='6' pref-height='10' child-align='MiddleCenter' child-expand-width='false' child-expand-height='false'>
         <clickable-image src='#SettingsIcon' on-click='clicked-settings' preserve-aspect='true' size-delta-x='6' size-delta-y='6' pref-width='6' pref-height='6' hover-hint='Opens the ScoreSaber settings menu' />
       </vertical>
     </horizontal>

@@ -1,0 +1,34 @@
+<bg horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+  <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2">
+    <horizontal bg="panel-top" horizontal-fit="PreferredSize" pref-width="82">
+      <text text="Tournament Browser" align="Center" font-size="6.5" overflow-mode="Ellipsis" />
+    </horizontal>
+
+    <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="82" spacing="2">
+      <text text="Tournaments you have access to" align="Center" font-size="3.2" pref-width="56" overflow-mode="Ellipsis" />
+      <button text="Refresh" on-click="refresh-tournaments" pref-width="22" pref-height="8" />
+    </horizontal>
+
+    <vertical pref-width="82" pref-height="52" pad-left="0" pad-right="2" pad-top="2" pad-bottom="2">
+      <custom-list active="~has-tournaments" id="tournament-list" list-width="80" visible-cells="4" cell-size="12" contents="tournaments" select-cell="tournament-selected" show-scrollbar="true">
+        <stack pref-width="80" pref-height="12" min-width="80">
+          <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="80" pref-height="12" min-width="80" spacing="0">
+            <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="80" pref-height="10.8" min-width="80" spacing="2">
+              <vertical pref-width="57" pref-height="10.2" min-width="57" child-align="MiddleLeft">
+                <text text="~row-title" align="Left" font-size="3.4" pref-width="57" min-width="57" pref-height="5.8" overflow-mode="Ellipsis" />
+              </vertical>
+              <vertical pref-width="21" pref-height="10" min-width="21" child-align="MiddleRight">
+                <text text="~row-detail" align="Right" font-size="2.8" pref-width="21" min-width="21" pref-height="4.5" overflow-mode="Ellipsis" />
+              </vertical>
+            </horizontal>
+            <image id="row-separator" src="#WhitePixel" image-color="#FFFFFF22" pref-width="80" min-width="80" pref-height="0.35" />
+          </vertical>
+        </stack>
+      </custom-list>
+
+      <vertical active="~tournaments-empty" pref-width="68" pref-height="38" child-align="MiddleCenter">
+        <text text="No active tournaments are linked to your account." align="Center" font-size="4" word-wrapping="true" />
+      </vertical>
+    </vertical>
+  </vertical>
+</bg>

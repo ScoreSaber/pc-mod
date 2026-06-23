@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using ScoreSaber.Core;
 using ScoreSaber.Core.Api.UploadTrust;
 using ScoreSaber.Core.Api.Generated;
 using ScoreSaber.Core.Api.Paging;
@@ -103,7 +104,7 @@ namespace ScoreSaber.Core.Api {
 
                 Plugin.Log.Debug("ScoreSaber API POST /api/v2/game/upload using Unity multipart");
                 string responseBody = await _http.PostAsync(
-                    "/v2/game/upload",
+                    "/api/v2/game/upload",
                     form,
                     headers);
 
@@ -187,6 +188,14 @@ namespace ScoreSaber.Core.Api {
             return GeneratedModelMapper.ToDomain(response);
         }
 
+        public Task<MapDetailsResponse> GetMapById(int mapId, CancellationToken cancellationToken) {
+            return CreateClient().GetMapByIdAsync(mapId, null, cancellationToken);
+        }
+
+        public Task<MapDetailsResponse> GetMapByHash(string hash, CancellationToken cancellationToken) {
+            return CreateClient().GetMapByHashAsync(hash, null, cancellationToken);
+        }
+
         public async Task<PagedResult<PlayerSummary>> GetPlayers(PlayerListQuery query, GameSession session, CancellationToken cancellationToken) {
             PlayerListResponse response = await CreateClient().GetPlayersAsync(
                 query.Page,
@@ -233,6 +242,22 @@ namespace ScoreSaber.Core.Api {
             }
         }
 
+        public Task<List<LivePlayerTournamentSummary>> ListLivePlayerTournaments(GameSession session, CancellationToken cancellationToken) {
+            return CreateClient().ListLivePlayerTournamentsAsync(GetSessionKey(session), GetSessionId(session), cancellationToken);
+        }
+
+        public Task<List<LivePlayerRoomSummary>> ListLivePlayerRooms(string tournamentId, GameSession session, CancellationToken cancellationToken) {
+            return CreateClient().ListLivePlayerRoomsAsync(tournamentId, GetSessionKey(session), GetSessionId(session), cancellationToken);
+        }
+
+        public Task<LivePlayerRoomDetails> GetLivePlayerRoom(string tournamentId, string matchId, GameSession session, CancellationToken cancellationToken) {
+            return CreateClient().GetLivePlayerRoomAsync(tournamentId, matchId, GetSessionKey(session), GetSessionId(session), cancellationToken);
+        }
+
+        public Task<LivePlayerRoomDetails> GetLivePlayerRoomByInviteCode(string inviteCode, GameSession session, CancellationToken cancellationToken) {
+            return CreateClient().GetLivePlayerRoomByInviteCodeAsync(inviteCode, GetSessionKey(session), GetSessionId(session), cancellationToken);
+        }
+
         private async Task<LeaderboardScoresSnapshot> GetLeaderboardScores(LeaderboardQuery query, GameSession session, CancellationToken cancellationToken) {
             LeaderboardScoresResponse response = await CreateClient().GetLeaderboardScoresAsync(
                 query.SongHash,
@@ -262,7 +287,7 @@ namespace ScoreSaber.Core.Api {
         }
 
         private ScoreSaberApiGeneratedClient CreateClient() {
-            return new ScoreSaberApiGeneratedClient(ScoreSaberUrls.WebsiteBaseUrl + "/", _httpClient);
+            return new ScoreSaberApiGeneratedClient(ScoreSaberEndpoints.ApiBaseUrl + "/", _httpClient);
         }
 
         private static ScoreUploadResult ErrorUploadResult(string message, string errorMessage) {

@@ -611,6 +611,170 @@ namespace ScoreSaber.Core.Api.Generated
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="realmId">Realm ID (defaults to the active realm)</param>
+        /// <returns>Map details with rank request</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<MapDetailsResponse> GetMapByIdAsync(int id, int? realmId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (id == null)
+                throw new System.ArgumentNullException("id");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/v2/maps/{id}"
+                    urlBuilder_.Append("api/v2/maps/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append('?');
+                    if (realmId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("realmId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(realmId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<MapDetailsResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="realmId">Realm ID (defaults to the active realm)</param>
+        /// <returns>Map details by hash</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<MapDetailsResponse> GetMapByHashAsync(string hash, int? realmId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (hash == null)
+                throw new System.ArgumentNullException("hash");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/v2/maps/hash/{hash}"
+                    urlBuilder_.Append("api/v2/maps/hash/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(hash, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append('?');
+                    if (realmId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("realmId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(realmId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<MapDetailsResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <param name="page">Page number</param>
         /// <param name="limit">Items per page (max: 100)</param>
         /// <param name="countries">Comma-separated country codes. Takes precedence over scope when both are provided</param>
@@ -1212,6 +1376,340 @@ namespace ScoreSaber.Core.Api.Generated
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="x_session_key">Game session key for live player API clients.</param>
+        /// <param name="x_session_id">Game session id for live player API clients.</param>
+        /// <returns>Active live tournaments available to the current player as a participant</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.List<LivePlayerTournamentSummary>> ListLivePlayerTournamentsAsync(string x_session_key = null, string x_session_id = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+
+                    if (x_session_key != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-key", ConvertToString(x_session_key, System.Globalization.CultureInfo.InvariantCulture));
+
+                    if (x_session_id != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-id", ConvertToString(x_session_id, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/v2/live/player/tournaments"
+                    urlBuilder_.Append("api/v2/live/player/tournaments");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.List<LivePlayerTournamentSummary>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="x_session_key">Game session key for live player API clients.</param>
+        /// <param name="x_session_id">Game session id for live player API clients.</param>
+        /// <returns>Live match rooms available to the current player as a participant</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.List<LivePlayerRoomSummary>> ListLivePlayerRoomsAsync(string tournamentId, string x_session_key = null, string x_session_id = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (tournamentId == null)
+                throw new System.ArgumentNullException("tournamentId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+
+                    if (x_session_key != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-key", ConvertToString(x_session_key, System.Globalization.CultureInfo.InvariantCulture));
+
+                    if (x_session_id != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-id", ConvertToString(x_session_id, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/v2/live/player/tournaments/{tournamentId}/rooms"
+                    urlBuilder_.Append("api/v2/live/player/tournaments/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(tournamentId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/rooms");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.List<LivePlayerRoomSummary>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="x_session_key">Game session key for live player API clients.</param>
+        /// <param name="x_session_id">Game session id for live player API clients.</param>
+        /// <returns>Live match room details available to the current player as a participant</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<LivePlayerRoomDetails> GetLivePlayerRoomAsync(string tournamentId, string matchId, string x_session_key = null, string x_session_id = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (tournamentId == null)
+                throw new System.ArgumentNullException("tournamentId");
+
+            if (matchId == null)
+                throw new System.ArgumentNullException("matchId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+
+                    if (x_session_key != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-key", ConvertToString(x_session_key, System.Globalization.CultureInfo.InvariantCulture));
+
+                    if (x_session_id != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-id", ConvertToString(x_session_id, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/v2/live/player/tournaments/{tournamentId}/rooms/{matchId}"
+                    urlBuilder_.Append("api/v2/live/player/tournaments/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(tournamentId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/rooms/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(matchId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<LivePlayerRoomDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="x_session_key">Game session key for live player API clients.</param>
+        /// <param name="x_session_id">Game session id for live player API clients.</param>
+        /// <returns>Live match room details for a participant invite code</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<LivePlayerRoomDetails> GetLivePlayerRoomByInviteCodeAsync(string inviteCode, string x_session_key = null, string x_session_id = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            if (inviteCode == null)
+                throw new System.ArgumentNullException("inviteCode");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+
+                    if (x_session_key != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-key", ConvertToString(x_session_key, System.Globalization.CultureInfo.InvariantCulture));
+
+                    if (x_session_id != null)
+                        request_.Headers.TryAddWithoutValidation("x-session-id", ConvertToString(x_session_id, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/v2/live/player/rooms/by-invite-code/{inviteCode}"
+                    urlBuilder_.Append("api/v2/live/player/rooms/by-invite-code/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(inviteCode, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<LivePlayerRoomDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Replay file</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<FileResponse> DownloadReplayAsync(int id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
@@ -1425,10 +1923,10 @@ namespace ScoreSaber.Core.Api.Generated
     public partial class GameAuthenticateRequest
     {
         /// <summary>
-        /// Auth type (0=Steam, 1=Oculus, 2=Quest key, 3=Dev)
+        /// Auth type (0=Steam, 1=Oculus, 2=Quest key, 3=Dev, 4=Device code)
         /// </summary>
         [Newtonsoft.Json.JsonProperty("at", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int At { get; set; }
+        public double At { get; set; }
 
         /// <summary>
         /// Player platform ID
@@ -1586,6 +2084,26 @@ namespace ScoreSaber.Core.Api.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class GameOfficialBuildRequestSupportedVersionsItem
+    {
+        [Newtonsoft.Json.JsonProperty("gameVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string GameVersion { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("uploadVersionHash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string UploadVersionHash { get; set; }
+
+        private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
+
+        [Newtonsoft.Json.JsonExtensionData]
+        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
+        {
+            get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
+            set { _additionalProperties = value; }
+        }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class GameOfficialBuildRequest
     {
         [Newtonsoft.Json.JsonProperty("buildId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1599,6 +2117,9 @@ namespace ScoreSaber.Core.Api.Generated
 
         [Newtonsoft.Json.JsonProperty("uploadVersionHash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string UploadVersionHash { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("supportedVersions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<GameOfficialBuildRequestSupportedVersionsItem> SupportedVersions { get; set; }
 
         [Newtonsoft.Json.JsonProperty("protocolVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double ProtocolVersion { get; set; }
@@ -1801,6 +2322,9 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Avatar { get; set; }
 
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
+
         [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double Permissions { get; set; }
 
@@ -1809,7 +2333,7 @@ namespace ScoreSaber.Core.Api.Generated
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class LeaderboardScoresResponseDataItemDevice
     {
-        [Newtonsoft.Json.JsonProperty("HMD", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("hmd", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string HMD { get; set; }
 
         [Newtonsoft.Json.JsonProperty("controllerLeft", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1838,7 +2362,7 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("accuracy", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double Accuracy { get; set; }
 
-        [Newtonsoft.Json.JsonProperty("PP", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("pp", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double PP { get; set; }
 
         [Newtonsoft.Json.JsonProperty("weight", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1865,7 +2389,7 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("personalBest", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public bool PersonalBest { get; set; }
 
-        [Newtonsoft.Json.JsonProperty("LegacyHMDId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("legacyHmdId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? LegacyHMDId { get; set; }
 
         [Newtonsoft.Json.JsonProperty("version", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1927,6 +2451,9 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Avatar { get; set; }
 
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
+
         [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double Permissions { get; set; }
 
@@ -1935,7 +2462,7 @@ namespace ScoreSaber.Core.Api.Generated
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class LeaderboardScoresResponsePlayerScoreDevice
     {
-        [Newtonsoft.Json.JsonProperty("HMD", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("hmd", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string HMD { get; set; }
 
         [Newtonsoft.Json.JsonProperty("controllerLeft", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1964,7 +2491,7 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("accuracy", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double Accuracy { get; set; }
 
-        [Newtonsoft.Json.JsonProperty("PP", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("pp", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double PP { get; set; }
 
         [Newtonsoft.Json.JsonProperty("weight", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1991,7 +2518,7 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("personalBest", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public bool PersonalBest { get; set; }
 
-        [Newtonsoft.Json.JsonProperty("LegacyHMDId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("legacyHmdId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? LegacyHMDId { get; set; }
 
         [Newtonsoft.Json.JsonProperty("version", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -2030,9 +2557,519 @@ namespace ScoreSaber.Core.Api.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseLeaderboardsItemRealm
+    {
+        [Newtonsoft.Json.JsonProperty("realmId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double RealmId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("realmName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RealmName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("leaderboardStatus", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public MapDetailsResponseLeaderboardsItemRealmLeaderboardStatus LeaderboardStatus { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("positiveModifiers", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool PositiveModifiers { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("stars", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Stars { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("rankedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RankedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("qualifiedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string QualifiedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("lovedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LovedAt { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseLeaderboardsItem
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("difficulty", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Difficulty { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("gameMode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string GameMode { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("rawDifficulty", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RawDifficulty { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("maxScore", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double MaxScore { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("totalScores", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double TotalScores { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("dailyScores", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double DailyScores { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("realm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseLeaderboardsItemRealm Realm { get; set; } = new MapDetailsResponseLeaderboardsItemRealm();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestReplacedByMap
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("hash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Hash { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bsid", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Bsid { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songSubName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongSubName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("levelAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LevelAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bpm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Bpm { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("coverUrl", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CoverUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("verified", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Verified { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestReplacedBy
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("map", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestReplacedByMap Map { get; set; } = new MapDetailsResponseRankRequestReplacedByMap();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestReplacedFromMap
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("hash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Hash { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bsid", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Bsid { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songSubName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongSubName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("levelAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LevelAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bpm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Bpm { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("coverUrl", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CoverUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("verified", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Verified { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestReplacedFrom
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("map", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestReplacedFromMap Map { get; set; } = new MapDetailsResponseRankRequestReplacedFromMap();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemLeaderboardMap
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("hash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Hash { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bsid", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Bsid { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songSubName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongSubName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("levelAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LevelAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bpm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Bpm { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("coverUrl", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CoverUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("verified", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Verified { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemLeaderboardDifficulty
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("difficulty", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Difficulty { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("rawDifficulty", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RawDifficulty { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("gameMode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string GameMode { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemLeaderboardRealm
+    {
+        [Newtonsoft.Json.JsonProperty("realmId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double RealmId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("realmName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RealmName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("leaderboardStatus", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public MapDetailsResponseRankRequestDifficultiesItemLeaderboardRealmLeaderboardStatus LeaderboardStatus { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("positiveModifiers", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool PositiveModifiers { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("stars", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Stars { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("rankedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RankedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("qualifiedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string QualifiedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("lovedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LovedAt { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemLeaderboard
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("map", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemLeaderboardMap Map { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemLeaderboardMap();
+
+        [Newtonsoft.Json.JsonProperty("difficulty", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemLeaderboardDifficulty Difficulty { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemLeaderboardDifficulty();
+
+        [Newtonsoft.Json.JsonProperty("maxScore", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double MaxScore { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("totalScores", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double TotalScores { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("dailyScores", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double DailyScores { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("realm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemLeaderboardRealm Realm { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemLeaderboardRealm();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemRtVotes
+    {
+        [Newtonsoft.Json.JsonProperty("upvotes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Upvotes { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("downvotes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Downvotes { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("myVote", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public MapDetailsResponseRankRequestDifficultiesItemRtVotesMyVote? MyVote { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemQatVotes
+    {
+        [Newtonsoft.Json.JsonProperty("upvotes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Upvotes { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("downvotes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Downvotes { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("neutrals", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Neutrals { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("myVote", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public MapDetailsResponseRankRequestDifficultiesItemQatVotesMyVote? MyVote { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemRtCommentsItemPlayer
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("playerNameInGame", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PlayerNameInGame { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("country", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Country { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("role", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Role { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Avatar { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Permissions { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemRtCommentsItem
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("player", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemRtCommentsItemPlayer Player { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemRtCommentsItemPlayer();
+
+        [Newtonsoft.Json.JsonProperty("comment", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Comment { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("edited", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Edited { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemQatCommentsItemPlayer
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("playerNameInGame", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PlayerNameInGame { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("country", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Country { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("role", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Role { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Avatar { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Permissions { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItemQatCommentsItem
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("player", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemQatCommentsItemPlayer Player { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemQatCommentsItemPlayer();
+
+        [Newtonsoft.Json.JsonProperty("comment", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Comment { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("edited", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Edited { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequestDifficultiesItem
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Description { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("approvalStatus", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public MapDetailsResponseRankRequestDifficultiesItemApprovalStatus ApprovalStatus { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("leaderboard", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemLeaderboard Leaderboard { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemLeaderboard();
+
+        [Newtonsoft.Json.JsonProperty("rtVotes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemRtVotes RtVotes { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemRtVotes();
+
+        [Newtonsoft.Json.JsonProperty("qatVotes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestDifficultiesItemQatVotes QatVotes { get; set; } = new MapDetailsResponseRankRequestDifficultiesItemQatVotes();
+
+        [Newtonsoft.Json.JsonProperty("rtComments", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<MapDetailsResponseRankRequestDifficultiesItemRtCommentsItem> RtComments { get; set; } = new System.Collections.Generic.List<MapDetailsResponseRankRequestDifficultiesItemRtCommentsItem>();
+
+        [Newtonsoft.Json.JsonProperty("qatComments", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<MapDetailsResponseRankRequestDifficultiesItemQatCommentsItem> QatComments { get; set; } = new System.Collections.Generic.List<MapDetailsResponseRankRequestDifficultiesItemQatCommentsItem>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponseRankRequest
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Description { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("requestType", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public MapDetailsResponseRankRequestRequestType RequestType { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("approvalStatus", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public MapDetailsResponseRankRequestApprovalStatus ApprovalStatus { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("replacedBy", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestReplacedBy ReplacedBy { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("replacedFrom", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MapDetailsResponseRankRequestReplacedFrom ReplacedFrom { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("weight", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Weight { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("difficulties", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<MapDetailsResponseRankRequestDifficultiesItem> Difficulties { get; set; } = new System.Collections.Generic.List<MapDetailsResponseRankRequestDifficultiesItem>();
+
+        [Newtonsoft.Json.JsonProperty("commentsObfuscated", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool CommentsObfuscated { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MapDetailsResponse
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("hash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Hash { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bsid", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Bsid { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songSubName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongSubName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("levelAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LevelAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bpm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Bpm { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("coverUrl", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CoverUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("verified", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Verified { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("totalScores", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double TotalScores { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("dailyScores", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double DailyScores { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("leaderboards", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<MapDetailsResponseLeaderboardsItem> Leaderboards { get; set; } = new System.Collections.Generic.List<MapDetailsResponseLeaderboardsItem>();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PlayerListResponseDataItemStatsDevice
     {
-        [Newtonsoft.Json.JsonProperty("HMD", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("hmd", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string HMD { get; set; }
 
         [Newtonsoft.Json.JsonProperty("controllerLeft", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -2114,6 +3151,9 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Avatar { get; set; }
 
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
+
         [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double Permissions { get; set; }
 
@@ -2162,7 +3202,7 @@ namespace ScoreSaber.Core.Api.Generated
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PlayerProfileResponseStatsDevice
     {
-        [Newtonsoft.Json.JsonProperty("HMD", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("hmd", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string HMD { get; set; }
 
         [Newtonsoft.Json.JsonProperty("controllerLeft", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -2258,6 +3298,9 @@ namespace ScoreSaber.Core.Api.Generated
         [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Avatar { get; set; }
 
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
+
         [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double Permissions { get; set; }
 
@@ -2275,6 +3318,9 @@ namespace ScoreSaber.Core.Api.Generated
 
         [Newtonsoft.Json.JsonProperty("bio", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Bio { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("vanity", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Vanity { get; set; }
 
         [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string CreatedAt { get; set; }
@@ -2296,7 +3342,7 @@ namespace ScoreSaber.Core.Api.Generated
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PlayerBasicProfileResponseStatsDevice
     {
-        [Newtonsoft.Json.JsonProperty("HMD", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonProperty("hmd", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string HMD { get; set; }
 
         [Newtonsoft.Json.JsonProperty("controllerLeft", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -2377,6 +3423,9 @@ namespace ScoreSaber.Core.Api.Generated
 
         [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Avatar { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
 
         [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double Permissions { get; set; }
@@ -2547,6 +3596,308 @@ namespace ScoreSaber.Core.Api.Generated
 
         [Newtonsoft.Json.JsonProperty("scoreCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double ScoreCount { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LivePlayerTournamentSummary
+    {
+        [Newtonsoft.Json.JsonProperty("tournamentId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string TournamentId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("status", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerTournamentSummaryStatus Status { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore, ItemConverterType = typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public System.Collections.Generic.List<Permissions> Permissions { get; set; } = new System.Collections.Generic.List<Permissions>();
+
+        [Newtonsoft.Json.JsonProperty("roomSummary", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RoomSummary { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string UpdatedAt { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LivePlayerRoomSummarySelectedSong
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("tournamentId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string TournamentId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("mapId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double MapId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("beatSaverKey", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string BeatSaverKey { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("mapHash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string MapHash { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("difficulty", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomSummarySelectedSongDifficulty Difficulty { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("characteristic", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomSummarySelectedSongCharacteristic Characteristic { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("leaderboardId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? LeaderboardId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songSubName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongSubName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("levelAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LevelAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bpm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Bpm { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("nps", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Nps { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("durationSeconds", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double DurationSeconds { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("maxScore", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double MaxScore { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("downloadUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string DownloadUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("coverUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CoverUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string UpdatedAt { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LivePlayerRoomSummary
+    {
+        [Newtonsoft.Json.JsonProperty("tournamentId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string TournamentId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("matchId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string MatchId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("inviteCode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string InviteCode { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomSummaryState State { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("rosterMode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomSummaryRosterMode RosterMode { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("playerCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double PlayerCount { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("selectedSong", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public LivePlayerRoomSummarySelectedSong SelectedSong { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string UpdatedAt { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LivePlayerRoomDetailsSelectedSong
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("tournamentId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string TournamentId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("mapId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double MapId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("beatSaverKey", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string BeatSaverKey { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("mapHash", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string MapHash { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("difficulty", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomDetailsSelectedSongDifficulty Difficulty { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("characteristic", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomDetailsSelectedSongCharacteristic Characteristic { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("leaderboardId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? LeaderboardId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songSubName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongSubName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("songAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SongAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("levelAuthorName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LevelAuthorName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("bpm", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Bpm { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("nps", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Nps { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("durationSeconds", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double DurationSeconds { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("maxScore", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double MaxScore { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("downloadUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string DownloadUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("coverUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CoverUrl { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string UpdatedAt { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LivePlayerRoomDetailsMembersItemPlayer
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Id { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("playerNameInGame", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PlayerNameInGame { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("country", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Country { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("role", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Role { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("avatar", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Avatar { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("avatarVersion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double AvatarVersion { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("permissions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double Permissions { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LivePlayerRoomDetailsMembersItem
+    {
+        [Newtonsoft.Json.JsonProperty("playerId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PlayerId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("player", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public LivePlayerRoomDetailsMembersItemPlayer Player { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("teamId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double? TeamId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("teamName", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string TeamName { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("connected", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Connected { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("isBot", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool IsBot { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("role", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomDetailsMembersItemRole Role { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("playState", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomDetailsMembersItemPlayState PlayState { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("downloadState", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomDetailsMembersItemDownloadState DownloadState { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("joinedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string JoinedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("lastSeenAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LastSeenAt { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LivePlayerRoomDetails
+    {
+        [Newtonsoft.Json.JsonProperty("tournamentId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string TournamentId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("matchId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string MatchId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("inviteCode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string InviteCode { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomDetailsState State { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("rosterMode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public LivePlayerRoomDetailsRosterMode RosterMode { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("playerCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public double PlayerCount { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("selectedSong", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public LivePlayerRoomDetailsSelectedSong SelectedSong { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("members", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<LivePlayerRoomDetailsMembersItem> Members { get; set; } = new System.Collections.Generic.List<LivePlayerRoomDetailsMembersItem>();
+
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CreatedAt { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string UpdatedAt { get; set; }
 
     }
 
@@ -2781,6 +4132,363 @@ namespace ScoreSaber.Core.Api.Generated
 
         [System.Runtime.Serialization.EnumMember(Value = @"RESTART")]
         RESTART = 3,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MapDetailsResponseLeaderboardsItemRealmLeaderboardStatus
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UNRANKED")]
+        UNRANKED = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RANKED")]
+        RANKED = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"QUALIFIED")]
+        QUALIFIED = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LOVED")]
+        LOVED = 3,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MapDetailsResponseRankRequestDifficultiesItemLeaderboardRealmLeaderboardStatus
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UNRANKED")]
+        UNRANKED = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RANKED")]
+        RANKED = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"QUALIFIED")]
+        QUALIFIED = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LOVED")]
+        LOVED = 3,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MapDetailsResponseRankRequestDifficultiesItemRtVotesMyVote
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UPVOTE")]
+        UPVOTE = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DOWNVOTE")]
+        DOWNVOTE = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MapDetailsResponseRankRequestDifficultiesItemQatVotesMyVote
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UPVOTE")]
+        UPVOTE = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DOWNVOTE")]
+        DOWNVOTE = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"NEUTRAL")]
+        NEUTRAL = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MapDetailsResponseRankRequestDifficultiesItemApprovalStatus
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PENDING")]
+        PENDING = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"QUALIFIED")]
+        QUALIFIED = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"APPROVED")]
+        APPROVED = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DENIED")]
+        DENIED = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"REPLACED")]
+        REPLACED = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MapDetailsResponseRankRequestRequestType
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RANK")]
+        RANK = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UNRANK")]
+        UNRANK = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MapDetailsResponseRankRequestApprovalStatus
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PENDING")]
+        PENDING = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"QUALIFIED")]
+        QUALIFIED = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"APPROVED")]
+        APPROVED = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DENIED")]
+        DENIED = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"REPLACED")]
+        REPLACED = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerTournamentSummaryStatus
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DRAFT")]
+        DRAFT = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ACTIVE")]
+        ACTIVE = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ARCHIVED")]
+        ARCHIVED = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum Permissions
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"VIEW_TOURNAMENT")]
+        VIEW_TOURNAMENT = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"EDIT_TOURNAMENT_SETTINGS")]
+        EDIT_TOURNAMENT_SETTINGS = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"EDIT_TOURNAMENT_ROLES")]
+        EDIT_TOURNAMENT_ROLES = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ASSIGN_TOURNAMENT_ROLES")]
+        ASSIGN_TOURNAMENT_ROLES = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SYNC_TOURNAMENT_PLAYERS")]
+        SYNC_TOURNAMENT_PLAYERS = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"MANAGE_MATCH_ROOMS")]
+        MANAGE_MATCH_ROOMS = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"COORDINATE_MATCHES")]
+        COORDINATE_MATCHES = 6,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CAST_MATCHES")]
+        CAST_MATCHES = 7,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomSummarySelectedSongDifficulty
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Easy")]
+        Easy = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Normal")]
+        Normal = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Hard")]
+        Hard = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Expert")]
+        Expert = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ExpertPlus")]
+        ExpertPlus = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomSummarySelectedSongCharacteristic
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Standard")]
+        Standard = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Lawless")]
+        Lawless = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OneSaber")]
+        OneSaber = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"NoArrows")]
+        NoArrows = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"NinetyDegree")]
+        NinetyDegree = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ThreeSixtyDegree")]
+        ThreeSixtyDegree = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Lightshow")]
+        Lightshow = 6,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomSummaryState
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OPEN")]
+        OPEN = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CLOSED")]
+        CLOSED = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ARCHIVED")]
+        ARCHIVED = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomSummaryRosterMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TEAM")]
+        TEAM = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"FLAT")]
+        FLAT = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomDetailsSelectedSongDifficulty
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Easy")]
+        Easy = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Normal")]
+        Normal = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Hard")]
+        Hard = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Expert")]
+        Expert = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ExpertPlus")]
+        ExpertPlus = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomDetailsSelectedSongCharacteristic
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Standard")]
+        Standard = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Lawless")]
+        Lawless = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OneSaber")]
+        OneSaber = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"NoArrows")]
+        NoArrows = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"NinetyDegree")]
+        NinetyDegree = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ThreeSixtyDegree")]
+        ThreeSixtyDegree = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Lightshow")]
+        Lightshow = 6,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomDetailsMembersItemRole
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PLAYER")]
+        PLAYER = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"VIEWER")]
+        VIEWER = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomDetailsMembersItemPlayState
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"IN_MENU")]
+        IN_MENU = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PAUSED")]
+        PAUSED = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"IN_GAME")]
+        IN_GAME = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomDetailsMembersItemDownloadState
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"NONE")]
+        NONE = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DOWNLOADING")]
+        DOWNLOADING = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DOWNLOADED")]
+        DOWNLOADED = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ERROR")]
+        ERROR = 3,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomDetailsState
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OPEN")]
+        OPEN = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CLOSED")]
+        CLOSED = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ARCHIVED")]
+        ARCHIVED = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum LivePlayerRoomDetailsRosterMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TEAM")]
+        TEAM = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"FLAT")]
+        FLAT = 1,
 
     }
 

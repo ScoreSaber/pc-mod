@@ -20,9 +20,12 @@ namespace ScoreSaber.Features.Replays.Playback {
         private PlayerDataModel _playerDataModel;
         private readonly List<EnergyEvent> _energyEvents;
         private readonly Dictionary<RectTransform, Vector3> _initialEnergyIconPositions = new Dictionary<RectTransform, Vector3>();
-        private bool _energyBarIconsResolved;
+        private bool _energyUIPanelObjectsResolved;
+        private Transform _laserCloud;
         private Transform _energyIconFull;
         private Transform _energyIconEmpty;
+        private ImageView _energyIconFullImage;
+        private ImageView _energyIconEmptyImage;
 
         public EnergyPlayer(ReplayFile file, GameEnergyCounter gameEnergyCounter, PlayerDataModel playerDataModel, DiContainer container) {
 
@@ -96,8 +99,10 @@ namespace ScoreSaber.Features.Replays.Playback {
 
         private void UpdateEnergyIcons(float energy) {
 
+            ResolveEnergyUIPanelObjects();
+
             if (energy >= Mathf.Epsilon) {
-                _gameEnergyUIPanel.transform.Find(LaserCloudName)?.gameObject.SetActive(false);
+                _laserCloud?.gameObject.SetActive(false);
             }
             if (_gameEnergyCounter.energyType == GameplayModifiers.EnergyType.Battery) {
                 UpdateBatteryEnergyIcons();
@@ -159,28 +164,47 @@ namespace ScoreSaber.Features.Replays.Playback {
             if (energy <= Mathf.Epsilon)
                 return;
 
-            if (!_energyBarIconsResolved) {
-                foreach (Transform transform in _gameEnergyUIPanel.GetComponentsInChildren<Transform>(true)) {
-                    if (transform.name == EnergyIconFullName)
-                        _energyIconFull = transform;
-                    else if (transform.name == EnergyIconEmptyName)
-                        _energyIconEmpty = transform;
-                }
-
-                _energyBarIconsResolved = true;
-            }
+            ResolveEnergyUIPanelObjects();
 
             if (_energyIconFull != null) {
                 _energyIconFull.localPosition = new Vector3(EnergyIconPositionX, 0f, _energyIconFull.localPosition.z);
-                ImageView image = _energyIconFull.GetComponent<ImageView>();
-                image.color = new Color(image.color.r, image.color.g, image.color.b, EnergyIconTransparentAlpha);
+                SetEnergyIconAlpha(_energyIconFullImage);
             }
 
             if (_energyIconEmpty != null) {
                 _energyIconEmpty.localPosition = new Vector3(-EnergyIconPositionX, 0f, _energyIconEmpty.localPosition.z);
-                ImageView image = _energyIconEmpty.GetComponent<ImageView>();
-                image.color = new Color(image.color.r, image.color.g, image.color.b, EnergyIconTransparentAlpha);
+                SetEnergyIconAlpha(_energyIconEmptyImage);
             }
+        }
+
+        private void ResolveEnergyUIPanelObjects() {
+
+            if (_energyUIPanelObjectsResolved || _gameEnergyUIPanel == null)
+                return;
+
+            foreach (Transform transform in _gameEnergyUIPanel.GetComponentsInChildren<Transform>(true)) {
+                if (transform.name == LaserCloudName) {
+                    _laserCloud = transform;
+                } else if (transform.name == EnergyIconFullName) {
+                    _energyIconFull = transform;
+                    _energyIconFullImage = transform.GetComponent<ImageView>();
+                } else if (transform.name == EnergyIconEmptyName) {
+                    _energyIconEmpty = transform;
+                    _energyIconEmptyImage = transform.GetComponent<ImageView>();
+                }
+            }
+
+            _energyUIPanelObjectsResolved = true;
+        }
+
+        private static void SetEnergyIconAlpha(ImageView image) {
+
+            if (image == null)
+                return;
+
+            Color color = image.color;
+            color.a = EnergyIconTransparentAlpha;
+            image.color = color;
         }
     }
 }

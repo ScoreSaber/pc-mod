@@ -55,6 +55,10 @@ namespace ScoreSaber.Features.Replays.Format {
         internal Hive.Versioning.Version GameVersion;
         internal Version PluginVersion;
         internal string Platform; // Quest or PC
+        internal float SongSpeed;
+        internal float JumpDistance;
+        internal Color? LeftSaberColor;
+        internal Color? RightSaberColor;
     };
 
     internal struct ScoreEvent {
