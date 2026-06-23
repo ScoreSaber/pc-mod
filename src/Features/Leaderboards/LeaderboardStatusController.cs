@@ -10,7 +10,7 @@ using System;
 using Zenject;
 
 namespace ScoreSaber.Features.Leaderboards {
-    internal class LeaderboardStatusController : IInitializable, IDisposable, INotifyScoreUpload {
+    internal class LeaderboardStatusController : IInitializable, IDisposable {
         private readonly PanelView _panelView;
         private readonly IScoreSubmissionStatusSource _submissionStatusSource;
         private readonly GameSessionService _gameSessionService;
@@ -41,8 +41,6 @@ namespace ScoreSaber.Features.Leaderboards {
                 ApplyLoginStatus(_gameSessionService.Status, _gameSessionService.StatusText, true);
             }
         }
-
-        public void OnScoreUploaded() => _leaderboardSession.RefreshFromFirstPage();
 
         private void PanelViewReady() => ApplyLoginStatus(_gameSessionService.Status, _gameSessionService.StatusText, false);
 
