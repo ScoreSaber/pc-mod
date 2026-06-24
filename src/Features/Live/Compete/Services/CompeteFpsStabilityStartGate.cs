@@ -18,6 +18,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
         private bool _waitingForStableFps;
         private bool _scoreControllerWasEnabled;
         private bool _scoreControllerStateCaptured;
+        private int _initialPauseFrame;
         private float _stableSeconds;
         private float _waitSeconds;
         private float _fpsThreshold;
@@ -46,11 +47,25 @@ namespace ScoreSaber.Features.Live.Compete.Services {
 
         public void Tick() {
             if (_initialPausePending) {
+                if (Time.frameCount <= _initialPauseFrame) {
+                    return;
+                }
+
                 StartStableFpsWait();
                 return;
             }
 
             if (!_waitingForStableFps) {
+                return;
+            }
+
+            if (!_gameplayState.IsLiveGameplayActive) {
+                CancelStableFpsWait("live gameplay ended before FPS stabilized.");
+                return;
+            }
+
+            if (!IsAudioPaused()) {
+                CancelStableFpsWait("playback state changed before FPS stabilized; leaving song alone.");
                 return;
             }
 
@@ -80,16 +95,17 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             }
 
             _waitingForInitialStart = false;
+            _initialPauseFrame = Time.frameCount;
             _initialPausePending = true;
         }
 
         private void StartStableFpsWait() {
             _initialPausePending = false;
-            if (!_gameplayState.IsLiveGameplayActive) {
+            if (!_gameplayState.IsLiveGameplayActive || !IsAudioPlaying()) {
+                Plugin.Log.Info("Ludus: Skipping FPS start gate because playback is no longer starting.");
                 return;
             }
 
-            _waitingForStableFps = true;
             _stableSeconds = 0f;
             _waitSeconds = 0f;
             _scoreControllerWasEnabled = _scoreController?.enabled ?? false;
@@ -100,6 +116,13 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             }
 
             _songController.PauseSong();
+            if (!IsAudioPaused()) {
+                RestoreScoreController();
+                Plugin.Log.Warn("Ludus: Skipping FPS start gate because the start pause did not take.");
+                return;
+            }
+
+            _waitingForStableFps = true;
             Plugin.Log.Info($"Ludus: Waiting for stable FPS before live map start (target {_fpsThreshold:0}+ FPS).");
         }
 
@@ -110,8 +133,23 @@ namespace ScoreSaber.Features.Live.Compete.Services {
 
             _waitingForStableFps = false;
             RestoreScoreController();
-            _songController.ResumeSong();
+            if (IsAudioPaused()) {
+                _songController.ResumeSong();
+            } else {
+                Plugin.Log.Warn("Ludus: FPS start gate ended while playback was not paused; leaving song alone.");
+            }
+
             Plugin.Log.Info($"Ludus: {reason}");
+        }
+
+        private void CancelStableFpsWait(string reason) {
+            if (!_waitingForStableFps) {
+                return;
+            }
+
+            _waitingForStableFps = false;
+            RestoreScoreController();
+            Plugin.Log.Warn($"Ludus: Canceling FPS start gate: {reason}");
         }
 
         private void RestoreScoreController() {
@@ -135,6 +173,14 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             return _audioTimeSyncController.state == IAudioTimeSource.State.Playing;
 #else
             return _audioTimeSyncController.state == AudioTimeSyncController.State.Playing;
+#endif
+        }
+
+        private bool IsAudioPaused() {
+#if BEAT_SABER_1_42_0
+            return _audioTimeSyncController.state == IAudioTimeSource.State.Paused;
+#else
+            return _audioTimeSyncController.state == AudioTimeSyncController.State.Paused;
 #endif
         }
     }
