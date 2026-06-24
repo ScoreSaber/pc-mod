@@ -49,6 +49,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         private bool _roomTransitioning;
         private bool _loadingTransitioning;
         private bool _tournamentBrowserEventsSubscribed;
+        private string _roomCloseStatus;
         private CancellationTokenSource _loadingCancellation;
 
         [Inject]
@@ -239,7 +240,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             }
         }
 
-        private async Task LoadRooms(bool present, string refreshingStatus = null) {
+        private async Task LoadRooms(bool present, string refreshingStatus = null, string finishedStatus = null) {
             if (_selectedTournament == null) {
                 return;
             }
@@ -263,7 +264,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                 IReadOnlyList<CompeteRoom> rooms = await _directoryService.GetJoinableRooms(_selectedTournament.Id, CancellationToken.None);
                 await OnMainThread(() => {
                     _roomListViewController.SetRooms(rooms);
-                    _roomListViewController.SetStatus(string.Empty);
+                    _roomListViewController.SetStatus(finishedStatus ?? string.Empty);
                 });
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Failed to refresh live rooms: {ex.Message}");
@@ -425,9 +426,12 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         }
 
         private void RoomWasClosed() {
+            string roomCloseStatus = _roomCloseStatus;
+            _roomCloseStatus = null;
+
             if (topViewController == _roomViewController) {
                 LeaveRoomView(false);
-                RefreshRoomsAfterClose();
+                RefreshRoomsAfterClose(roomCloseStatus);
                 return;
             }
 
@@ -438,9 +442,9 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                 _roomTransitioning = false;
                 this.DismissView(_loadingViewController).RunTask();
                 if (_selectedTournament == null) {
-                    _codeEntryViewController.SetStatus("That room could not be joined.");
+                    _codeEntryViewController.SetStatus(roomCloseStatus ?? "That room could not be joined.");
                 } else {
-                    RefreshRoomsAfterClose();
+                    RefreshRoomsAfterClose(roomCloseStatus);
                 }
             }
         }
@@ -450,8 +454,13 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             LoadRooms(false, "That room could not be joined. Refreshing rooms...").RunTask();
         }
 
-        private void RefreshRoomsAfterClose() {
-            LoadRooms(false, "Room closed. Refreshing rooms...").RunTask();
+        private void RefreshRoomsAfterClose(string status = null) {
+            if (_selectedTournament == null) {
+                _codeEntryViewController.SetStatus(status ?? "Room closed.");
+                return;
+            }
+
+            LoadRooms(false, status ?? "Room closed. Refreshing rooms...", status).RunTask();
         }
 
         private void LeaveRoomView(bool returnToPublicPresence) {
@@ -539,7 +548,20 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         }
 
         private void LudusStatusChanged(string status) {
+            if (IsTournamentJoinBlockedStatus(status)) {
+                _roomCloseStatus = status;
+            }
+
             Plugin.Log.Debug($"Ludus: {status}");
+        }
+
+        private static bool IsTournamentJoinBlockedStatus(string status) {
+            if (string.IsNullOrEmpty(status)) {
+                return false;
+            }
+
+            return status.IndexOf("denied mods", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                status.IndexOf("requires ScoreSaber to report installed mods", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void ClearPrompts() {
