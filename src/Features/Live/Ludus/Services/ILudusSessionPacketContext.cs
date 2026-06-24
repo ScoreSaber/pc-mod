@@ -18,6 +18,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         void CloseTournamentRoom();
         void Disconnect();
         void EnterTournamentRoom(CompeteRoom room);
+        void RejectPendingTournamentJoin(string message);
         bool RequestAuthenticationRefresh();
         void ScheduleNextHeartbeat();
         void ScheduleReconnect(string reason, float? delayOverrideSeconds);

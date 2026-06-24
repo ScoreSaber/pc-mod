@@ -33,6 +33,7 @@ namespace ScoreSaber.Features.Live.Ludus.Packets.Handlers {
             }
 
             if (string.Equals(envelope.ErrorCode, "denied_mods", StringComparison.OrdinalIgnoreCase)) {
+                session.RejectPendingTournamentJoin(envelope.ErrorMessage);
                 session.NotifyStatusChanged(envelope.ErrorMessage);
                 Plugin.Log.Warn(status);
                 session.CloseTournamentRoom();

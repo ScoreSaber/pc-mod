@@ -1,5 +1,5 @@
 <bg horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
   <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-align="MiddleCenter" spacing="2">
-    <text text="~loading-message" align="Center" font-size="5.8" pref-width="54" overflow-mode="Ellipsis" />
+    <text text="~loading-message" align="Center" font-size="4.2" pref-width="72" pref-height="18" word-wrapping="true" />
   </vertical>
 </bg>

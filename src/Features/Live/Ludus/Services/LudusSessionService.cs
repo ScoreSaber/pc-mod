@@ -23,6 +23,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
     internal class LudusSessionService : IInitializable, ITickable, IDisposable {
         private const float ReconnectMinDelaySeconds = 0.5f;
         private const float ReconnectMaxDelaySeconds = 10f;
+        private const int TournamentJoinAckTimeoutMs = 3000;
         private static readonly TimeSpan FreshGameSessionAuthGuard = TimeSpan.FromMinutes(3);
         private static readonly TimeSpan GameSessionReconnectRefreshInterval = TimeSpan.FromHours(3);
         private static readonly TimeSpan GameSessionRefreshRetryDelay = TimeSpan.FromMinutes(10);
@@ -51,6 +52,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
 
         private CompeteRoom _tournamentRoom;
         private CompeteRoom _pendingTournamentRoom;
+        private TaskCompletionSource<CompeteRoom> _pendingTournamentJoin;
+        private string _pendingTournamentJoinRoomId;
         private IReadOnlyList<LiveRoomViewerState> _currentViewers = Array.Empty<LiveRoomViewerState>();
         private string _connectionId;
         private string _currentMatchId;
@@ -98,7 +101,10 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 gameplayControl,
                 viewerCount => PlayerFollowRequested?.Invoke(viewerCount),
                 UpdateViewerList,
-                room => RoomUpdated?.Invoke(room),
+                room => {
+                    RoomUpdated?.Invoke(room);
+                    CompletePendingTournamentJoin(room);
+                },
                 prompt => PromptReceived?.Invoke(prompt),
                 status => StatusChanged?.Invoke(status),
                 CloseTournamentRoomFromServer,
@@ -123,6 +129,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 CloseTournamentRoomFromServer,
                 Disconnect,
                 EnterTournamentRoom,
+                RejectPendingTournamentJoin,
                 RequestAuthenticationRefresh,
                 () => _nextHeartbeatAt = Time.realtimeSinceStartup + _heartbeatIntervalSeconds,
                 (reason, delayOverrideSeconds) => ScheduleReconnect(reason, delayOverrideSeconds),
@@ -180,10 +187,21 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
 
             _tournamentRoom = room;
             _pendingTournamentRoom = room;
+            Task<CompeteRoom> pendingJoin = BeginPendingTournamentJoin(room);
 
-            await EnsureSessionConnection(cancellationToken);
-            if (IsConnectedToLudus) {
-                EnterTournamentRoom(room);
+            try {
+                await EnsureSessionConnection(cancellationToken);
+                if (IsConnectedToLudus) {
+                    EnterTournamentRoom(room);
+                }
+
+                Task completed = await Task.WhenAny(pendingJoin, Task.Delay(TournamentJoinAckTimeoutMs, cancellationToken));
+                cancellationToken.ThrowIfCancellationRequested();
+                if (completed == pendingJoin) {
+                    await pendingJoin;
+                }
+            } finally {
+                ClearPendingTournamentJoin(pendingJoin);
             }
         }
 
@@ -260,6 +278,37 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             List<LiveMod> installedMods = LudusInstalledMods.List();
             _outgoing.SetRoomContext(LudusRoomContextType.LudusRoomContextTypeTournament, room.TournamentId, installedMods, _connectionId);
             _outgoing.JoinRoom(room.Id, installedMods, _connectionId);
+        }
+
+        private Task<CompeteRoom> BeginPendingTournamentJoin(CompeteRoom room) {
+            _pendingTournamentJoin = new TaskCompletionSource<CompeteRoom>();
+            _pendingTournamentJoinRoomId = room?.Id ?? string.Empty;
+            return _pendingTournamentJoin.Task;
+        }
+
+        private void CompletePendingTournamentJoin(CompeteRoom room) {
+            if (_pendingTournamentJoin == null || room == null || room.Id != _pendingTournamentJoinRoomId) {
+                return;
+            }
+
+            _pendingTournamentJoin.TrySetResult(room);
+        }
+
+        private void RejectPendingTournamentJoin(string message) {
+            if (_pendingTournamentJoin == null) {
+                return;
+            }
+
+            _pendingTournamentJoin.TrySetException(new InvalidOperationException(string.IsNullOrEmpty(message) ? "That room could not be joined." : message));
+        }
+
+        private void ClearPendingTournamentJoin(Task<CompeteRoom> pendingJoin) {
+            if (_pendingTournamentJoin == null || _pendingTournamentJoin.Task != pendingJoin) {
+                return;
+            }
+
+            _pendingTournamentJoin = null;
+            _pendingTournamentJoinRoomId = null;
         }
 
         private void ApplyRoomContext(LudusRoomContextType roomContext, string tournamentId, string currentMatchId) {

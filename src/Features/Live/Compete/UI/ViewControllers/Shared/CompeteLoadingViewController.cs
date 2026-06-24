@@ -15,8 +15,8 @@ namespace ScoreSaber.Features.Live.Compete.UI.ViewControllers.Shared {
             }
         }
 
-        internal void SetMessage(string message) {
-            loadingMessage = message.EndsWith("...") ? message : $"{message}...";
+        internal void SetMessage(string message, bool pending = true) {
+            loadingMessage = pending && !message.EndsWith("...") ? $"{message}..." : message;
         }
     }
 }

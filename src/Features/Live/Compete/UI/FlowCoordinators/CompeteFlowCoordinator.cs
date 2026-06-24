@@ -354,6 +354,12 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                 _roomTransitioning = false;
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Live compete load failed: {ex.Message}");
+                bool showJoinError = IsTournamentJoinBlockedStatus(ex.Message);
+                if (showJoinError) {
+                    await OnMainThread(() => _loadingViewController.SetMessage(ex.Message, false));
+                    await Task.Delay(3000);
+                }
+
                 await OnMainThread(() => {
                     _loadingTransitioning = false;
                     _roomTransitioning = false;
@@ -427,6 +433,10 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
         private void RoomWasClosed() {
             string roomCloseStatus = _roomCloseStatus;
+            if (_roomTransitioning && topViewController == _loadingViewController && IsTournamentJoinBlockedStatus(roomCloseStatus)) {
+                return;
+            }
+
             _roomCloseStatus = null;
 
             if (topViewController == _roomViewController) {
@@ -451,7 +461,8 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
         private void RoomJoinFailed(Exception ex) {
             Plugin.Log.Warn($"Failed to join live room: {ex.Message}");
-            LoadRooms(false, "That room could not be joined. Refreshing rooms...").RunTask();
+            string status = IsTournamentJoinBlockedStatus(ex.Message) ? ex.Message : "That room could not be joined.";
+            LoadRooms(false, $"{status} Refreshing rooms...", status).RunTask();
         }
 
         private void RefreshRoomsAfterClose(string status = null) {

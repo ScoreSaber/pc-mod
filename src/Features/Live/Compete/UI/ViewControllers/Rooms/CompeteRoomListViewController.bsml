@@ -5,7 +5,7 @@
     </horizontal>
 
     <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="82" spacing="2">
-      <text text="~room-list-subtitle" align="Center" font-size="3.2" pref-width="56" overflow-mode="Ellipsis" />
+      <text text="~room-list-subtitle" align="Center" font-size="2.8" pref-width="56" pref-height="9" word-wrapping="true" />
       <button text="Refresh" on-click="refresh-rooms" pref-width="22" pref-height="8" interactable="~can-refresh" />
     </horizontal>
 

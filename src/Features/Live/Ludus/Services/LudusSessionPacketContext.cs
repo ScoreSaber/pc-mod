@@ -21,6 +21,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private readonly Action _closeTournamentRoom;
         private readonly Action _disconnect;
         private readonly Action<CompeteRoom> _enterTournamentRoom;
+        private readonly Action<string> _rejectPendingTournamentJoin;
         private readonly Func<bool> _requestAuthenticationRefresh;
         private readonly Action _scheduleNextHeartbeat;
         private readonly Action<string, float?> _scheduleReconnect;
@@ -44,6 +45,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             Action closeTournamentRoom,
             Action disconnect,
             Action<CompeteRoom> enterTournamentRoom,
+            Action<string> rejectPendingTournamentJoin,
             Func<bool> requestAuthenticationRefresh,
             Action scheduleNextHeartbeat,
             Action<string, float?> scheduleReconnect,
@@ -66,6 +68,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _closeTournamentRoom = closeTournamentRoom;
             _disconnect = disconnect;
             _enterTournamentRoom = enterTournamentRoom;
+            _rejectPendingTournamentJoin = rejectPendingTournamentJoin;
             _requestAuthenticationRefresh = requestAuthenticationRefresh;
             _scheduleNextHeartbeat = scheduleNextHeartbeat;
             _scheduleReconnect = scheduleReconnect;
@@ -98,6 +101,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         public void CloseTournamentRoom() => _closeTournamentRoom();
         public void Disconnect() => _disconnect();
         public void EnterTournamentRoom(CompeteRoom room) => _enterTournamentRoom(room);
+        public void RejectPendingTournamentJoin(string message) => _rejectPendingTournamentJoin(message);
         public bool RequestAuthenticationRefresh() => _requestAuthenticationRefresh();
         public void ScheduleNextHeartbeat() => _scheduleNextHeartbeat();
         public void ScheduleReconnect(string reason, float? delayOverrideSeconds) => _scheduleReconnect(reason, delayOverrideSeconds);

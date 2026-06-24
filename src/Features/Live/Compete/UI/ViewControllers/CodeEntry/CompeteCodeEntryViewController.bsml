@@ -11,7 +11,7 @@
         <button text="Join" on-click="join-code" pref-width="18" pref-height="8" />
       </horizontal>
 
-      <text text="~status" align="Center" font-size="3.2" pref-width="62" overflow-mode="Ellipsis" />
+      <text text="~status" align="Center" font-size="2.8" pref-width="62" pref-height="10" word-wrapping="true" />
     </vertical>
   </vertical>
 
