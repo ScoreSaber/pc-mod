@@ -1,14 +1,23 @@
 using Newtonsoft.Json;
+using ScoreSaber.Core.Compat;
 using SongCore;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ScoreSaber.Core.BeatSaver {
     internal class BeatSaverService {
+        private const int DownloadAttemptCount = 3;
+        private const int DownloadRetryDelayMs = 750;
+        private const int DownloadTimeoutSeconds = 45;
+        private static readonly TimeSpan DownloadStallTimeout = TimeSpan.FromSeconds(30);
+
         private readonly Http _http;
 
         internal BeatSaverService(Http http) {
@@ -42,35 +51,31 @@ namespace ScoreSaber.Core.BeatSaver {
                 throw new ArgumentException("BeatSaver hash is required", nameof(hash));
             }
 
+            if (!IsBeatSaverHash(normalizedHash)) {
+                throw new ArgumentException("BeatSaver hash must be a 40-character SHA1", nameof(hash));
+            }
+
             string lowerHash = normalizedHash.ToLowerInvariant();
             string songUrl = string.IsNullOrEmpty(version?.DownloadUrl)
                 ? $"https://cdn.beatsaver.com/{lowerHash}.zip"
                 : version.DownloadUrl;
             string customSongsPath = Path.GetFullPath(CustomLevelPathHelper.customLevelsDirectoryPath);
             string customSongPath = Path.Combine(customSongsPath, lowerHash);
-            string tempSongPath = Path.Combine(customSongsPath, $"{lowerHash}.{Guid.NewGuid():N}.download");
-            string zipPath = Path.Combine(tempSongPath, $"{lowerHash}.zip");
+            string tempRootPath = Path.Combine(customSongsPath, $"{lowerHash}.{Guid.NewGuid():N}.download");
+            string tempSongPath = Path.Combine(tempRootPath, "song");
+            string zipPath = Path.Combine(tempRootPath, $"{lowerHash}.zip");
 
             try {
                 Directory.CreateDirectory(customSongsPath);
-                Directory.CreateDirectory(tempSongPath);
-                TrySetHidden(tempSongPath, true);
+                Directory.CreateDirectory(tempRootPath);
+                TrySetHidden(tempRootPath, true);
 
-                byte[] data = await _http.DownloadRawAsync(songUrl);
-                cancellationToken.ThrowIfCancellationRequested();
-                File.WriteAllBytes(zipPath, data);
-                ZipFile.ExtractToDirectory(zipPath, tempSongPath);
-                cancellationToken.ThrowIfCancellationRequested();
-                TryDelete(zipPath);
-
-                TrySetHidden(tempSongPath, false);
-                if (Directory.Exists(customSongPath)) {
-                    Directory.Delete(customSongPath, true);
-                }
-                Directory.Move(tempSongPath, customSongPath);
+                await DownloadAndExtractMap(BuildDownloadUrls(songUrl, lowerHash), zipPath, tempSongPath, cancellationToken);
+                TrySetHidden(tempRootPath, false);
+                ReplaceDirectory(tempSongPath, customSongPath);
             } finally {
                 TryDelete(zipPath);
-                TryDeleteDirectory(tempSongPath);
+                TryDeleteDirectory(tempRootPath);
             }
         }
 
@@ -100,10 +105,208 @@ namespace ScoreSaber.Core.BeatSaver {
             return difficulty.Replace("+", "Plus");
         }
 
+        private async Task DownloadAndExtractMap(IReadOnlyList<string> urls, string zipPath, string tempSongPath, CancellationToken cancellationToken) {
+            Exception lastError = null;
+
+            foreach (string url in urls) {
+                for (int attempt = 1; attempt <= DownloadAttemptCount; attempt++) {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    TryDelete(zipPath);
+                    TryDeleteDirectory(tempSongPath);
+
+                    try {
+                        await DownloadZipToFile(url, zipPath, cancellationToken);
+                        EnsureDownloadedZip(zipPath);
+                        Directory.CreateDirectory(tempSongPath);
+                        ExtractZip(zipPath, tempSongPath, cancellationToken);
+                        TryDelete(zipPath);
+                        return;
+                    } catch (OperationCanceledException) {
+                        throw;
+                    } catch (Exception ex) {
+                        lastError = ex;
+                        Plugin.Log.Warn($"BeatSaver map download failed from {url} (attempt {attempt}/{DownloadAttemptCount}): {ex.Message}");
+                        TryDelete(zipPath);
+                        TryDeleteDirectory(tempSongPath);
+
+                        if (attempt >= DownloadAttemptCount || !ShouldRetry(ex)) {
+                            break;
+                        }
+
+                        await Task.Delay(DownloadRetryDelayMs * attempt, cancellationToken);
+                    }
+                }
+            }
+
+            throw new IOException("Failed to download BeatSaver map zip", lastError);
+        }
+
+        private async Task DownloadZipToFile(string url, string zipPath, CancellationToken cancellationToken) {
+            using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET)) {
+                foreach (var header in _http.PersistentRequestHeaders) {
+                    request.SetRequestHeader(header.Key, header.Value);
+                }
+
+                request.timeout = DownloadTimeoutSeconds;
+                request.downloadHandler = new DownloadHandlerFile(zipPath) {
+                    removeFileOnAbort = true
+                };
+
+                AsyncOperation asyncOperation = request.SendWebRequest();
+                ulong downloadedBytes = 0;
+                DateTime lastProgressAt = DateTime.UtcNow;
+
+                try {
+                    while (!asyncOperation.isDone) {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (request.downloadedBytes > downloadedBytes) {
+                            downloadedBytes = request.downloadedBytes;
+                            lastProgressAt = DateTime.UtcNow;
+                        } else if (DateTime.UtcNow - lastProgressAt > DownloadStallTimeout) {
+                            request.Abort();
+                            throw new BeatSaverDownloadException("download stalled", true);
+                        }
+
+                        await Task.Delay(100, cancellationToken);
+                    }
+                } catch (OperationCanceledException) {
+                    request.Abort();
+                    throw;
+                }
+
+                if (request.IsConnectionError() || request.IsProtocolError()) {
+                    throw CreateDownloadException(request);
+                }
+            }
+        }
+
+        private static IReadOnlyList<string> BuildDownloadUrls(string songUrl, string lowerHash) {
+            var urls = new List<string>();
+            AddDownloadUrl(urls, songUrl);
+            AddDownloadUrl(urls, $"https://cdn.beatsaver.com/{lowerHash}.zip");
+            return urls;
+        }
+
+        private static void AddDownloadUrl(List<string> urls, string url) {
+            if (string.IsNullOrWhiteSpace(url)) {
+                return;
+            }
+
+            string trimmed = url.Trim();
+            if (urls.Any(existing => string.Equals(existing, trimmed, StringComparison.OrdinalIgnoreCase))) {
+                return;
+            }
+
+            urls.Add(trimmed);
+        }
+
+        private static void EnsureDownloadedZip(string zipPath) {
+            var zipFile = new FileInfo(zipPath);
+            if (!zipFile.Exists || zipFile.Length == 0) {
+                throw new BeatSaverDownloadException("downloaded zip was empty", true);
+            }
+        }
+
+        private static bool IsBeatSaverHash(string hash) {
+            return hash.Length == 40 && hash.All(Uri.IsHexDigit);
+        }
+
+        private static void ExtractZip(string zipPath, string tempSongPath, CancellationToken cancellationToken) {
+            int extractedFiles = 0;
+            string rootPath = Path.GetFullPath(tempSongPath);
+            if (!rootPath.EndsWith(Path.DirectorySeparatorChar.ToString())) {
+                rootPath += Path.DirectorySeparatorChar;
+            }
+
+            using (ZipArchive archive = ZipFile.OpenRead(zipPath)) {
+                foreach (ZipArchiveEntry entry in archive.Entries) {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    string destinationPath = Path.GetFullPath(Path.Combine(tempSongPath, entry.FullName));
+                    if (!destinationPath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase)) {
+                        throw new BeatSaverDownloadException("downloaded zip contained an unsafe path", false);
+                    }
+
+                    if (string.IsNullOrEmpty(entry.Name)) {
+                        Directory.CreateDirectory(destinationPath);
+                        continue;
+                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                    entry.ExtractToFile(destinationPath);
+                    extractedFiles++;
+                }
+            }
+
+            if (extractedFiles == 0) {
+                throw new BeatSaverDownloadException("downloaded zip did not contain map files", true);
+            }
+        }
+
+        private static void ReplaceDirectory(string sourcePath, string destinationPath) {
+            string backupPath = null;
+            bool replaced = false;
+
+            if (Directory.Exists(destinationPath)) {
+                backupPath = $"{destinationPath}.{Guid.NewGuid():N}.backup";
+                Directory.Move(destinationPath, backupPath);
+            }
+
+            try {
+                Directory.Move(sourcePath, destinationPath);
+                replaced = true;
+            } catch {
+                TryRestoreDirectory(backupPath, destinationPath);
+                throw;
+            } finally {
+                if (replaced && backupPath != null) {
+                    TryDeleteDirectory(backupPath);
+                }
+            }
+        }
+
+        private static void TryRestoreDirectory(string backupPath, string destinationPath) {
+            if (backupPath == null || Directory.Exists(destinationPath) || !Directory.Exists(backupPath)) {
+                return;
+            }
+
+            try {
+                Directory.Move(backupPath, destinationPath);
+            } catch (IOException ex) {
+                Plugin.Log.Warn($"Unable to restore previous BeatSaver map folder: {ex.Message}");
+            } catch (UnauthorizedAccessException ex) {
+                Plugin.Log.Warn($"Unable to restore previous BeatSaver map folder: {ex.Message}");
+            }
+        }
+
+        private static bool ShouldRetry(Exception ex) {
+            BeatSaverDownloadException downloadException = ex as BeatSaverDownloadException;
+            if (downloadException != null) {
+                return downloadException.Retryable;
+            }
+
+            return ex is IOException || ex is InvalidDataException;
+        }
+
+        private static BeatSaverDownloadException CreateDownloadException(UnityWebRequest request) {
+            int statusCode = (int)request.responseCode;
+            string message = !string.IsNullOrEmpty(request.error)
+                ? request.error
+                : statusCode > 0
+                    ? $"HTTP {statusCode}"
+                    : "download request failed";
+            bool retryable = request.IsConnectionError() || statusCode == 0 || statusCode == 408 || statusCode == 429 || statusCode >= 500;
+
+            return new BeatSaverDownloadException(message, retryable);
+        }
+
         private static void TryDelete(string path) {
             try {
                 File.Delete(path);
             } catch (IOException ex) {
+                Plugin.Log.Warn($"Unable to delete BeatSaver map zip: {ex.Message}");
+            } catch (UnauthorizedAccessException ex) {
                 Plugin.Log.Warn($"Unable to delete BeatSaver map zip: {ex.Message}");
             }
         }
@@ -125,9 +328,17 @@ namespace ScoreSaber.Core.BeatSaver {
                     Directory.Delete(path, true);
                 }
             } catch (IOException ex) {
-                Plugin.Log.Warn($"Unable to delete BeatSaver map temp folder: {ex.Message}");
+                Plugin.Log.Warn($"Unable to delete BeatSaver map folder: {ex.Message}");
             } catch (UnauthorizedAccessException ex) {
-                Plugin.Log.Warn($"Unable to delete BeatSaver map temp folder: {ex.Message}");
+                Plugin.Log.Warn($"Unable to delete BeatSaver map folder: {ex.Message}");
+            }
+        }
+
+        private sealed class BeatSaverDownloadException : Exception {
+            internal bool Retryable { get; }
+
+            internal BeatSaverDownloadException(string message, bool retryable) : base(message) {
+                Retryable = retryable;
             }
         }
     }
