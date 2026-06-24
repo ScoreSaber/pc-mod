@@ -95,6 +95,10 @@ namespace ScoreSaber.Live.V1
         [global::ProtoBuf.ProtoMember(5, Name = @"responded_at_unix_ms")]
         public long RespondedAtUnixMs { get; set; }
 
+        [global::ProtoBuf.ProtoMember(6, Name = @"prompt_message")]
+        [global::System.ComponentModel.DefaultValue("")]
+        public string PromptMessage { get; set; } = "";
+
     }
 
     [global::ProtoBuf.ProtoContract()]

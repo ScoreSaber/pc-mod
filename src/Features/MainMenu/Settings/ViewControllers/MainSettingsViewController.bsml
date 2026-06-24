@@ -25,6 +25,7 @@
 					<toggle-setting  text='Save Local Replays' id='saveLocalReplaysSetting' value='saveLocalReplays' apply-on-change='true' />
 					<toggle-setting  text='Camera smoothing' id='replayCameraSmoothingSetting' value='replayCameraSmoothing' apply-on-change='true' />
 					<toggle-setting  text='Override handedness' id='replayOverrideHandednessSetting' value='replayOverrideHandedness' apply-on-change='true' hover-hint='This might break replays with modded requirements!'/>
+					<toggle-setting  text='Use Recorded Player Settings' id='useRecordedPlayerSettingsSetting' value='useRecordedPlayerSettings' apply-on-change='true' hover-hint='Use recorded colors, jump distance, environment, lights, and arc preferences when available.' />
 					<slider-setting  show-buttons='true' increment='0.1' min='60' max='120' text='Camera FOV' value='replayCameraFOV' apply-on-change='true' hover-hint='This only applies to the base game camera!' />
 				</modifier-container>
 				<modifier-container child-expand-width='true' horizontal-fit='PreferredSize'>

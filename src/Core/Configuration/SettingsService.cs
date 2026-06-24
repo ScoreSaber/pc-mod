@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ScoreSaber.Core.Configuration {
     internal class SettingsService {
-        private const int CurrentVersion = 10;
+        private const int CurrentVersion = 11;
 
         internal string DataPath => "UserData";
         internal string ConfigPath => DataPath + @"\ScoreSaber";
@@ -87,6 +87,9 @@ namespace ScoreSaber.Core.Configuration {
                 settings.liveChatOverlayGameplayEnabled = true;
                 settings.liveChatOverlayScale = 1.15f;
                 settings.liveChatOverlayTextScale = 1.25f;
+            }
+            if (settings.fileVersion < 11) {
+                settings.useRecordedPlayerSettings = true;
             }
         }
     }

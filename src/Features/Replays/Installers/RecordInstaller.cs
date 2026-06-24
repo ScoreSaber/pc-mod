@@ -23,6 +23,9 @@ namespace ScoreSaber.Features.Replays.Installers {
                 Container.BindInterfacesAndSelfTo<PoseRecorder>().AsSingle();
                 Container.BindInterfacesAndSelfTo<ScoreEventRecorder>().AsSingle();
                 Container.BindInterfacesAndSelfTo<EnergyEventRecorder>().AsSingle();
+                Container.BindInterfacesAndSelfTo<PauseEventRecorder>().AsSingle();
+                Container.BindInterfacesAndSelfTo<WallEventRecorder>().AsSingle();
+                Container.Bind<HsvConfigRecorder>().AsSingle();
                 Container.BindInterfacesTo<CompetePauseGuard>().AsSingle();
                 Plugin.Log.Debug("Replay recorders installed");
             }

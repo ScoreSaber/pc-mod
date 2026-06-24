@@ -145,7 +145,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         internal string LocalAuthType => _gameSessionService.LocalPlayerInfo?.authType ?? string.Empty;
         internal IReadOnlyList<LiveRoomViewerState> CurrentViewers => _currentViewers;
         internal int CurrentViewerCount => _currentViewers.Count;
-        internal IReadOnlyList<LiveChatEntry> CurrentChatMessages => _chatMessages.CurrentMessages;
+        internal IReadOnlyList<LiveChatEntry> CurrentChatMessages => _chatMessages.MessagesFor(CurrentLudusMatchId);
 
         public void Initialize() {
             Plugin.Log.Info("Ludus session initialized.");
@@ -183,6 +183,10 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         }
 
         internal void Disconnect() {
+            ResetSessionConnection(true);
+        }
+
+        private void ResetSessionConnection(bool clearChatMessages) {
             _active = false;
             _roomContext = LudusRoomContextType.LudusRoomContextTypeUnspecified;
             _reconnectScheduled = false;
@@ -191,7 +195,9 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _pendingTournamentRoom = null;
             _tournamentRoom = null;
             UpdateViewerList(null);
-            ClearChatMessages();
+            if (clearChatMessages) {
+                ClearChatMessages();
+            }
             _nextLudusUrl = null;
             _mapStartCountdown.Cancel();
 
@@ -201,6 +207,11 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _currentMatchId = string.Empty;
             _currentTournamentId = string.Empty;
             _connectTask = null;
+        }
+
+        private void RestartDefaultSessionConnection() {
+            ResetSessionConnection(false);
+            EnsureSessionConnection(CancellationToken.None).RunTask();
         }
 
         internal void ReturnToPublicPresence() {
@@ -224,7 +235,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 _replayStreamingService.StopPublicPresenceStream();
             }
 
-            ApplyDefaultSessionRoomContext();
+            RestartDefaultSessionConnection();
         }
 
         private void EnterTournamentRoom(CompeteRoom room) {
@@ -236,6 +247,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _tournamentRoom = room;
             RequestClientType(LudusClientType.LudusClientTypePlayer);
             ApplyRoomContext(LudusRoomContextType.LudusRoomContextTypeTournament, room.TournamentId, room.Id);
+            ChatMessagesChanged?.Invoke(CurrentChatMessages);
             _outgoing.SetRoomContext(LudusRoomContextType.LudusRoomContextTypeTournament, room.TournamentId, _connectionId);
             _outgoing.JoinRoom(room.Id, _connectionId);
         }
@@ -249,6 +261,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private void ApplyClientContext(DecodedLudusEnvelope envelope) {
             _clientType = NormalizeClientType(envelope.ClientType);
             ApplyRoomContext(envelope.RoomContext, envelope.TournamentId, envelope.CurrentMatchId);
+            ChatMessagesChanged?.Invoke(CurrentChatMessages);
         }
 
         private void RequestAuthenticationRefresh() {
@@ -544,6 +557,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _outgoing.SetRoomContext(roomContext, string.Empty, _connectionId);
             RequestClientType(LudusClientType.LudusClientTypePlayer);
             ApplyRoomContext(roomContext, string.Empty, roomContext == LudusRoomContextType.LudusRoomContextTypePublicPresence ? PublicPresenceMatchId() : string.Empty);
+            ChatMessagesChanged?.Invoke(CurrentChatMessages);
             if (IsInPublicPresence) {
                 SendPresence(LudusPlayState.LudusPlayStateInMenus, LudusDownloadState.LudusDownloadStateNone, string.Empty);
             }

@@ -9,6 +9,7 @@ using ScoreSaber.Features.Players.Domain;
 using ScoreSaber.Live.V1;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -180,9 +181,18 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             } catch (OperationCanceledException) {
                 throw;
             } catch (Exception ex) {
-                Plugin.Log.Warn($"Failed to open live chat map link: {ex.Message}");
-                StatusChanged?.Invoke($"Map link failed: {ex.Message}");
+                Plugin.Log.Warn("Failed to open live chat map link:");
+                Plugin.Log.Warn(ex);
+                StatusChanged?.Invoke($"Map link failed: {MapLinkFailureMessage(ex)}");
             }
+        }
+
+        private static string MapLinkFailureMessage(Exception ex) {
+            if (ex is IOException || ex is UnauthorizedAccessException) {
+                return "Could not install the downloaded map.";
+            }
+
+            return string.IsNullOrWhiteSpace(ex?.Message) ? "Unknown error." : ex.Message;
         }
 
         private Task<LiveSongCommand> SongFromTarget(LiveChatLinkTarget target, CancellationToken cancellationToken) {

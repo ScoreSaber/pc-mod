@@ -1,5 +1,6 @@
 using ScoreSaber.Core;
 using ScoreSaber.Features.Live.Ludus.Services;
+using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Live.V1;
 using System.Collections.Generic;
 using Zenject;
@@ -16,7 +17,9 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private LudusSessionService _ludus;
         private ReplayMetadataSource _metadata;
+        private byte[] _hsvConfig;
         private StreamReplayEventBatch _pendingBatch;
+        private List<ReplayExtension> _pendingExtensions;
         private ReplayEventCounts _counts;
         private string _streamId;
         private bool _recording;
@@ -96,6 +99,7 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private void ResetBatch() {
             _pendingBatch = new StreamReplayEventBatch();
+            _pendingExtensions = new List<ReplayExtension>();
             _pendingEventCount = 0;
             _pendingBatchStartedAt = 0f;
         }

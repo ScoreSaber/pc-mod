@@ -12,6 +12,9 @@ namespace ScoreSaber.Features.Replays.Format {
         internal List<ComboEvent> comboKeyframes;
         internal List<MultiplierEvent> multiplierKeyframes;
         internal List<EnergyEvent> energyKeyframes;
+        internal List<PauseEvent> pauseKeyframes;
+        internal List<WallEvent> wallKeyframes;
+        internal byte[] hsvConfig;
 
         internal ReplayFile() {
 
@@ -22,6 +25,8 @@ namespace ScoreSaber.Features.Replays.Format {
             comboKeyframes = new List<ComboEvent>();
             multiplierKeyframes = new List<MultiplierEvent>();
             energyKeyframes = new List<EnergyEvent>();
+            pauseKeyframes = new List<PauseEvent>();
+            wallKeyframes = new List<WallEvent>();
         }
 
         internal void Mirror() {
@@ -35,6 +40,9 @@ namespace ScoreSaber.Features.Replays.Format {
                 keyframe.Mirror();
                 noteKeyframes[i] = keyframe;
             }
+            Color? leftSaberColor = metadata.LeftSaberColor;
+            metadata.LeftSaberColor = metadata.RightSaberColor;
+            metadata.RightSaberColor = leftSaberColor;
             metadata.LeftHanded = !metadata.LeftHanded;
         }
     }
@@ -55,10 +63,60 @@ namespace ScoreSaber.Features.Replays.Format {
         internal Hive.Versioning.Version GameVersion;
         internal Version PluginVersion;
         internal string Platform; // Quest or PC
+
+        // Official replay metadata ends at Platform. Fields below are mapped from extension payloads.
+        internal bool HasPlaySettingsExtension;
         internal float SongSpeed;
         internal float JumpDistance;
         internal Color? LeftSaberColor;
         internal Color? RightSaberColor;
+        internal Color? ObstacleColor;
+        internal Color? EnvironmentColor0;
+        internal Color? EnvironmentColor1;
+        internal Color? EnvironmentColorW;
+        internal Color? EnvironmentColor0Boost;
+        internal Color? EnvironmentColor1Boost;
+        internal Color? EnvironmentColorWBoost;
+        internal bool SupportsEnvironmentColorBoost;
+        internal int EnvironmentEffectsFilterDefaultPreset;
+        internal int EnvironmentEffectsFilterExpertPlusPreset;
+        internal int EnvironmentEffectsFilterPreset;
+        internal bool NoTextsAndHuds;
+        internal float SaberTrailIntensity;
+        internal bool HideNoteSpawnEffect;
+        internal bool ArcsHapticFeedback;
+        internal int ArcVisibility;
+        internal ReplayControllerOffsets? ControllerOffsets;
+    };
+
+    internal struct ReplayControllerOffsets {
+        internal ReplayControllerOffset? Shared;
+        internal ReplayControllerOffset? Left;
+        internal ReplayControllerOffset? Right;
+    };
+
+    internal struct ReplayControllerOffset {
+        internal VRPosition Position;
+        internal VRPosition Rotation;
+    };
+
+    internal struct PauseEvent {
+        internal float Time;
+        internal long Duration;
+        internal long UnixStartTime;
+        internal long UnixEndTime;
+    };
+
+    internal struct WallEvent {
+        internal float Time;
+        internal float ExitTime;
+        internal float Energy;
+        internal float ObstacleTime;
+        internal float ObstacleDuration;
+        internal int LineIndex;
+        internal int LineLayer;
+        internal int Width;
+        internal int Height;
     };
 
     internal struct ScoreEvent {

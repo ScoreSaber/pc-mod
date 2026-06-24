@@ -14,11 +14,15 @@ namespace ScoreSaber.Features.Replays {
         private readonly ScoreEventRecorder _scoreEventRecorder;
         private readonly HeightEventRecorder _heightEventRecorder;
         private readonly EnergyEventRecorder _energyEventRecorder;
+        private readonly PauseEventRecorder _pauseEventRecorder;
+        private readonly WallEventRecorder _wallEventRecorder;
+        private readonly HsvConfigRecorder _hsvConfigRecorder;
         private readonly LiveReplayStreamingService _liveReplayStreamingService;
         private readonly IGamePause _gamePause;
         private readonly AudioTimeSyncController _audioTimeSyncController;
+        private byte[] _hsvConfig;
 
-        public Recorder(PoseRecorder poseRecorder, MetadataRecorder metadataRecorder, NoteEventRecorder noteEventRecorder, ScoreEventRecorder scoreEventRecorder, HeightEventRecorder heightEventRecorder, EnergyEventRecorder energyEventRecorder, ReplayService replayService, LiveReplayStreamingService liveReplayStreamingService, [InjectOptional] IGamePause gamePause, [InjectOptional] AudioTimeSyncController audioTimeSyncController) {
+        public Recorder(PoseRecorder poseRecorder, MetadataRecorder metadataRecorder, NoteEventRecorder noteEventRecorder, ScoreEventRecorder scoreEventRecorder, HeightEventRecorder heightEventRecorder, EnergyEventRecorder energyEventRecorder, PauseEventRecorder pauseEventRecorder, WallEventRecorder wallEventRecorder, HsvConfigRecorder hsvConfigRecorder, ReplayService replayService, LiveReplayStreamingService liveReplayStreamingService, [InjectOptional] IGamePause gamePause, [InjectOptional] AudioTimeSyncController audioTimeSyncController) {
 
             _poseRecorder = poseRecorder;
             _replayService = replayService;
@@ -27,6 +31,9 @@ namespace ScoreSaber.Features.Replays {
             _scoreEventRecorder = scoreEventRecorder;
             _heightEventRecorder = heightEventRecorder;
             _energyEventRecorder = energyEventRecorder;
+            _pauseEventRecorder = pauseEventRecorder;
+            _wallEventRecorder = wallEventRecorder;
+            _hsvConfigRecorder = hsvConfigRecorder;
             _liveReplayStreamingService = liveReplayStreamingService;
             _gamePause = gamePause;
             _audioTimeSyncController = audioTimeSyncController;
@@ -38,7 +45,8 @@ namespace ScoreSaber.Features.Replays {
         public void Initialize() {
 
             _replayService.NewPlayStarted(_id, this);
-            _liveReplayStreamingService.Begin(_metadataRecorder.Export());
+            _hsvConfig = _hsvConfigRecorder.Export();
+            _liveReplayStreamingService.Begin(_metadataRecorder.Export(), _hsvConfig);
             if (_gamePause != null) {
                 _gamePause.didPauseEvent += GamePauseDidPauseEvent;
                 _gamePause.didResumeEvent += GamePauseDidResumeEvent;
@@ -59,7 +67,10 @@ namespace ScoreSaber.Features.Replays {
                 scoreKeyframes = _scoreEventRecorder.ExportScoreKeyframes(),
                 comboKeyframes = _scoreEventRecorder.ExportComboKeyframes(),
                 multiplierKeyframes = _scoreEventRecorder.ExportMultiplierKeyframes(),
-                energyKeyframes = _energyEventRecorder.Export()
+                energyKeyframes = _energyEventRecorder.Export(),
+                pauseKeyframes = _pauseEventRecorder.Export(),
+                wallKeyframes = _wallEventRecorder.Export(),
+                hsvConfig = _hsvConfig
             };
         }
 

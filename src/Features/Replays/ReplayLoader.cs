@@ -63,7 +63,7 @@ namespace ScoreSaber.Features.Replays {
             }
 
             _scoreSubmissionService.SuspendForReplay();
-            _menuTransitionsHelper.StartReplayLevel(beatmapKey, beatmapLevel, playerData, gameplayModifiers, playerSettings, _environmentsListModel, ReplayEnd);
+            _menuTransitionsHelper.StartReplayLevel(beatmapKey, beatmapLevel, playerData, gameplayModifiers, playerSettings, _environmentsListModel, null, null, ReplayEnd);
         }
 
         private static Z.SavedData DeserializeLegacyReplay(byte[] decompressed) {
@@ -114,13 +114,63 @@ namespace ScoreSaber.Features.Replays {
                 replay.Mirror();
             }
 
+            bool useRecordedPlayerSettings = _settings.Current.useRecordedPlayerSettings && replay.metadata.HasPlaySettingsExtension;
             PlayerSpecificSettings playerSettings = PlayerSettingsCompat.ForReplay(localPlayerSettings,
-                replay.metadata.LeftHanded, replay.metadata.InitialHeight, replay.heightKeyframes.Count > 0);
+                replay.metadata.LeftHanded,
+                replay.metadata.InitialHeight,
+                replay.heightKeyframes.Count > 0,
+                useRecordedPlayerSettings,
+                replay.metadata.NoTextsAndHuds,
+                replay.metadata.SaberTrailIntensity,
+                replay.metadata.HideNoteSpawnEffect,
+                replay.metadata.ArcsHapticFeedback,
+                replay.metadata.ArcVisibility,
+                replay.metadata.EnvironmentEffectsFilterDefaultPreset,
+                replay.metadata.EnvironmentEffectsFilterExpertPlusPreset);
+            ColorScheme replayColorScheme = useRecordedPlayerSettings
+                ? ColorSchemeCompat.ForReplay(
+                    playerData,
+                    replay.metadata.LeftSaberColor,
+                    replay.metadata.RightSaberColor,
+                    replay.metadata.ObstacleColor,
+                    replay.metadata.EnvironmentColor0,
+                    replay.metadata.EnvironmentColor1,
+                    replay.metadata.EnvironmentColorW,
+                    replay.metadata.EnvironmentColor0Boost,
+                    replay.metadata.EnvironmentColor1Boost,
+                    replay.metadata.EnvironmentColorWBoost,
+                    replay.metadata.SupportsEnvironmentColorBoost)
+                : null;
+            OverrideEnvironmentSettings replayEnvironmentSettings = ReplayEnvironmentSettings(playerData, replay.metadata, useRecordedPlayerSettings);
 
             _scoreSubmissionService.SuspendForReplay();
             _menuTransitionsHelper.StartReplayLevel(beatmapKey, beatmapLevel, playerData,
                 ScoreSaberGameplayModifiers.FromCodes(replay.metadata.Modifiers, false).GameplayModifiers,
-                playerSettings, _environmentsListModel, ReplayEnd);
+                playerSettings, _environmentsListModel,
+                replayEnvironmentSettings,
+                replayColorScheme,
+                ReplayEnd);
+        }
+
+        private OverrideEnvironmentSettings ReplayEnvironmentSettings(PlayerData playerData, Metadata metadata, bool useRecordedPlayerSettings) {
+
+#if BEAT_SABER_1_29_0
+            return playerData.overrideEnvironmentSettings;
+#else
+            if (!useRecordedPlayerSettings || string.IsNullOrEmpty(metadata.Environment)) {
+                return playerData.overrideEnvironmentSettings;
+            }
+
+            EnvironmentInfoSO environmentInfo = _environmentsListModel.GetEnvironmentInfoBySerializedName(metadata.Environment);
+            if (environmentInfo == null) {
+                return playerData.overrideEnvironmentSettings;
+            }
+
+            var overrideEnvironmentSettings = new OverrideEnvironmentSettings();
+            overrideEnvironmentSettings.overrideEnvironments = true;
+            overrideEnvironmentSettings.SetEnvironmentInfoForType(environmentInfo.environmentType, environmentInfo);
+            return overrideEnvironmentSettings;
+#endif
         }
 
         private void ReplayEnd(StandardLevelScenesTransitionSetupDataSO standardLevelSceneSetupData, LevelCompletionResults levelCompletionResults) {

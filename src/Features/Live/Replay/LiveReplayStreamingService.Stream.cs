@@ -1,4 +1,5 @@
 using ScoreSaber.Core;
+using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Live.V1;
 using System;
 
@@ -122,7 +123,8 @@ namespace ScoreSaber.Features.Live.Replay {
                     ClientStartTimeUnixMs = UnixNowMs(),
                     GameSessionId = _ludus.GameSessionId,
                     Features = { ReplayFeature.ReplayFeatureSpectatorCatchup },
-                    ReplayMetadata = StreamMetadata()
+                    ReplayMetadata = StreamMetadata(),
+                    ReplayExtensions = ToReplayExtensions(ReplayExtensionPayloads.CreateStartExtensions(_metadata, _hsvConfig))
                 }
             });
             if (_paused) {
@@ -209,7 +211,8 @@ namespace ScoreSaber.Features.Live.Replay {
                 Chunk = new ReplayChunk {
                     Cursor = Cursor(_nextSequence++, _pendingBatch.MaxTimeSeconds),
                     Events = _pendingBatch,
-                    CumulativeEventCounts = CloneCounts(_counts)
+                    CumulativeEventCounts = CloneCounts(_counts),
+                    ReplayExtensions = _pendingExtensions
                 }
             });
             ResetBatch();

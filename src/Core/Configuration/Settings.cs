@@ -16,6 +16,7 @@ namespace ScoreSaber.Core.Configuration {
         public string locationFilterMode { get; set; }
         public bool replayCameraSmoothing { get; set; }
         public bool replayOverrideHandedness { get; set; }
+        public bool useRecordedPlayerSettings { get; set; }
         public bool publicLivePresenceOptOut { get; set; } = false;
         public bool liveChatOverlayEnabled { get; set; } = true;
         public bool liveChatOverlayGameplayEnabled { get; set; } = true;
@@ -48,6 +49,7 @@ namespace ScoreSaber.Core.Configuration {
             locationFilterMode = "Country";
             replayCameraSmoothing = true;
             replayOverrideHandedness = false;
+            useRecordedPlayerSettings = true;
             publicLivePresenceOptOut = false;
             liveChatOverlayEnabled = true;
             liveChatOverlayGameplayEnabled = true;

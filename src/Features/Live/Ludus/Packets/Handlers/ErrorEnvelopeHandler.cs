@@ -10,12 +10,25 @@ namespace ScoreSaber.Features.Live.Ludus.Packets.Handlers {
 
         public void Handle(TSession session, DecodedLudusEnvelope envelope) {
             string status = $"Ludus error {envelope.ErrorCode}: {envelope.ErrorMessage}";
-            session.NotifyStatusChanged(status);
-            Plugin.Log.Warn(status);
+            if (IsHiddenClientStatus(envelope)) {
+                Plugin.Log.Debug(status);
+                return;
+            }
+
             if (string.Equals(envelope.ErrorCode, "auth_failed", StringComparison.OrdinalIgnoreCase)) {
+                session.NotifyStatusChanged(status);
+                Plugin.Log.Warn(status);
                 session.RequestAuthenticationRefresh();
                 session.ScheduleReconnect("authentication failed", 0.5f);
+                return;
             }
+
+            session.NotifyStatusChanged(status);
+            Plugin.Log.Warn(status);
+        }
+
+        private static bool IsHiddenClientStatus(DecodedLudusEnvelope envelope) {
+            return string.Equals(envelope?.ErrorCode, "packet_rejected", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -5,10 +5,18 @@ using System.Collections.Generic;
 
 namespace ScoreSaber.Features.Live.Ludus.Packets {
     internal sealed class LudusChatMessageBuffer {
-        private const int MaxMessages = 100;
+        private const int MaxMessages = 200;
         private readonly List<LiveChatEntry> _messages = new List<LiveChatEntry>();
 
         internal IReadOnlyList<LiveChatEntry> CurrentMessages => _messages.ToArray();
+
+        internal IReadOnlyList<LiveChatEntry> MessagesFor(string matchId) {
+            if (string.IsNullOrEmpty(matchId)) {
+                return Array.Empty<LiveChatEntry>();
+            }
+
+            return _messages.FindAll(message => string.Equals(message.MatchId, matchId, StringComparison.Ordinal)).ToArray();
+        }
 
         internal bool Apply(LiveChatMessage message, string currentMatchId) {
             LiveChatEntry entry = EntryForCurrentMatch(message, currentMatchId);
@@ -23,11 +31,9 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
 
         internal void Replace(LiveChatSnapshot snapshot, string currentMatchId) {
             if (string.IsNullOrEmpty(currentMatchId)) {
-                _messages.Clear();
                 return;
             }
 
-            _messages.RemoveAll(message => !string.Equals(message.MatchId, currentMatchId, StringComparison.Ordinal));
             if (snapshot?.Messages == null) {
                 return;
             }
@@ -69,10 +75,38 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
         }
 
         private void SortAndTrim() {
-            _messages.Sort((left, right) => left.RoomSequence.CompareTo(right.RoomSequence));
+            _messages.Sort(CompareEntries);
             if (_messages.Count > MaxMessages) {
                 _messages.RemoveRange(0, _messages.Count - MaxMessages);
             }
+        }
+
+        private static int CompareEntries(LiveChatEntry left, LiveChatEntry right) {
+            if (left == null && right == null) {
+                return 0;
+            }
+            if (left == null) {
+                return -1;
+            }
+            if (right == null) {
+                return 1;
+            }
+
+            if (left.CreatedAtUnixMs > 0 && right.CreatedAtUnixMs > 0 && left.CreatedAtUnixMs != right.CreatedAtUnixMs) {
+                return left.CreatedAtUnixMs.CompareTo(right.CreatedAtUnixMs);
+            }
+
+            int matchComparison = string.CompareOrdinal(left.MatchId, right.MatchId);
+            if (matchComparison != 0) {
+                return matchComparison;
+            }
+
+            int sequenceComparison = left.RoomSequence.CompareTo(right.RoomSequence);
+            if (sequenceComparison != 0) {
+                return sequenceComparison;
+            }
+
+            return string.CompareOrdinal(left.Key, right.Key);
         }
     }
 }

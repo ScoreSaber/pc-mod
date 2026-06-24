@@ -46,20 +46,31 @@ namespace ScoreSaber.Core.BeatSaver {
             string songUrl = string.IsNullOrEmpty(version?.DownloadUrl)
                 ? $"https://cdn.beatsaver.com/{lowerHash}.zip"
                 : version.DownloadUrl;
-            string customSongsPath = CustomLevelPathHelper.customLevelsDirectoryPath;
+            string customSongsPath = Path.GetFullPath(CustomLevelPathHelper.customLevelsDirectoryPath);
             string customSongPath = Path.Combine(customSongsPath, lowerHash);
-            string zipPath = Path.Combine(customSongPath, $"{lowerHash}.zip");
-
-            Directory.CreateDirectory(customSongPath);
-
-            byte[] data = await _http.DownloadRawAsync(songUrl);
-            cancellationToken.ThrowIfCancellationRequested();
-            File.WriteAllBytes(zipPath, data);
+            string tempSongPath = Path.Combine(customSongsPath, $"{lowerHash}.{Guid.NewGuid():N}.download");
+            string zipPath = Path.Combine(tempSongPath, $"{lowerHash}.zip");
 
             try {
-                ZipFile.ExtractToDirectory(zipPath, customSongPath);
+                Directory.CreateDirectory(customSongsPath);
+                Directory.CreateDirectory(tempSongPath);
+                TrySetHidden(tempSongPath, true);
+
+                byte[] data = await _http.DownloadRawAsync(songUrl);
+                cancellationToken.ThrowIfCancellationRequested();
+                File.WriteAllBytes(zipPath, data);
+                ZipFile.ExtractToDirectory(zipPath, tempSongPath);
+                cancellationToken.ThrowIfCancellationRequested();
+                TryDelete(zipPath);
+
+                TrySetHidden(tempSongPath, false);
+                if (Directory.Exists(customSongPath)) {
+                    Directory.Delete(customSongPath, true);
+                }
+                Directory.Move(tempSongPath, customSongPath);
             } finally {
                 TryDelete(zipPath);
+                TryDeleteDirectory(tempSongPath);
             }
         }
 
@@ -94,6 +105,29 @@ namespace ScoreSaber.Core.BeatSaver {
                 File.Delete(path);
             } catch (IOException ex) {
                 Plugin.Log.Warn($"Unable to delete BeatSaver map zip: {ex.Message}");
+            }
+        }
+
+        private static void TrySetHidden(string path, bool hidden) {
+            try {
+                FileAttributes attributes = File.GetAttributes(path);
+                File.SetAttributes(path, hidden ? attributes | FileAttributes.Hidden : attributes & ~FileAttributes.Hidden);
+            } catch (IOException ex) {
+                Plugin.Log.Warn($"Unable to update BeatSaver map temp folder attributes: {ex.Message}");
+            } catch (UnauthorizedAccessException ex) {
+                Plugin.Log.Warn($"Unable to update BeatSaver map temp folder attributes: {ex.Message}");
+            }
+        }
+
+        private static void TryDeleteDirectory(string path) {
+            try {
+                if (Directory.Exists(path)) {
+                    Directory.Delete(path, true);
+                }
+            } catch (IOException ex) {
+                Plugin.Log.Warn($"Unable to delete BeatSaver map temp folder: {ex.Message}");
+            } catch (UnauthorizedAccessException ex) {
+                Plugin.Log.Warn($"Unable to delete BeatSaver map temp folder: {ex.Message}");
             }
         }
     }

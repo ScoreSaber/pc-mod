@@ -1,5 +1,7 @@
 using ScoreSaber.Core;
+using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Live.V1;
+using System.Collections.Generic;
 using ReplayComboEventSource = ScoreSaber.Features.Replays.Format.ComboEvent;
 using ReplayEnergyEventSource = ScoreSaber.Features.Replays.Format.EnergyEvent;
 using ReplayHeightEventSource = ScoreSaber.Features.Replays.Format.HeightEvent;
@@ -11,8 +13,9 @@ using ReplayScoreEventSource = ScoreSaber.Features.Replays.Format.ScoreEvent;
 
 namespace ScoreSaber.Features.Live.Replay {
     internal partial class LiveReplayStreamingService {
-        internal void Begin(ReplayMetadataSource metadata) {
+        internal void Begin(ReplayMetadataSource metadata, byte[] hsvConfig) {
             _metadata = metadata;
+            _hsvConfig = hsvConfig;
             _recording = true;
             _streaming = false;
             _streamId = string.Empty;
@@ -149,6 +152,17 @@ namespace ScoreSaber.Features.Live.Replay {
             });
             _counts.EnergyEvents++;
             MarkEventTime(energy.Time);
+            FlushIfFull();
+        }
+
+        internal void RecordWall(WallEvent wall) {
+            if (!CanRecordEvent()) {
+                return;
+            }
+
+            ReplayExtensionEntry entry = ReplayExtensionPayloads.CreateWallEvents(new List<WallEvent> { wall });
+            _pendingExtensions.Add(ToReplayExtension(entry));
+            MarkEventTime(wall.ExitTime);
             FlushIfFull();
         }
 

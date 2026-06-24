@@ -1,5 +1,6 @@
 using ScoreSaber.Core;
 using ScoreSaber.Features.Leaderboards.Domain;
+using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Live.V1;
 using System;
 using System.Collections.Generic;
@@ -67,6 +68,22 @@ namespace ScoreSaber.Features.Live.Replay {
                 JumpDistance = _metadata.JumpDistance,
                 LeftSaberColor = ToReplayColor(_metadata.LeftSaberColor),
                 RightSaberColor = ToReplayColor(_metadata.RightSaberColor)
+            };
+        }
+
+        private static List<ReplayExtension> ToReplayExtensions(List<ReplayExtensionEntry> entries) {
+            var extensions = new List<ReplayExtension>(entries.Count);
+            foreach (ReplayExtensionEntry entry in entries) {
+                extensions.Add(ToReplayExtension(entry));
+            }
+            return extensions;
+        }
+
+        private static ReplayExtension ToReplayExtension(ReplayExtensionEntry entry) {
+            return new ReplayExtension {
+                Id = entry.Id,
+                Version = (uint)entry.Version,
+                Payload = entry.Payload
             };
         }
 

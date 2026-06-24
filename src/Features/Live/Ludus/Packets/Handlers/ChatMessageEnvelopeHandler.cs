@@ -14,7 +14,7 @@ namespace ScoreSaber.Features.Live.Ludus.Packets.Handlers {
 
         public void Handle(TSession session, DecodedLudusEnvelope envelope) {
             if (_messages.Apply(envelope.ChatMessage, session.CurrentLudusMatchId)) {
-                session.NotifyChatMessagesChanged(_messages.CurrentMessages);
+                session.NotifyChatMessagesChanged(_messages.MessagesFor(session.CurrentLudusMatchId));
             }
         }
     }

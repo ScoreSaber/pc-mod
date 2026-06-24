@@ -155,6 +155,9 @@ namespace ScoreSaber.Live.V1
         [global::ProtoBuf.ProtoMember(13, Name = @"replay_metadata")]
         public StreamReplayMetadata ReplayMetadata { get; set; }
 
+        [global::ProtoBuf.ProtoMember(14, Name = @"replay_extensions")]
+        public global::System.Collections.Generic.List<ReplayExtension> ReplayExtensions { get; set; } = new global::System.Collections.Generic.List<ReplayExtension>();
+
     }
 
     [global::ProtoBuf.ProtoContract()]
@@ -260,6 +263,9 @@ namespace ScoreSaber.Live.V1
         [global::ProtoBuf.ProtoMember(3, Name = @"cumulative_event_counts")]
         public ReplayEventCounts CumulativeEventCounts { get; set; }
 
+        [global::ProtoBuf.ProtoMember(4, Name = @"replay_extensions")]
+        public global::System.Collections.Generic.List<ReplayExtension> ReplayExtensions { get; set; } = new global::System.Collections.Generic.List<ReplayExtension>();
+
     }
 
     [global::ProtoBuf.ProtoContract()]
@@ -307,6 +313,9 @@ namespace ScoreSaber.Live.V1
 
         [global::ProtoBuf.ProtoMember(7, Name = @"stream_sha256")]
         public byte[] StreamSha256 { get; set; }
+
+        [global::ProtoBuf.ProtoMember(8, Name = @"replay_extensions")]
+        public global::System.Collections.Generic.List<ReplayExtension> ReplayExtensions { get; set; } = new global::System.Collections.Generic.List<ReplayExtension>();
 
     }
 
@@ -539,6 +548,28 @@ namespace ScoreSaber.Live.V1
 
         [global::ProtoBuf.ProtoMember(8, Name = @"cumulative_event_counts")]
         public ReplayEventCounts CumulativeEventCounts { get; set; }
+
+        [global::ProtoBuf.ProtoMember(9, Name = @"replay_extensions")]
+        public global::System.Collections.Generic.List<ReplayExtension> ReplayExtensions { get; set; } = new global::System.Collections.Generic.List<ReplayExtension>();
+
+    }
+
+    [global::ProtoBuf.ProtoContract()]
+    public partial class ReplayExtension : global::ProtoBuf.IExtensible
+    {
+        private global::ProtoBuf.IExtension __pbn__extensionData;
+        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+            => global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
+
+        [global::ProtoBuf.ProtoMember(1, Name = @"id")]
+        [global::System.ComponentModel.DefaultValue("")]
+        public string Id { get; set; } = "";
+
+        [global::ProtoBuf.ProtoMember(2, Name = @"version")]
+        public uint Version { get; set; }
+
+        [global::ProtoBuf.ProtoMember(3, Name = @"payload")]
+        public byte[] Payload { get; set; }
 
     }
 

@@ -374,7 +374,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
 
         private void ApplyTournamentActionVisibility() {
             if (_tournamentActionsRoot != null) {
-                _tournamentActionsRoot.gameObject.SetActive(competeButtonActive);
+                _tournamentActionsRoot.gameObject.SetActive(true);
             }
 
             if (_competeButton != null) {

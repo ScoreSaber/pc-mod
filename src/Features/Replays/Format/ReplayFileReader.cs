@@ -14,7 +14,7 @@ namespace ScoreSaber.Features.Replays.Format {
         internal int comboKeyframes;
         internal int multiplierKeyframes;
         internal int energyKeyframes;
-        internal int fpsKeyframes;
+        internal int extensions;
     }
 
     internal class ReplayVersionException : Exception {
@@ -27,6 +27,13 @@ namespace ScoreSaber.Features.Replays.Format {
         private static readonly byte[] FileHeader = Encoding.UTF8.GetBytes("ScoreSaber Replay 👌🤠\r\n");
         private static readonly Version ReplayVersion2 = new Version("2.0.0");
         private static readonly Version ReplayVersion3Max = new Version("3.1.0");
+        private const int ExtensionMagic = 0x31585353; // SSX1
+        private const int ExtensionTableVersion = 1;
+        private const string PlaySettingsExtension = "scoresaber.play-settings";
+        private const string PauseEventsExtension = "scoresaber.pause-events";
+        private const string WallEventsExtension = "scoresaber.wall-events";
+        private const string ControllerOffsetsExtension = "scoresaber.controller-offsets";
+        private const string HsvConfigExtension = "scoresaber.hsv-config";
 
         private byte[] _input;
         private delegate T ReadItem<T>(ref int offset);
@@ -50,7 +57,7 @@ namespace ScoreSaber.Features.Replays.Format {
             }
 
             bool usesV2Events = metadata.Version == ReplayVersion2;
-            return new ReplayFile() {
+            var replay = new ReplayFile() {
                 metadata = metadata,
                 poseKeyframes = ReadList(ref pointers.poseKeyframes, ReadVRPoseGroup),
                 heightKeyframes = ReadList(ref pointers.heightKeyframes, ReadHeightChange),
@@ -60,6 +67,8 @@ namespace ScoreSaber.Features.Replays.Format {
                 multiplierKeyframes = ReadList(ref pointers.multiplierKeyframes, ReadMultiplierEvent),
                 energyKeyframes = ReadList(ref pointers.energyKeyframes, ReadEnergyEvent)
             };
+            ReadExtensions(replay, pointers.extensions);
+            return replay;
         }
 
         private static bool HasFileHeader(byte[] input) {
@@ -88,7 +97,7 @@ namespace ScoreSaber.Features.Replays.Format {
                 comboKeyframes = ReadInt(ref offset),
                 multiplierKeyframes = ReadInt(ref offset),
                 energyKeyframes = ReadInt(ref offset),
-                fpsKeyframes = ReadInt(ref offset)
+                extensions = ReadInt(ref offset)
             };
         }
 
@@ -129,6 +138,92 @@ namespace ScoreSaber.Features.Replays.Format {
                     Platform = ReadString(ref offset),
                 };
             }
+        }
+
+        private void ReadExtensions(ReplayFile replay, int offset) {
+
+            if (offset <= 0 || offset >= _input.Length) {
+                return;
+            }
+
+            try {
+                if (ReadInt(ref offset) != ExtensionMagic) {
+                    return;
+                }
+                int tableVersion = ReadInt(ref offset);
+                if (tableVersion != ExtensionTableVersion) {
+                    return;
+                }
+
+                int entryCount = ReadInt(ref offset);
+                for (int i = 0; i < entryCount; i++) {
+                    string id = ReadString(ref offset);
+                    int version = ReadInt(ref offset);
+                    int payloadLength = ReadInt(ref offset);
+                    if (payloadLength < 0 || offset + payloadLength > _input.Length) {
+                        throw new ReplayVersionException("Replay extension payload is out of bounds");
+                    }
+
+                    int payloadOffset = offset;
+                    int nextOffset = offset + payloadLength;
+                    if (id == PlaySettingsExtension && version == 1) {
+                        ReadPlaySettings(replay, ref payloadOffset);
+                    } else if (id == PauseEventsExtension && version == 1) {
+                        replay.pauseKeyframes = ReadList(ref payloadOffset, ReadPauseEvent);
+                    } else if (id == WallEventsExtension && version == 1) {
+                        replay.wallKeyframes = ReadList(ref payloadOffset, ReadWallEvent);
+                    } else if (id == ControllerOffsetsExtension && version == 1) {
+                        ReadControllerOffsets(replay, ref payloadOffset);
+                    } else if (id == HsvConfigExtension && version == 1) {
+                        replay.hsvConfig = ReadBytes(payloadOffset, payloadLength);
+                    }
+                    offset = nextOffset;
+                }
+            } catch (Exception ex) {
+                Plugin.Log.Debug($"Ignoring replay extensions: {ex.Message}");
+            }
+        }
+
+        private void ReadPlaySettings(ReplayFile replay, ref int offset) {
+
+            Metadata metadata = replay.metadata;
+            metadata.HasPlaySettingsExtension = true;
+            metadata.SongSpeed = ReadFloat(ref offset);
+            metadata.JumpDistance = ReadFloat(ref offset);
+            metadata.LeftSaberColor = ReadColor(ref offset);
+            metadata.RightSaberColor = ReadColor(ref offset);
+            metadata.ObstacleColor = ReadColor(ref offset);
+            metadata.EnvironmentColor0 = ReadColor(ref offset);
+            metadata.EnvironmentColor1 = ReadColor(ref offset);
+            metadata.EnvironmentColorW = ReadColor(ref offset);
+            metadata.EnvironmentColor0Boost = ReadColor(ref offset);
+            metadata.EnvironmentColor1Boost = ReadColor(ref offset);
+            metadata.EnvironmentColorWBoost = ReadColor(ref offset);
+            metadata.SupportsEnvironmentColorBoost = ReadBool(ref offset);
+            string environment = ReadString(ref offset);
+            if (!string.IsNullOrEmpty(environment)) {
+                metadata.Environment = environment;
+            }
+            metadata.EnvironmentEffectsFilterDefaultPreset = ReadInt(ref offset);
+            metadata.EnvironmentEffectsFilterExpertPlusPreset = ReadInt(ref offset);
+            metadata.EnvironmentEffectsFilterPreset = ReadInt(ref offset);
+            metadata.NoTextsAndHuds = ReadBool(ref offset);
+            metadata.SaberTrailIntensity = ReadFloat(ref offset);
+            metadata.HideNoteSpawnEffect = ReadBool(ref offset);
+            metadata.ArcsHapticFeedback = ReadBool(ref offset);
+            metadata.ArcVisibility = ReadInt(ref offset);
+            replay.metadata = metadata;
+        }
+
+        private void ReadControllerOffsets(ReplayFile replay, ref int offset) {
+
+            Metadata metadata = replay.metadata;
+            metadata.ControllerOffsets = new ReplayControllerOffsets() {
+                Shared = ReadControllerOffset(ref offset),
+                Left = ReadControllerOffset(ref offset),
+                Right = ReadControllerOffset(ref offset)
+            };
+            replay.metadata = metadata;
         }
 
         private VRPoseGroup ReadVRPoseGroup(ref int offset) {
@@ -275,6 +370,50 @@ namespace ScoreSaber.Features.Replays.Format {
             };
         }
 
+        private PauseEvent ReadPauseEvent(ref int offset) {
+
+            return new PauseEvent() {
+                Time = ReadFloat(ref offset),
+                Duration = ReadLong(ref offset),
+                UnixStartTime = ReadLong(ref offset),
+                UnixEndTime = ReadLong(ref offset)
+            };
+        }
+
+        private WallEvent ReadWallEvent(ref int offset) {
+
+            return new WallEvent() {
+                Time = ReadFloat(ref offset),
+                ExitTime = ReadFloat(ref offset),
+                Energy = ReadFloat(ref offset),
+                ObstacleTime = ReadFloat(ref offset),
+                ObstacleDuration = ReadFloat(ref offset),
+                LineIndex = ReadInt(ref offset),
+                LineLayer = ReadInt(ref offset),
+                Width = ReadInt(ref offset),
+                Height = ReadInt(ref offset)
+            };
+        }
+
+        private ReplayControllerOffset? ReadControllerOffset(ref int offset) {
+
+            if (!ReadBool(ref offset)) {
+                return null;
+            }
+
+            return new ReplayControllerOffset() {
+                Position = ReadVRPosition(ref offset),
+                Rotation = ReadVRPosition(ref offset)
+            };
+        }
+
+        private byte[] ReadBytes(int offset, int length) {
+
+            var bytes = new byte[length];
+            Buffer.BlockCopy(_input, offset, bytes, 0, length);
+            return bytes;
+        }
+
         // Lists
         private string[] ReadStringArray(ref int offset) {
 
@@ -324,6 +463,26 @@ namespace ScoreSaber.Features.Replays.Format {
             bool value = BitConverter.ToBoolean(_input, offset);
             offset += 1;
             return value;
+        }
+
+        private long ReadLong(ref int offset) {
+
+            long value = BitConverter.ToInt64(_input, offset);
+            offset += 8;
+            return value;
+        }
+
+        private UnityEngine.Color? ReadColor(ref int offset) {
+
+            if (!ReadBool(ref offset)) {
+                return null;
+            }
+
+            return new UnityEngine.Color(
+                ReadFloat(ref offset),
+                ReadFloat(ref offset),
+                ReadFloat(ref offset),
+                ReadFloat(ref offset));
         }
 
         private VRPosition ReadVRPosition(ref int offset) {

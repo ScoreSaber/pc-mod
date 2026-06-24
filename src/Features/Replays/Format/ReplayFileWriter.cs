@@ -8,6 +8,8 @@ using System.Text;
 namespace ScoreSaber.Features.Replays.Format {
     internal class ReplayFileWriter {
         private const int _pointerSize = 38;
+        private const int ExtensionMagic = 0x31585353; // SSX1
+        private const int ExtensionTableVersion = 1;
         private static readonly byte[] FileHeader = Encoding.UTF8.GetBytes("ScoreSaber Replay 👌🤠\r\n");
         private delegate int WriteItem<T>(T value, MemoryStream outputStream);
 
@@ -39,6 +41,11 @@ namespace ScoreSaber.Features.Replays.Format {
                     WriteList(file.multiplierKeyframes, outputStream, WriteMultiplierEvent);
                     int energyEventsPointer = (int)outputStream.Length;
                     WriteList(file.energyKeyframes, outputStream, WriteEnergyEvent);
+                    int extensionsPointer = 0;
+                    if (HasExtensions(file)) {
+                        extensionsPointer = (int)outputStream.Length;
+                        WriteExtensions(file, outputStream);
+                    }
 
                     // Write pointers
                     outputStream.Position = pointerLocation;
@@ -50,6 +57,7 @@ namespace ScoreSaber.Features.Replays.Format {
                     WriteInt(comboEventsPointer, outputStream);
                     WriteInt(multiplierEventsPointer, outputStream);
                     WriteInt(energyEventsPointer, outputStream);
+                    WriteInt(extensionsPointer, outputStream);
                     byte[] uncompressed = outputStream.ToArray();
                     compressed = SevenZipHelper.Compress(uncompressed);
                 }
@@ -71,7 +79,7 @@ namespace ScoreSaber.Features.Replays.Format {
             bytesWritten += WriteString(metadata.LevelID, outputStream);
             bytesWritten += WriteInt(metadata.Difficulty, outputStream);
             bytesWritten += WriteString(metadata.Characteristic, outputStream);
-            bytesWritten += WriteString(metadata.Environment, outputStream);
+            bytesWritten += WriteString(metadata.Environment ?? string.Empty, outputStream);
             bytesWritten += WriteStringArray(metadata.Modifiers, outputStream);
             bytesWritten += WriteFloat(metadata.NoteSpawnOffset, outputStream);
             bytesWritten += WriteBool(metadata.LeftHanded, outputStream);
@@ -82,6 +90,125 @@ namespace ScoreSaber.Features.Replays.Format {
             bytesWritten += WriteString(metadata.GameVersion.ToString(), outputStream);
             bytesWritten += WriteString(metadata.PluginVersion.ToString(), outputStream);
             bytesWritten += WriteString(metadata.Platform, outputStream);
+            return bytesWritten;
+        }
+
+        private int WriteExtensions(ReplayFile file, MemoryStream outputStream) {
+
+            List<ReplayExtensionEntry> entries = ReplayExtensionPayloads.CreateFileExtensions(file);
+
+            int bytesWritten = 0;
+            bytesWritten += WriteInt(ExtensionMagic, outputStream);
+            bytesWritten += WriteInt(ExtensionTableVersion, outputStream);
+            bytesWritten += WriteInt(entries.Count, outputStream);
+            foreach (ReplayExtensionEntry entry in entries) {
+                bytesWritten += WriteString(entry.Id, outputStream);
+                bytesWritten += WriteInt(entry.Version, outputStream);
+                bytesWritten += WriteByteArray(entry.Payload, outputStream);
+            }
+            return bytesWritten;
+        }
+
+        private static bool HasExtensions(ReplayFile file) {
+
+            return ReplayExtensionPayloads.HasFileExtensions(file);
+        }
+
+        private static bool HasPlaySettings(Metadata metadata) {
+
+            return metadata.HasPlaySettingsExtension
+                || !string.IsNullOrEmpty(metadata.Environment)
+                || metadata.SongSpeed > 0f
+                || metadata.JumpDistance > 0f
+                || metadata.LeftSaberColor.HasValue
+                || metadata.RightSaberColor.HasValue
+                || metadata.ObstacleColor.HasValue
+                || metadata.EnvironmentColor0.HasValue
+                || metadata.EnvironmentColor1.HasValue
+                || metadata.EnvironmentColorW.HasValue
+                || metadata.EnvironmentColor0Boost.HasValue
+                || metadata.EnvironmentColor1Boost.HasValue
+                || metadata.EnvironmentColorWBoost.HasValue;
+        }
+
+        private static ReplayExtensionEntry CreateExtension(string id, int version, Action<MemoryStream> writePayload) {
+
+            using (var stream = new MemoryStream()) {
+                writePayload(stream);
+                return new ReplayExtensionEntry(id, version, stream.ToArray());
+            }
+        }
+
+        private int WritePlaySettings(Metadata metadata, MemoryStream outputStream) {
+
+            int bytesWritten = 0;
+            bytesWritten += WriteFloat(metadata.SongSpeed, outputStream);
+            bytesWritten += WriteFloat(metadata.JumpDistance, outputStream);
+            bytesWritten += WriteColor(metadata.LeftSaberColor, outputStream);
+            bytesWritten += WriteColor(metadata.RightSaberColor, outputStream);
+            bytesWritten += WriteColor(metadata.ObstacleColor, outputStream);
+            bytesWritten += WriteColor(metadata.EnvironmentColor0, outputStream);
+            bytesWritten += WriteColor(metadata.EnvironmentColor1, outputStream);
+            bytesWritten += WriteColor(metadata.EnvironmentColorW, outputStream);
+            bytesWritten += WriteColor(metadata.EnvironmentColor0Boost, outputStream);
+            bytesWritten += WriteColor(metadata.EnvironmentColor1Boost, outputStream);
+            bytesWritten += WriteColor(metadata.EnvironmentColorWBoost, outputStream);
+            bytesWritten += WriteBool(metadata.SupportsEnvironmentColorBoost, outputStream);
+            bytesWritten += WriteString(metadata.Environment ?? string.Empty, outputStream);
+            bytesWritten += WriteInt(metadata.EnvironmentEffectsFilterDefaultPreset, outputStream);
+            bytesWritten += WriteInt(metadata.EnvironmentEffectsFilterExpertPlusPreset, outputStream);
+            bytesWritten += WriteInt(metadata.EnvironmentEffectsFilterPreset, outputStream);
+            bytesWritten += WriteBool(metadata.NoTextsAndHuds, outputStream);
+            bytesWritten += WriteFloat(metadata.SaberTrailIntensity, outputStream);
+            bytesWritten += WriteBool(metadata.HideNoteSpawnEffect, outputStream);
+            bytesWritten += WriteBool(metadata.ArcsHapticFeedback, outputStream);
+            bytesWritten += WriteInt(metadata.ArcVisibility, outputStream);
+            return bytesWritten;
+        }
+
+        private int WritePauseEvent(PauseEvent pauseEvent, MemoryStream outputStream) {
+
+            int bytesWritten = 0;
+            bytesWritten += WriteFloat(pauseEvent.Time, outputStream);
+            bytesWritten += WriteLong(pauseEvent.Duration, outputStream);
+            bytesWritten += WriteLong(pauseEvent.UnixStartTime, outputStream);
+            bytesWritten += WriteLong(pauseEvent.UnixEndTime, outputStream);
+            return bytesWritten;
+        }
+
+        private int WriteWallEvent(WallEvent wallEvent, MemoryStream outputStream) {
+
+            int bytesWritten = 0;
+            bytesWritten += WriteFloat(wallEvent.Time, outputStream);
+            bytesWritten += WriteFloat(wallEvent.ExitTime, outputStream);
+            bytesWritten += WriteFloat(wallEvent.Energy, outputStream);
+            bytesWritten += WriteFloat(wallEvent.ObstacleTime, outputStream);
+            bytesWritten += WriteFloat(wallEvent.ObstacleDuration, outputStream);
+            bytesWritten += WriteInt(wallEvent.LineIndex, outputStream);
+            bytesWritten += WriteInt(wallEvent.LineLayer, outputStream);
+            bytesWritten += WriteInt(wallEvent.Width, outputStream);
+            bytesWritten += WriteInt(wallEvent.Height, outputStream);
+            return bytesWritten;
+        }
+
+        private int WriteControllerOffsets(ReplayControllerOffsets offsets, MemoryStream outputStream) {
+
+            int bytesWritten = 0;
+            bytesWritten += WriteControllerOffset(offsets.Shared, outputStream);
+            bytesWritten += WriteControllerOffset(offsets.Left, outputStream);
+            bytesWritten += WriteControllerOffset(offsets.Right, outputStream);
+            return bytesWritten;
+        }
+
+        private int WriteControllerOffset(ReplayControllerOffset? offset, MemoryStream outputStream) {
+
+            int bytesWritten = 0;
+            bytesWritten += WriteBool(offset.HasValue, outputStream);
+            if (offset.HasValue) {
+                ReplayControllerOffset value = offset.Value;
+                bytesWritten += WriteVRPosition(value.Position, outputStream);
+                bytesWritten += WriteVRPosition(value.Rotation, outputStream);
+            }
             return bytesWritten;
         }
 
@@ -242,6 +369,37 @@ namespace ScoreSaber.Features.Replays.Format {
             return 1;
         }
 
+        private int WriteLong(long value, MemoryStream outputStream) {
+
+            for (int i = 0; i < 8; i++) {
+                outputStream.WriteByte((byte)(value >> (8 * i)));
+            }
+            return 8;
+        }
+
+        private int WriteByteArray(byte[] value, MemoryStream outputStream) {
+
+            int bytesWritten = 0;
+            bytesWritten += WriteInt(value.Length, outputStream);
+            outputStream.Write(value, 0, value.Length);
+            bytesWritten += value.Length;
+            return bytesWritten;
+        }
+
+        private int WriteColor(UnityEngine.Color? color, MemoryStream outputStream) {
+
+            int bytesWritten = 0;
+            bytesWritten += WriteBool(color.HasValue, outputStream);
+            if (color.HasValue) {
+                UnityEngine.Color value = color.Value;
+                bytesWritten += WriteFloat(value.r, outputStream);
+                bytesWritten += WriteFloat(value.g, outputStream);
+                bytesWritten += WriteFloat(value.b, outputStream);
+                bytesWritten += WriteFloat(value.a, outputStream);
+            }
+            return bytesWritten;
+        }
+
         private int WriteVRPosition(VRPosition position, MemoryStream outputStream) {
 
             int bytesWritten = 0;
@@ -269,5 +427,6 @@ namespace ScoreSaber.Features.Replays.Format {
             [FieldOffset(0)]
             internal int Int;
         }
+
     }
 }

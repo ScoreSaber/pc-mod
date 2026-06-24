@@ -135,6 +135,12 @@ namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
             set => _settings.Current.replayOverrideHandedness = value;
         }
 
+        [UIValue("useRecordedPlayerSettings")]
+        public bool UseRecordedPlayerSettings {
+            get => _settings.Current.useRecordedPlayerSettings;
+            set => _settings.Current.useRecordedPlayerSettings = value;
+        }
+
         [UIValue("replayCameraFOV")]
         public float ReplayCameraFOV {
             get => _settings.Current.replayCameraFOV;
