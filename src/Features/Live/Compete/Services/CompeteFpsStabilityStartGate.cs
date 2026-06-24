@@ -14,6 +14,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
         private readonly ScoreController _scoreController;
 
         private bool _waitingForInitialStart = true;
+        private bool _initialPausePending;
         private bool _waitingForStableFps;
         private bool _scoreControllerWasEnabled;
         private bool _scoreControllerStateCaptured;
@@ -44,6 +45,11 @@ namespace ScoreSaber.Features.Live.Compete.Services {
         }
 
         public void Tick() {
+            if (_initialPausePending) {
+                StartStableFpsWait();
+                return;
+            }
+
             if (!_waitingForStableFps) {
                 return;
             }
@@ -74,6 +80,15 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             }
 
             _waitingForInitialStart = false;
+            _initialPausePending = true;
+        }
+
+        private void StartStableFpsWait() {
+            _initialPausePending = false;
+            if (!_gameplayState.IsLiveGameplayActive) {
+                return;
+            }
+
             _waitingForStableFps = true;
             _stableSeconds = 0f;
             _waitSeconds = 0f;
