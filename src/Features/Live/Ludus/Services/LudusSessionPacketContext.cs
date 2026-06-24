@@ -19,6 +19,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private readonly Func<CompeteRoom> _getPendingTournamentRoom;
         private readonly Action<DecodedLudusEnvelope> _applyClientContext;
         private readonly Action<CompeteRoom> _enterTournamentRoom;
+        private readonly Action _requestAuthenticationRefresh;
         private readonly Action _scheduleNextHeartbeat;
         private readonly Action<string, float?> _scheduleReconnect;
         private readonly Action<LudusPlayState, LudusDownloadState, string> _sendPresence;
@@ -39,6 +40,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             Func<CompeteRoom> getPendingTournamentRoom,
             Action<DecodedLudusEnvelope> applyClientContext,
             Action<CompeteRoom> enterTournamentRoom,
+            Action requestAuthenticationRefresh,
             Action scheduleNextHeartbeat,
             Action<string, float?> scheduleReconnect,
             Action<LudusPlayState, LudusDownloadState, string> sendPresence,
@@ -58,6 +60,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _getPendingTournamentRoom = getPendingTournamentRoom;
             _applyClientContext = applyClientContext;
             _enterTournamentRoom = enterTournamentRoom;
+            _requestAuthenticationRefresh = requestAuthenticationRefresh;
             _scheduleNextHeartbeat = scheduleNextHeartbeat;
             _scheduleReconnect = scheduleReconnect;
             _sendPresence = sendPresence;
@@ -87,6 +90,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         public CompeteRoom PendingTournamentRoom => _getPendingTournamentRoom();
         public void ApplyClientContext(DecodedLudusEnvelope envelope) => _applyClientContext(envelope);
         public void EnterTournamentRoom(CompeteRoom room) => _enterTournamentRoom(room);
+        public void RequestAuthenticationRefresh() => _requestAuthenticationRefresh();
         public void ScheduleNextHeartbeat() => _scheduleNextHeartbeat();
         public void ScheduleReconnect(string reason, float? delayOverrideSeconds) => _scheduleReconnect(reason, delayOverrideSeconds);
         public void SendPresence(LudusPlayState playState, LudusDownloadState downloadState, string currentMapHash) =>

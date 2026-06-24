@@ -29,6 +29,7 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
             bool publicLivePresenceOptOut) {
 
             _send(LudusProto.EncodeConnect(
+                string.Empty,
                 session.SessionId,
                 session.SessionKey,
                 string.Empty,

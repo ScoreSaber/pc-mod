@@ -23,6 +23,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
     internal class LudusSessionService : IInitializable, ITickable, IDisposable {
         private const float ReconnectMinDelaySeconds = 0.5f;
         private const float ReconnectMaxDelaySeconds = 10f;
+        private static readonly TimeSpan GameSessionReconnectRefreshInterval = TimeSpan.FromHours(3);
+        private static readonly TimeSpan GameSessionRefreshRetryDelay = TimeSpan.FromMinutes(10);
         private static readonly Regex DisplayMarkupTagPattern = new Regex(@"<[^>\r\n]{1,128}>", RegexOptions.Compiled);
 
         internal event Action<int> PlayerFollowRequested;
@@ -59,6 +61,9 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private int _reconnectAttempt;
         private bool _reconnectScheduled;
         private bool _active;
+        private bool _forceAuthenticationRefreshOnNextConnect;
+        private DateTime _lastConnectionAuthRefreshAtUtc = DateTime.MinValue;
+        private DateTime _nextConnectionAuthRefreshAttemptAtUtc = DateTime.MinValue;
         private LudusRoomContextType _roomContext = LudusRoomContextType.LudusRoomContextTypeUnspecified;
         private LudusClientType _clientType = LudusClientType.LudusClientTypePlayer;
 
@@ -113,6 +118,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 () => _pendingTournamentRoom,
                 ApplyClientContext,
                 EnterTournamentRoom,
+                RequestAuthenticationRefresh,
                 () => _nextHeartbeatAt = Time.realtimeSinceStartup + _heartbeatIntervalSeconds,
                 (reason, delayOverrideSeconds) => ScheduleReconnect(reason, delayOverrideSeconds),
                 SendPresence,
@@ -245,6 +251,11 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             ApplyRoomContext(envelope.RoomContext, envelope.TournamentId, envelope.CurrentMatchId);
         }
 
+        private void RequestAuthenticationRefresh() {
+            _forceAuthenticationRefreshOnNextConnect = true;
+            _nextConnectionAuthRefreshAttemptAtUtc = DateTime.MinValue;
+        }
+
         private void UpdateViewerList(IReadOnlyList<LiveRoomViewerState> viewers) {
             _currentViewers = viewers == null ? Array.Empty<LiveRoomViewerState>() : viewers.ToArray();
             ViewerListUpdated?.Invoke(_currentViewers);
@@ -352,10 +363,20 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 return;
             }
 
-            bool authenticated = await _gameSessionService.EnsureAuthenticated(false, cancellationToken);
+            bool hadCachedSession = _gameSessionService.HasAuthenticatedSession;
+            bool forceAuthenticationRefresh = ShouldRefreshAuthenticationForConnection();
+            bool authenticated = await _gameSessionService.EnsureAuthenticated(forceAuthenticationRefresh, cancellationToken);
+            bool usedCachedSessionAfterRefreshFailure = false;
+            if (!authenticated && hadCachedSession && _gameSessionService.HasAuthenticatedSession && !AuthenticationRefreshIsRequired()) {
+                _nextConnectionAuthRefreshAttemptAtUtc = DateTime.UtcNow + GameSessionRefreshRetryDelay;
+                authenticated = true;
+                usedCachedSessionAfterRefreshFailure = true;
+                Plugin.Log.Warn("Ludus: Game session refresh failed; retrying cached session.");
+            }
             if (!authenticated || !_gameSessionService.HasAuthenticatedSession) {
                 throw new InvalidOperationException("ScoreSaber game session is not available");
             }
+            MarkAuthenticationAvailable(forceAuthenticationRefresh && !usedCachedSessionAfterRefreshFailure);
 
             PrepareConnectionAttempt(cancellationToken);
 
@@ -374,6 +395,39 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 ScheduleReconnect(ex.Message, null);
                 Plugin.Log.Warn($"Ludus connection failed: {ex.Message}");
                 throw;
+            }
+        }
+
+        private bool ShouldRefreshAuthenticationForConnection() {
+            if (!_gameSessionService.HasAuthenticatedSession) {
+                _forceAuthenticationRefreshOnNextConnect = false;
+                return false;
+            }
+
+            DateTime now = DateTime.UtcNow;
+            if (_forceAuthenticationRefreshOnNextConnect) {
+                return true;
+            }
+            if (_lastConnectionAuthRefreshAtUtc == DateTime.MinValue) {
+                return false;
+            }
+            if (now < _nextConnectionAuthRefreshAttemptAtUtc) {
+                return false;
+            }
+            return now - _lastConnectionAuthRefreshAtUtc >= GameSessionReconnectRefreshInterval;
+        }
+
+        private bool AuthenticationRefreshIsRequired() {
+            return _forceAuthenticationRefreshOnNextConnect;
+        }
+
+        private void MarkAuthenticationAvailable(bool refreshAttempted) {
+            if (refreshAttempted || _lastConnectionAuthRefreshAtUtc == DateTime.MinValue) {
+                _lastConnectionAuthRefreshAtUtc = DateTime.UtcNow;
+                _nextConnectionAuthRefreshAttemptAtUtc = DateTime.MinValue;
+            }
+            if (refreshAttempted) {
+                _forceAuthenticationRefreshOnNextConnect = false;
             }
         }
 

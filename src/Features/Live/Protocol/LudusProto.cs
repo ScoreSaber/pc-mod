@@ -45,6 +45,7 @@ namespace ScoreSaber.Features.Live.Protocol {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         internal static byte[] EncodeConnect(
+            string authToken,
             string sessionId,
             string sessionKey,
             string tournamentId,
@@ -58,6 +59,7 @@ namespace ScoreSaber.Features.Live.Protocol {
 
             return Encode(sequence, null, new ProtoLudusEnvelope {
                 ConnectRequest = new ConnectRequest {
+                    AuthToken = authToken ?? string.Empty,
                     SessionId = sessionId ?? string.Empty,
                     SessionKey = sessionKey ?? string.Empty,
                     TournamentId = tournamentId ?? string.Empty,

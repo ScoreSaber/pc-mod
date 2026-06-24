@@ -30,13 +30,21 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         }
 
         internal void Handle(ILudusServerCommandSession session, ServerCommand command) {
-            if (command == null || !TargetsLocalPlayer(session, command)) {
+            if (command == null) {
+                return;
+            }
+
+            if (!TargetsLocalPlayer(session, command)) {
+                Plugin.Log.Debug($"Ludus: Ignored server command {command.Type} for match {command.MatchId}.");
                 return;
             }
 
             ILudusServerCommandHandler handler;
             if (_handlers.TryGetValue(command.Type, out handler)) {
+                Plugin.Log.Info($"Ludus: Handling server command {command.Type} for match {command.MatchId}.");
                 handler.Handle(session, command);
+            } else {
+                Plugin.Log.Warn($"Ludus: No handler registered for server command {command.Type}.");
             }
         }
 
