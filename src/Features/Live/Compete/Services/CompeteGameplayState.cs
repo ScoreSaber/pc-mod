@@ -3,6 +3,8 @@ using System;
 namespace ScoreSaber.Features.Live.Compete.Services {
     internal class CompeteGameplayState {
         internal bool IsLiveGameplayActive { get; private set; }
+        internal bool IsMapStartReady { get; private set; }
+        internal bool IsWaitingForMapStartReady => IsLiveGameplayActive && !IsMapStartReady;
         internal string TournamentId { get; private set; } = string.Empty;
         internal string MatchId { get; private set; } = string.Empty;
         internal string MapHash { get; private set; } = string.Empty;
@@ -14,15 +16,37 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             TournamentId = tournamentId ?? string.Empty;
             MatchId = matchId ?? string.Empty;
             MapHash = mapHash ?? string.Empty;
+            IsMapStartReady = false;
             _hostStopRequested = false;
             _hostStopMapHash = string.Empty;
         }
 
         internal void End() {
             IsLiveGameplayActive = false;
+            IsMapStartReady = false;
             TournamentId = string.Empty;
             MatchId = string.Empty;
             MapHash = string.Empty;
+        }
+
+        internal void MarkMapStartReady() {
+            if (!IsLiveGameplayActive) {
+                return;
+            }
+
+            IsMapStartReady = true;
+        }
+
+        internal bool IsCurrentMap(string matchId, string mapHash) {
+            if (!IsLiveGameplayActive) {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(matchId) && !string.Equals(MatchId, matchId, StringComparison.Ordinal)) {
+                return false;
+            }
+
+            return string.IsNullOrEmpty(mapHash) || string.Equals(MapHash, mapHash, StringComparison.OrdinalIgnoreCase);
         }
 
         internal void MarkHostStopRequested() {

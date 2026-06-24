@@ -103,6 +103,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             _initialPausePending = false;
             if (!_gameplayState.IsLiveGameplayActive || !IsAudioPlaying()) {
                 Plugin.Log.Info("Ludus: Skipping FPS start gate because playback is no longer starting.");
+                _gameplayState.MarkMapStartReady();
                 return;
             }
 
@@ -119,6 +120,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             if (!IsAudioPaused()) {
                 RestoreScoreController();
                 Plugin.Log.Warn("Ludus: Skipping FPS start gate because the start pause did not take.");
+                _gameplayState.MarkMapStartReady();
                 return;
             }
 
@@ -139,6 +141,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 Plugin.Log.Warn("Ludus: FPS start gate ended while playback was not paused; leaving song alone.");
             }
 
+            _gameplayState.MarkMapStartReady();
             Plugin.Log.Info($"Ludus: {reason}");
         }
 
@@ -149,6 +152,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
 
             _waitingForStableFps = false;
             RestoreScoreController();
+            _gameplayState.MarkMapStartReady();
             Plugin.Log.Warn($"Ludus: Canceling FPS start gate: {reason}");
         }
 

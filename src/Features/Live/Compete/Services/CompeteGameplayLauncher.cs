@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScoreSaber.Features.Live.Compete.Services {
     internal class CompeteGameplayLauncher {
+        private const int MapStartReadyPollMs = 25;
+        private const int MapStartReadyTimeoutMs = 30000;
+
         private readonly PlayerDataModel _playerDataModel;
         private readonly MenuTransitionsHelper _menuTransitionsHelper;
         private readonly EnvironmentsListModel _environmentsListModel;
@@ -60,6 +63,25 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 _gameplayState.End();
                 throw;
             }
+        }
+
+        internal async Task<bool> WaitForMapStartReady(string matchId, string mapHash, CancellationToken cancellationToken) {
+            int waitedMs = 0;
+            while (_gameplayState.IsCurrentMap(matchId, mapHash) && !_gameplayState.IsMapStartReady && waitedMs < MapStartReadyTimeoutMs) {
+                await Task.Delay(MapStartReadyPollMs, cancellationToken);
+                waitedMs += MapStartReadyPollMs;
+            }
+
+            if (!_gameplayState.IsCurrentMap(matchId, mapHash)) {
+                return false;
+            }
+
+            if (!_gameplayState.IsMapStartReady) {
+                Plugin.Log.Warn("Ludus: Timed out waiting for FPS start gate; sending map start presence anyway.");
+                _gameplayState.MarkMapStartReady();
+            }
+
+            return true;
         }
 
         private void LevelFinished(StandardLevelScenesTransitionSetupDataSO transition, LevelCompletionResults results) {

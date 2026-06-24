@@ -1,4 +1,5 @@
 using ScoreSaber.Core;
+using ScoreSaber.Features.Live.Compete.Services;
 using ScoreSaber.Features.Live.Ludus.Services;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Live.V1;
@@ -14,6 +15,7 @@ namespace ScoreSaber.Features.Live.Replay {
         private const uint MaxChunkSizeBytes = 256 * 1024;
 
         private readonly ScoreSaberRuntimeInfo _runtimeInfo;
+        private readonly CompeteGameplayState _competeGameplayState;
 
         private LudusSessionService _ludus;
         private ReplayMetadataSource _metadata;
@@ -38,8 +40,9 @@ namespace ScoreSaber.Features.Live.Replay {
         private float _pendingBatchStartedAt;
         private uint _lastMaxScore;
 
-        internal LiveReplayStreamingService(ScoreSaberRuntimeInfo runtimeInfo) {
+        internal LiveReplayStreamingService(ScoreSaberRuntimeInfo runtimeInfo, CompeteGameplayState competeGameplayState) {
             _runtimeInfo = runtimeInfo;
+            _competeGameplayState = competeGameplayState;
             ResetBatch();
             ResetCounts();
         }
@@ -106,6 +109,10 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private void ResetCounts() {
             _counts = new ReplayEventCounts();
+        }
+
+        private bool IsWaitingForTournamentMapStart() {
+            return _ludus != null && _ludus.IsInTournamentRoom && _competeGameplayState.IsWaitingForMapStartReady;
         }
     }
 }

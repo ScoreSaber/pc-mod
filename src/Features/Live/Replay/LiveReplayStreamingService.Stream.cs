@@ -94,6 +94,10 @@ namespace ScoreSaber.Features.Live.Replay {
                 return;
             }
 
+            if (IsWaitingForTournamentMapStart()) {
+                return;
+            }
+
             bool canUsePublicPresence = CanUsePublicPresenceForCurrentLevel();
             if (_ludus.IsInPublicPresence && !canUsePublicPresence) {
                 return;
@@ -135,6 +139,10 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private void TrySendPlayingPresence() {
             if (_playingPresenceSent || !_recording || _ludus == null || !_ludus.IsConnectedToLudus) {
+                return;
+            }
+
+            if (IsWaitingForTournamentMapStart()) {
                 return;
             }
 

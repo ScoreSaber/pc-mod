@@ -36,6 +36,10 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 session.NotifyStatusChanged(delayMs > 0 ? "Map starting soon..." : "Starting map...");
                 Plugin.Log.Info($"Ludus: Starting room map {room.Song.Name} for {room.Id}.");
                 await session.GameplayLauncher.Start(room, command, cancellationToken);
+                if (!await session.GameplayLauncher.WaitForMapStartReady(room.Id, room.Song.MapHash, cancellationToken)) {
+                    return;
+                }
+
                 session.SendPresence(LudusPlayState.LudusPlayStateInGame, LudusDownloadState.LudusDownloadStateNone, room.Song.MapHash);
             } catch (OperationCanceledException) {
             } catch (Exception ex) {
