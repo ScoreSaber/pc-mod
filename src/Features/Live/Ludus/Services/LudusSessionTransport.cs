@@ -53,6 +53,19 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             }
         }
 
+        internal void SendDeferred(Func<byte[]> bytesFactory) {
+            if (bytesFactory == null) {
+                return;
+            }
+
+            ClientWebSocket socket = _socket;
+            CancellationTokenSource cancellation = _cancellation;
+            lock (_sendTaskLock) {
+                _sendTask = SendAfter(_sendTask, socket, cancellation, bytesFactory);
+                _sendTask.RunTask();
+            }
+        }
+
         internal void DisposeSocket() {
             try {
                 _cancellation?.Cancel();
@@ -98,6 +111,32 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             });
         }
 
+        private async Task SendAfter(Task previousSend, ClientWebSocket socket, CancellationTokenSource cancellation, Func<byte[]> bytesFactory) {
+            try {
+                await previousSend.ConfigureAwait(false);
+            } catch {
+            }
+
+            if (socket != _socket || cancellation != _cancellation) {
+                return;
+            }
+
+            if (!CanSendToSocket(socket, cancellation)) {
+                _mainThread.Enqueue(() => ReconnectRequested?.Invoke("socket is not open"));
+                return;
+            }
+
+            byte[] bytes;
+            try {
+                bytes = bytesFactory();
+            } catch (Exception ex) {
+                _mainThread.Enqueue(() => SendFailed?.Invoke(ex.Message));
+                return;
+            }
+
+            await SendAsync(socket, cancellation, bytes).ConfigureAwait(false);
+        }
+
         private async Task SendAfter(Task previousSend, ClientWebSocket socket, CancellationTokenSource cancellation, byte[] bytes) {
             try {
                 await previousSend.ConfigureAwait(false);
@@ -108,8 +147,12 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         }
 
         private async Task SendAsync(ClientWebSocket socket, CancellationTokenSource cancellation, byte[] bytes) {
-            if (socket == null || cancellation == null || socket.State != WebSocketState.Open) {
+            if (!CanSendToSocket(socket, cancellation)) {
                 _mainThread.Enqueue(() => ReconnectRequested?.Invoke("socket is not open"));
+                return;
+            }
+
+            if (bytes == null || bytes.Length == 0) {
                 return;
             }
 
@@ -128,6 +171,10 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                     ReconnectRequested?.Invoke(ex.Message);
                 });
             }
+        }
+
+        private static bool CanSendToSocket(ClientWebSocket socket, CancellationTokenSource cancellation) {
+            return socket != null && cancellation != null && socket.State == WebSocketState.Open;
         }
     }
 }

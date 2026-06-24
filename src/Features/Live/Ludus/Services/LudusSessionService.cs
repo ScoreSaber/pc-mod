@@ -85,7 +85,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _replayStreamingService = replayStreamingService;
             _mainThread = new LudusMainThreadQueue();
             _transport = new LudusSessionTransport(_mainThread);
-            _outgoing = new LudusPacketSender(_transport.Send);
+            _outgoing = new LudusPacketSender(_transport.Send, _transport.SendDeferred);
             _mapStartCountdown = new LudusMapStartCountdown(_mainThread, () => _tournamentRoom?.Id ?? string.Empty);
             ILudusServerCommandSession commandSession = new CompeteLudusCommandSession(
                 () => LocalPlayerId,

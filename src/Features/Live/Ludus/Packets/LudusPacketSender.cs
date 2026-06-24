@@ -7,10 +7,12 @@ using System;
 namespace ScoreSaber.Features.Live.Ludus.Packets {
     internal sealed class LudusPacketSender {
         private readonly Action<byte[]> _send;
+        private readonly Action<Func<byte[]>> _sendDeferred;
         private ulong _outgoingSequence = 1;
 
-        internal LudusPacketSender(Action<byte[]> send) {
+        internal LudusPacketSender(Action<byte[]> send, Action<Func<byte[]>> sendDeferred) {
             _send = send;
+            _sendDeferred = sendDeferred;
         }
 
         internal ulong LastReceivedSequence { get; set; }
@@ -79,7 +81,8 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
         }
 
         internal void ReplayPacket(ReplayStreamPacket packet, string connectionId) {
-            _send(LudusProto.EncodeReplayPacket(packet, NextSequence(), connectionId));
+            ulong sequence = NextSequence();
+            _sendDeferred(() => LudusProto.EncodeReplayPacket(packet, sequence, connectionId));
         }
 
         private ulong NextSequence() => _outgoingSequence++;
