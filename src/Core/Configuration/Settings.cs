@@ -17,6 +17,7 @@ namespace ScoreSaber.Core.Configuration {
         public bool replayCameraSmoothing { get; set; }
         public bool replayOverrideHandedness { get; set; }
         public bool useRecordedPlayerSettings { get; set; }
+        public bool shareHsvProfiles { get; set; } = false;
         public bool publicLivePresenceOptOut { get; set; } = false;
         public bool liveChatOverlayEnabled { get; set; } = true;
         public bool liveChatOverlayGameplayEnabled { get; set; } = true;
@@ -50,6 +51,7 @@ namespace ScoreSaber.Core.Configuration {
             replayCameraSmoothing = true;
             replayOverrideHandedness = false;
             useRecordedPlayerSettings = true;
+            shareHsvProfiles = false;
             publicLivePresenceOptOut = false;
             liveChatOverlayEnabled = true;
             liveChatOverlayGameplayEnabled = true;

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ScoreSaber.Core.Configuration {
     internal class SettingsService {
-        private const int CurrentVersion = 11;
+        private const int CurrentVersion = 12;
 
         internal string DataPath => "UserData";
         internal string ConfigPath => DataPath + @"\ScoreSaber";
@@ -90,6 +90,9 @@ namespace ScoreSaber.Core.Configuration {
             }
             if (settings.fileVersion < 11) {
                 settings.useRecordedPlayerSettings = true;
+            }
+            if (settings.fileVersion < 12) {
+                settings.shareHsvProfiles = false;
             }
         }
     }

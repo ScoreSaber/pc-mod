@@ -109,6 +109,19 @@ namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
             }
         }
 
+        [UIValue("shareHsvProfiles")]
+        public bool ShareHsvProfiles {
+            get => _settings.Current.shareHsvProfiles;
+            set {
+                if (_settings.Current.shareHsvProfiles == value) {
+                    return;
+                }
+
+                _settings.Current.shareHsvProfiles = value;
+                _settings.Save();
+            }
+        }
+
         [UIValue("locationFilterOptions")]
         public List<object> LocationFilterOptions = new object[] {
             "Country",

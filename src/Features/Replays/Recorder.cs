@@ -1,4 +1,5 @@
-﻿using ScoreSaber.Features.Live.Replay;
+﻿using ScoreSaber.Core.Configuration;
+using ScoreSaber.Features.Live.Replay;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Features.Replays.Recorders;
 using System;
@@ -18,11 +19,12 @@ namespace ScoreSaber.Features.Replays {
         private readonly WallEventRecorder _wallEventRecorder;
         private readonly HsvConfigRecorder _hsvConfigRecorder;
         private readonly LiveReplayStreamingService _liveReplayStreamingService;
+        private readonly SettingsService _settings;
         private readonly IGamePause _gamePause;
         private readonly AudioTimeSyncController _audioTimeSyncController;
         private byte[] _hsvConfig;
 
-        public Recorder(PoseRecorder poseRecorder, MetadataRecorder metadataRecorder, NoteEventRecorder noteEventRecorder, ScoreEventRecorder scoreEventRecorder, HeightEventRecorder heightEventRecorder, EnergyEventRecorder energyEventRecorder, PauseEventRecorder pauseEventRecorder, WallEventRecorder wallEventRecorder, HsvConfigRecorder hsvConfigRecorder, ReplayService replayService, LiveReplayStreamingService liveReplayStreamingService, [InjectOptional] IGamePause gamePause, [InjectOptional] AudioTimeSyncController audioTimeSyncController) {
+        public Recorder(PoseRecorder poseRecorder, MetadataRecorder metadataRecorder, NoteEventRecorder noteEventRecorder, ScoreEventRecorder scoreEventRecorder, HeightEventRecorder heightEventRecorder, EnergyEventRecorder energyEventRecorder, PauseEventRecorder pauseEventRecorder, WallEventRecorder wallEventRecorder, HsvConfigRecorder hsvConfigRecorder, ReplayService replayService, LiveReplayStreamingService liveReplayStreamingService, SettingsService settings, [InjectOptional] IGamePause gamePause, [InjectOptional] AudioTimeSyncController audioTimeSyncController) {
 
             _poseRecorder = poseRecorder;
             _replayService = replayService;
@@ -35,6 +37,7 @@ namespace ScoreSaber.Features.Replays {
             _wallEventRecorder = wallEventRecorder;
             _hsvConfigRecorder = hsvConfigRecorder;
             _liveReplayStreamingService = liveReplayStreamingService;
+            _settings = settings;
             _gamePause = gamePause;
             _audioTimeSyncController = audioTimeSyncController;
 
@@ -45,7 +48,7 @@ namespace ScoreSaber.Features.Replays {
         public void Initialize() {
 
             _replayService.NewPlayStarted(_id, this);
-            _hsvConfig = _hsvConfigRecorder.Export();
+            _hsvConfig = _settings.Current.shareHsvProfiles ? _hsvConfigRecorder.Export() : null;
             _liveReplayStreamingService.Begin(_metadataRecorder.Export(), _hsvConfig);
             if (_gamePause != null) {
                 _gamePause.didPauseEvent += GamePauseDidPauseEvent;
