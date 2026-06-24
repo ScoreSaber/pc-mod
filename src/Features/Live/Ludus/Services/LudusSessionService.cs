@@ -223,7 +223,6 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _pendingTournamentRoom = null;
             _tournamentRoom = null;
             UpdateViewerList(null);
-            ClearChatMessages();
             _nextLudusUrl = null;
 
             ApplyDefaultSessionRoomContext();

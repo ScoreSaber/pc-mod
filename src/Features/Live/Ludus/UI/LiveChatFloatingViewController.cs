@@ -60,6 +60,7 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
         private string _viewerStatus = string.Empty;
         private float _appliedTextScale = -1f;
         private int _statusVersion;
+        private bool _statusAutoClear;
         private IReadOnlyList<LiveChatEntry> _currentMessages = Array.Empty<LiveChatEntry>();
         private LiveChatFloatingRow[] _visibleRows = Array.Empty<LiveChatFloatingRow>();
         private readonly List<GameObject> _messageObjects = new List<GameObject>();
@@ -158,24 +159,36 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
             SetStatus(value, ShouldAutoClearStatus(value));
         }
 
+        internal void ResumeStatusAutoClear() {
+            StartStatusAutoClearIfReady();
+        }
+
         private void SetStatus(string value, bool autoClear) {
             _statusVersion++;
             status = string.IsNullOrEmpty(value) ? DefaultStatus : value;
+            _statusAutoClear = autoClear && ShouldAutoClearStatus(status);
 
             if (_statusClearCoroutine != null) {
                 StopCoroutine(_statusClearCoroutine);
                 _statusClearCoroutine = null;
             }
 
-            if (autoClear && status != DefaultStatus && gameObject.activeInHierarchy) {
-                _statusClearCoroutine = StartCoroutine(ClearStatusAfterDelay(_statusVersion));
+            StartStatusAutoClearIfReady();
+        }
+
+        private void StartStatusAutoClearIfReady() {
+            if (!_statusAutoClear || _statusClearCoroutine != null || !gameObject.activeInHierarchy) {
+                return;
             }
+
+            _statusClearCoroutine = StartCoroutine(ClearStatusAfterDelay(_statusVersion));
         }
 
         private IEnumerator ClearStatusAfterDelay(int statusVersion) {
             yield return new WaitForSeconds(StatusAutoClearSeconds);
             if (_statusVersion == statusVersion) {
                 _statusVersion++;
+                _statusAutoClear = false;
                 status = DefaultStatus;
             }
 

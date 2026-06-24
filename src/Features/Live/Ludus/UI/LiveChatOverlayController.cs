@@ -133,6 +133,7 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
             if (_visible) {
                 _screen.gameObject.SetActive(true);
                 _screen.SetRootViewController(_viewController, animated ? ViewController.AnimationType.In : ViewController.AnimationType.None);
+                _viewController.ResumeStatusAutoClear();
                 Plugin.Log.Info($"Live chat overlay shown. connected={_ludusSession.IsConnectedToLudus}");
                 return;
             }
