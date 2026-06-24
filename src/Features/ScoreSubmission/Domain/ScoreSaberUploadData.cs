@@ -58,7 +58,7 @@ namespace ScoreSaber.Features.ScoreSubmission.Domain {
         [JsonProperty("deviceControllerRightIdentifier")]
         internal string DeviceControllerRightIdentifier { get; set; }
 
-        internal static ScoreSaberUploadData Create(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, LocalPlayerInfo playerInfo, string infoHash, float playOutcomeTime) {
+        internal static ScoreSaberUploadData Create(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, LocalPlayerInfo playerInfo, string infoHash, float playOutcomeTime, ScoreSaberPlayOutcome? playOutcomeOverride) {
             return new ScoreSaberUploadData {
                 GameMode = $"Solo{beatmapKey.beatmapCharacteristic.serializedName}",
                 Difficulty = BeatmapDifficultyMethods.DefaultRating(beatmapKey.difficulty),
@@ -77,7 +77,7 @@ namespace ScoreSaber.Features.ScoreSubmission.Domain {
                 FullCombo = results.fullCombo,
                 Score = results.multipliedScore,
                 Modifiers = ScoreSaberGameplayModifiers.ToCodeList(results),
-                PlayOutcome = ScoreSaberPlayOutcomes.FromLevelCompletionResults(results),
+                PlayOutcome = playOutcomeOverride ?? ScoreSaberPlayOutcomes.FromLevelCompletionResults(results),
                 PlayOutcomeTime = playOutcomeTime,
                 HMD = null,
                 DeviceHMDIdentifier = VRDevices.GetDeviceHMD(),

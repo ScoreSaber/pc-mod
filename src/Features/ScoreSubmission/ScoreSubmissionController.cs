@@ -3,6 +3,7 @@ using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.Services;
+using ScoreSaber.Features.Live.Compete.Services;
 using ScoreSaber.Features.Live.Replay;
 using ScoreSaber.Features.Players.Services;
 using ScoreSaber.Features.Replays;
@@ -32,15 +33,17 @@ namespace ScoreSaber.Features.ScoreSubmission {
         private readonly GameSessionService _gameSessionService;
         private readonly ReplayState _replayState;
         private readonly LiveReplayStreamingService _liveReplayStreamingService;
+        private readonly CompeteGameplayState _competeGameplayState;
         private int _visibleUploadCount;
 
-        public ScoreSubmissionController(ScoreSubmissionWorkflow submissionWorkflow, ScoreSubmissionService scoreSubmissionService, LeaderboardPlayerScoreCache playerScoreCache, GameSessionService gameSessionService, ReplayState replayState, LiveReplayStreamingService liveReplayStreamingService) {
+        public ScoreSubmissionController(ScoreSubmissionWorkflow submissionWorkflow, ScoreSubmissionService scoreSubmissionService, LeaderboardPlayerScoreCache playerScoreCache, GameSessionService gameSessionService, ReplayState replayState, LiveReplayStreamingService liveReplayStreamingService, CompeteGameplayState competeGameplayState) {
             _submissionWorkflow = submissionWorkflow;
             _scoreSubmissionService = scoreSubmissionService;
             _playerScoreCache = playerScoreCache;
             _gameSessionService = gameSessionService;
             _replayState = replayState;
             _liveReplayStreamingService = liveReplayStreamingService;
+            _competeGameplayState = competeGameplayState;
             Plugin.Log.Debug("Upload service setup!");
         }
 
@@ -71,8 +74,9 @@ namespace ScoreSaber.Features.ScoreSubmission {
 
         private void HandleLevelFinished(ScoreSubmissionRequest request) {
             try {
-                _liveReplayStreamingService.Complete(request.Results, request.PlayOutcomeTime);
-                ScoreSubmissionDecision decision = Decide(request);
+                ScoreSaberPlayOutcome? playOutcomeOverride = GetPlayOutcomeOverride(request);
+                _liveReplayStreamingService.Complete(request.Results, request.PlayOutcomeTime, playOutcomeOverride);
+                ScoreSubmissionDecision decision = Decide(request, playOutcomeOverride);
                 Plugin.Log.Debug($"Score submission decision: {decision.Action} {decision.Reason}");
 
                 switch (decision.Action) {
@@ -82,7 +86,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
                         WriteReplayOnly(request);
                         return;
                     case ScoreSubmissionAction.SubmitScore:
-                        SubmitScore(request, decision.Visibility).RunTask();
+                        SubmitScore(request, decision.Visibility, playOutcomeOverride).RunTask();
                         return;
                 }
             } catch (Exception ex) {
@@ -91,7 +95,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
             }
         }
 
-        private async Task SubmitScore(ScoreSubmissionRequest request, ScoreSubmissionVisibility visibility) {
+        private async Task SubmitScore(ScoreSubmissionRequest request, ScoreSubmissionVisibility visibility, ScoreSaberPlayOutcome? playOutcomeOverride) {
             bool visibleUpload = visibility == ScoreSubmissionVisibility.Visible && ShouldShowUploadStatus(request);
             if (visibleUpload) {
                 IsUploading = Interlocked.Increment(ref _visibleUploadCount) > 0;
@@ -103,6 +107,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
                     request.BeatmapKey,
                     request.Results,
                     request.PlayOutcomeTime,
+                    playOutcomeOverride,
                     visibleUpload,
                     visibleUpload ? Emit : (Action<ScoreSubmissionStatus>)null,
                     false,
@@ -169,7 +174,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
 
         private void Emit(ScoreSubmissionStatus status) => StatusChanged?.Invoke(status);
 
-        private ScoreSubmissionDecision Decide(ScoreSubmissionRequest request) {
+        private ScoreSubmissionDecision Decide(ScoreSubmissionRequest request, ScoreSaberPlayOutcome? playOutcomeOverride) {
             if (_replayState.IsPlaybackEnabled) {
                 return ScoreSubmissionDecision.Ignore("replay playback is active");
             }
@@ -188,6 +193,10 @@ namespace ScoreSaber.Features.ScoreSubmission {
 
             if (request.Results.multipliedScore <= 0) {
                 return ScoreSubmissionDecision.Ignore("score is 0, server would reject it");
+            }
+
+            if (playOutcomeOverride.HasValue && playOutcomeOverride.Value == ScoreSaberPlayOutcome.Quit) {
+                return ScoreSubmissionDecision.SubmitScore(ScoreSubmissionVisibility.Silent, "live map was stopped by host");
             }
 
             if (request.Results.levelEndStateType == LevelCompletionResults.LevelEndStateType.Failed) {
@@ -212,6 +221,15 @@ namespace ScoreSaber.Features.ScoreSubmission {
         private static bool IsPracticeViewActive() => Resources.FindObjectsOfTypeAll<PracticeViewController>().FirstOrDefault()?.isInViewControllerHierarchy ?? false;
 
         private static float GetCurrentSongTime() => Resources.FindObjectsOfTypeAll<AudioTimeSyncController>().FirstOrDefault()?.songTime ?? 0f;
+
+        private ScoreSaberPlayOutcome? GetPlayOutcomeOverride(ScoreSubmissionRequest request) {
+            string songHash;
+            if (!ScoreSaberBeatmapKey.TryGetSongHash(request.BeatmapKey, out songHash)) {
+                songHash = string.Empty;
+            }
+
+            return _competeGameplayState.TryConsumeHostStop(songHash) ? ScoreSaberPlayOutcome.Quit : (ScoreSaberPlayOutcome?)null;
+        }
 
         public void Dispose() {
             Plugin.Log.Info("Upload service succesfully deconstructed");

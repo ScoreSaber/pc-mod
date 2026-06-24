@@ -26,7 +26,11 @@ namespace ScoreSaber.Core.Gameplay {
                 return ScoreSaberPlayOutcome.Quit;
             }
 
-            return ScoreSaberPlayOutcome.Clear;
+            if (results.levelEndStateType == LevelCompletionResults.LevelEndStateType.Cleared) {
+                return ScoreSaberPlayOutcome.Clear;
+            }
+
+            return ScoreSaberPlayOutcome.Quit;
         }
     }
 }

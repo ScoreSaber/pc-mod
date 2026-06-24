@@ -1,4 +1,5 @@
 using ScoreSaber.Core;
+using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Live.V1;
@@ -223,7 +224,11 @@ namespace ScoreSaber.Features.Live.Replay {
             }
         }
 
-        private static ReplayCompletion CompletionFromResults(LevelCompletionResults results) {
+        private static ReplayCompletion CompletionFromResults(LevelCompletionResults results, ScoreSaberPlayOutcome? playOutcomeOverride) {
+            if (playOutcomeOverride.HasValue) {
+                return CompletionFromPlayOutcome(playOutcomeOverride.Value);
+            }
+
             if (results.levelEndAction == LevelCompletionResults.LevelEndAction.Quit) {
                 return ReplayCompletion.ReplayCompletionQuit;
             }
@@ -241,6 +246,21 @@ namespace ScoreSaber.Features.Live.Replay {
             }
 
             return ReplayCompletion.ReplayCompletionAborted;
+        }
+
+        private static ReplayCompletion CompletionFromPlayOutcome(ScoreSaberPlayOutcome outcome) {
+            switch (outcome) {
+                case ScoreSaberPlayOutcome.Clear:
+                    return ReplayCompletion.ReplayCompletionPassed;
+                case ScoreSaberPlayOutcome.Fail:
+                    return ReplayCompletion.ReplayCompletionFailed;
+                case ScoreSaberPlayOutcome.Quit:
+                    return ReplayCompletion.ReplayCompletionQuit;
+                case ScoreSaberPlayOutcome.Restart:
+                    return ReplayCompletion.ReplayCompletionAborted;
+                default:
+                    return ReplayCompletion.ReplayCompletionUnspecified;
+            }
         }
 
         private static ReplayPlatform PlatformFromAuthType(string authType) {

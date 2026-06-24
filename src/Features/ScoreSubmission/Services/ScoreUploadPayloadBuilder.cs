@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using ScoreSaber.Core;
+using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Players.Domain;
 using ScoreSaber.Features.ScoreSubmission.Domain;
 using System;
@@ -16,8 +17,8 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
             _runtimeInfo = runtimeInfo;
         }
 
-        internal ScoreUploadPayload Build(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, LocalPlayerInfo playerInfo, float playOutcomeTime) {
-            ScoreSaberUploadData scoreData = ScoreSaberUploadData.Create(beatmapLevel, beatmapKey, results, playerInfo, _runtimeInfo.UploadVersionHash, playOutcomeTime);
+        internal ScoreUploadPayload Build(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, LocalPlayerInfo playerInfo, float playOutcomeTime, ScoreSaberPlayOutcome? playOutcomeOverride) {
+            ScoreSaberUploadData scoreData = ScoreSaberUploadData.Create(beatmapLevel, beatmapKey, results, playerInfo, _runtimeInfo.UploadVersionHash, playOutcomeTime, playOutcomeOverride);
             string serializedScore = JsonConvert.SerializeObject(scoreData);
             string key = BuildUploadKey(playerInfo);
 

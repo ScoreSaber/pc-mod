@@ -1,11 +1,12 @@
 using ScoreSaber.Core;
+using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Live.V1;
 using System;
 
 namespace ScoreSaber.Features.Live.Replay {
     internal partial class LiveReplayStreamingService {
-        internal void Complete(LevelCompletionResults results, float playOutcomeTime) {
+        internal void Complete(LevelCompletionResults results, float playOutcomeTime, ScoreSaberPlayOutcome? playOutcomeOverride = null) {
             if (!_recording) {
                 return;
             }
@@ -25,7 +26,7 @@ namespace ScoreSaber.Features.Live.Replay {
                     MatchId = _ludus.CurrentLudusMatchId,
                     End = new ReplayStreamEnd {
                         Cursor = Cursor(_nextSequence++, playOutcomeTime),
-                        Completion = CompletionFromResults(results),
+                        Completion = CompletionFromResults(results, playOutcomeOverride),
                         Score = ScoreSummary(results),
                         ChunkCount = _chunkCount,
                         CumulativeEventCounts = CloneCounts(_counts)

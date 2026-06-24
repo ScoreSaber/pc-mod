@@ -30,6 +30,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 return false;
             }
 
+            _gameplayState.MarkHostStopRequested();
             _songControl.Quit();
             return true;
         }

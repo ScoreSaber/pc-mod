@@ -1,4 +1,5 @@
 using ScoreSaber.Core.Api;
+using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Players.Services;
 using ScoreSaber.Features.Replays;
 using ScoreSaber.Features.ScoreSubmission.Domain;
@@ -30,7 +31,7 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
             _apiClient = apiClient;
         }
 
-        internal async Task<ScoreUploadResult> SubmitScore(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, float playOutcomeTime, bool saveLocalReplay, Action<ScoreSubmissionStatus> statusChanged, bool forceAuthenticationRefresh, bool notifyAuthenticationStatus, CancellationToken cancellationToken) {
+        internal async Task<ScoreUploadResult> SubmitScore(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, float playOutcomeTime, ScoreSaberPlayOutcome? playOutcomeOverride, bool saveLocalReplay, Action<ScoreSubmissionStatus> statusChanged, bool forceAuthenticationRefresh, bool notifyAuthenticationStatus, CancellationToken cancellationToken) {
             Report(statusChanged, ScoreUploadStatus.Packaging, "Packaging score...");
             ReplaySerializationResult replay = await WriteSerializedReplay(statusChanged);
             if (replay == null || replay.Replay == null) {
@@ -42,7 +43,7 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
             }
 
             float outcomeTime = GetPlayOutcomeTime(results, playOutcomeTime, replay.FailTime);
-            ScoreUploadPayload payload = _payloadBuilder.Build(beatmapLevel, beatmapKey, results, _gameSessionService.LocalPlayerInfo, outcomeTime);
+            ScoreUploadPayload payload = _payloadBuilder.Build(beatmapLevel, beatmapKey, results, _gameSessionService.LocalPlayerInfo, outcomeTime, playOutcomeOverride);
 
             Plugin.Log.Debug($"Upload payload size: data={payload.EncryptedScoreData.Length} chars, replay={replay.Replay.Length} bytes");
             ScoreUploadResult result = await UploadWithRetries(payload.EncryptedScoreData, payload.ScoreData.InfoHash, replay.Replay, statusChanged, notifyAuthenticationStatus, cancellationToken);
