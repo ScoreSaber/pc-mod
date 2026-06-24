@@ -38,6 +38,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 #endif
         private const string CountryIconResource = "ScoreSaber.Resources.country.png";
 
+        private static PlatformLeaderboardViewController _currentPlatformLeaderboardViewController;
         private static LoadingControl _activePlatformLoadingControl;
         private static string _suppressedPlatformCustomLevelWarningText = string.Empty;
 
@@ -80,6 +81,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private void Construct(SettingsService settings, PlatformLeaderboardViewController platformLeaderboardViewController, LeaderboardTweeningService leaderboardTweeningService) {
             _settings = settings;
             _platformLeaderboardViewController = platformLeaderboardViewController;
+            _currentPlatformLeaderboardViewController = platformLeaderboardViewController;
             _leaderboardTweeningService = leaderboardTweeningService;
         }
 
@@ -447,7 +449,10 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private void RestorePlatformControls() {
             LoadingControl loadingControl = _activePlatformLoadingControl;
             _activePlatformLoadingControl = null;
-            if (loadingControl != null && PlatformLeaderboardHasCustomLevel() && IsCustomLevelWarningText(_suppressedPlatformCustomLevelWarningText)) {
+            if (loadingControl != null
+                && PlatformLeaderboardHasCustomLevel()
+                && !PlatformLeaderboardHasScoreSaberCustomLevel()
+                && IsCustomLevelWarningText(_suppressedPlatformCustomLevelWarningText)) {
                 loadingControl.ShowText(_suppressedPlatformCustomLevelWarningText, false);
             }
             _suppressedPlatformCustomLevelWarningText = string.Empty;
@@ -459,7 +464,10 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         }
 
         internal static bool ShouldSuppressPlatformCustomLevelWarning(LoadingControl loadingControl, string text) {
-            if (loadingControl == null || loadingControl != _activePlatformLoadingControl || !IsCustomLevelWarningText(text)) {
+            if (loadingControl == null
+                || !IsCustomLevelWarningText(text)
+                || (loadingControl != _activePlatformLoadingControl && !IsCurrentPlatformLoadingControl(loadingControl))
+                || !PlatformLeaderboardHasScoreSaberCustomLevel()) {
                 return false;
             }
 
@@ -470,17 +478,38 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         private static bool IsCustomLevelWarningText(string text) => !string.IsNullOrEmpty(text) && text.IndexOf("custom levels", StringComparison.OrdinalIgnoreCase) >= 0;
 
-        private bool PlatformLeaderboardHasCustomLevel() {
-            if (_platformLeaderboardViewController == null) {
+        private static bool IsCurrentPlatformLoadingControl(LoadingControl loadingControl) {
+            PlatformLeaderboardViewController platformLeaderboardViewController = _currentPlatformLeaderboardViewController;
+            return platformLeaderboardViewController != null && loadingControl == PlatformLoadingControl(ref platformLeaderboardViewController);
+        }
+
+        private static bool PlatformLeaderboardHasCustomLevel() {
+            PlatformLeaderboardViewController platformLeaderboardViewController = _currentPlatformLeaderboardViewController;
+            if (platformLeaderboardViewController == null) {
                 return false;
             }
 
 #if BEAT_SABER_1_29_0
-            IDifficultyBeatmap difficultyBeatmap = PlatformDifficultyBeatmap(ref _platformLeaderboardViewController);
+            IDifficultyBeatmap difficultyBeatmap = PlatformDifficultyBeatmap(ref platformLeaderboardViewController);
             return difficultyBeatmap?.level is CustomBeatmapLevel;
 #else
-            BeatmapKey beatmapKey = PlatformBeatmapKey(ref _platformLeaderboardViewController);
+            BeatmapKey beatmapKey = PlatformBeatmapKey(ref platformLeaderboardViewController);
             return ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey);
+#endif
+        }
+
+        private static bool PlatformLeaderboardHasScoreSaberCustomLevel() {
+            PlatformLeaderboardViewController platformLeaderboardViewController = _currentPlatformLeaderboardViewController;
+            if (platformLeaderboardViewController == null) {
+                return false;
+            }
+
+#if BEAT_SABER_1_29_0
+            IDifficultyBeatmap difficultyBeatmap = PlatformDifficultyBeatmap(ref platformLeaderboardViewController);
+            return difficultyBeatmap?.level is CustomBeatmapLevel && ScoreSaberBeatmapKey.IsSupportedLevelId(difficultyBeatmap.level.levelID);
+#else
+            BeatmapKey beatmapKey = PlatformBeatmapKey(ref platformLeaderboardViewController);
+            return ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey) && ScoreSaberBeatmapKey.IsSupported(beatmapKey);
 #endif
         }
     }
