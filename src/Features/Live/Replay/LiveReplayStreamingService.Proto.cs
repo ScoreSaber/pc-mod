@@ -1,4 +1,5 @@
 using ScoreSaber.Core;
+using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Live.V1;
 using System;
 using System.Collections.Generic;
@@ -239,15 +240,19 @@ namespace ScoreSaber.Features.Live.Replay {
         }
 
         private static string ExtractMapHash(string levelId) {
-            string value = levelId ?? string.Empty;
-            string[] parts = value.Split('_');
-            return parts.Length >= 3 ? parts[2].ToUpperInvariant() : value.ToUpperInvariant();
+            string songHash;
+            return ScoreSaberBeatmapKey.TryGetSongHash(levelId, out songHash) ? songHash : string.Empty;
         }
 
         private static string ExtractLeaderboardId(string levelId) {
-            string value = levelId ?? string.Empty;
-            string[] parts = value.Split('_');
-            return parts.Length >= 3 ? parts[2] : string.Empty;
+            return ExtractMapHash(levelId);
+        }
+
+        private bool CanUsePublicPresenceForCurrentLevel() {
+            string levelId = _metadata.LevelID;
+            return ScoreSaberBeatmapKey.IsCustomLevelId(levelId)
+                && !ScoreSaberBeatmapKey.IsWipLevelId(levelId)
+                && ScoreSaberBeatmapKey.TryGetSongHash(levelId, out _);
         }
 
         private static string DifficultyName(int difficulty) {

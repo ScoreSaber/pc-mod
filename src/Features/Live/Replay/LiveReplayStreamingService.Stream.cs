@@ -92,8 +92,13 @@ namespace ScoreSaber.Features.Live.Replay {
                 return;
             }
 
+            bool canUsePublicPresence = CanUsePublicPresenceForCurrentLevel();
+            if (_ludus.IsInPublicPresence && !canUsePublicPresence) {
+                return;
+            }
+
             TrySendPlayingPresence();
-            bool shouldStream = _ludus.IsInTournamentRoom || (_playerFollowRequested && _ludus.IsInPublicPresence);
+            bool shouldStream = _ludus.IsInTournamentRoom || (canUsePublicPresence && _playerFollowRequested && _ludus.IsInPublicPresence);
             if (!shouldStream) {
                 return;
             }
@@ -131,6 +136,10 @@ namespace ScoreSaber.Features.Live.Replay {
             }
 
             if (!_ludus.IsInTournamentRoom && !_ludus.IsInPublicPresence) {
+                return;
+            }
+
+            if (_ludus.IsInPublicPresence && !CanUsePublicPresenceForCurrentLevel()) {
                 return;
             }
 

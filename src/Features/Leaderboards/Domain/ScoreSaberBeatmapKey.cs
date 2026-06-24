@@ -3,10 +3,13 @@ using System;
 namespace ScoreSaber.Features.Leaderboards.Domain {
     internal static class ScoreSaberBeatmapKey {
         private const string CustomLevelPrefix = "custom_level_";
+        private const string OstLevelPrefix = "ost_";
         private const string WipLevelSuffix = " WIP";
         private const string WipLevelSegment = "_WIP";
 
         internal static bool IsSupported(BeatmapKey beatmapKey) => TryGetSongHash(beatmapKey, out _);
+
+        internal static bool IsSupportedLevelId(string levelId) => TryGetSongHash(levelId, out _);
 
         internal static bool IsCustomLevel(BeatmapKey beatmapKey) => IsCustomLevelId(beatmapKey.levelId);
 
@@ -25,22 +28,24 @@ namespace ScoreSaber.Features.Leaderboards.Domain {
             return songHash;
         }
 
-        private static bool TryGetSongHash(string levelId, out string songHash) {
+        internal static bool TryGetSongHash(string levelId, out string songHash) {
             songHash = string.Empty;
-            if (string.IsNullOrEmpty(levelId) || !levelId.StartsWith(CustomLevelPrefix, StringComparison.Ordinal)) {
+            if (string.IsNullOrEmpty(levelId)) {
                 return false;
             }
 
-            if (IsWipLevelId(levelId)) {
+            if (IsCustomLevelId(levelId) && IsWipLevelId(levelId)) {
                 return false;
             }
 
-            songHash = GetLevelInfo(levelId)[0];
+            songHash = FormatSongHash(levelId);
             return !string.IsNullOrEmpty(songHash);
         }
 
-        private static bool IsWipLevelId(string levelId) => levelId.IndexOf(WipLevelSuffix, StringComparison.OrdinalIgnoreCase) >= 0 || levelId.IndexOf(WipLevelSegment, StringComparison.OrdinalIgnoreCase) >= 0;
+        internal static bool IsWipLevelId(string levelId) => !string.IsNullOrEmpty(levelId) && (levelId.IndexOf(WipLevelSuffix, StringComparison.OrdinalIgnoreCase) >= 0 || levelId.IndexOf(WipLevelSegment, StringComparison.OrdinalIgnoreCase) >= 0);
 
-        private static string[] GetLevelInfo(string levelId) => levelId.Substring(CustomLevelPrefix.Length).Split('_');
+        private static string FormatSongHash(string levelId) => levelId.IndexOf(CustomLevelPrefix, StringComparison.Ordinal) >= 0
+            ? levelId.Replace(CustomLevelPrefix, string.Empty)
+            : OstLevelPrefix + levelId;
     }
 }

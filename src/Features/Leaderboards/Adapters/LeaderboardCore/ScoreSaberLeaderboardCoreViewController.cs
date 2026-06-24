@@ -31,6 +31,11 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private static readonly FieldAccessor<PlatformLeaderboardViewController, Sprite>.Accessor PlatformGlobalLeaderboardIcon = FieldAccessor<PlatformLeaderboardViewController, Sprite>.GetAccessor("_globalLeaderboardIcon");
         private static readonly FieldAccessor<PlatformLeaderboardViewController, Sprite>.Accessor PlatformAroundPlayerLeaderboardIcon = FieldAccessor<PlatformLeaderboardViewController, Sprite>.GetAccessor("_aroundPlayerLeaderboardIcon");
         private static readonly FieldAccessor<PlatformLeaderboardViewController, Sprite>.Accessor PlatformFriendsLeaderboardIcon = FieldAccessor<PlatformLeaderboardViewController, Sprite>.GetAccessor("_friendsLeaderboardIcon");
+#if BEAT_SABER_1_29_0
+        private static readonly FieldAccessor<PlatformLeaderboardViewController, IDifficultyBeatmap>.Accessor PlatformDifficultyBeatmap = FieldAccessor<PlatformLeaderboardViewController, IDifficultyBeatmap>.GetAccessor("_difficultyBeatmap");
+#else
+        private static readonly FieldAccessor<PlatformLeaderboardViewController, BeatmapKey>.Accessor PlatformBeatmapKey = FieldAccessor<PlatformLeaderboardViewController, BeatmapKey>.GetAccessor("_beatmapKey");
+#endif
         private const string CountryIconResource = "ScoreSaber.Resources.country.png";
 
         private static LoadingControl _activePlatformLoadingControl;
@@ -442,7 +447,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private void RestorePlatformControls() {
             LoadingControl loadingControl = _activePlatformLoadingControl;
             _activePlatformLoadingControl = null;
-            if (loadingControl != null && IsCustomLevelWarningText(_suppressedPlatformCustomLevelWarningText)) {
+            if (loadingControl != null && PlatformLeaderboardHasCustomLevel() && IsCustomLevelWarningText(_suppressedPlatformCustomLevelWarningText)) {
                 loadingControl.ShowText(_suppressedPlatformCustomLevelWarningText, false);
             }
             _suppressedPlatformCustomLevelWarningText = string.Empty;
@@ -464,6 +469,20 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         }
 
         private static bool IsCustomLevelWarningText(string text) => !string.IsNullOrEmpty(text) && text.IndexOf("custom levels", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        private bool PlatformLeaderboardHasCustomLevel() {
+            if (_platformLeaderboardViewController == null) {
+                return false;
+            }
+
+#if BEAT_SABER_1_29_0
+            IDifficultyBeatmap difficultyBeatmap = PlatformDifficultyBeatmap(ref _platformLeaderboardViewController);
+            return difficultyBeatmap?.level is CustomBeatmapLevel;
+#else
+            BeatmapKey beatmapKey = PlatformBeatmapKey(ref _platformLeaderboardViewController);
+            return ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey);
+#endif
+        }
     }
 
     internal class LeaderboardPlayerNameLayout : MonoBehaviour {

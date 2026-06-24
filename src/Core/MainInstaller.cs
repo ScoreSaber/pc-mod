@@ -27,6 +27,7 @@ namespace ScoreSaber.Core {
             Container.Install<LiveFeatureInstaller>();
             Container.Install<MainMenuFeatureInstaller>();
             Container.BindInterfacesTo<MultiplayerSessionController>().AsSingle();
+            Container.BindInterfacesTo<MultiplayerLeaderboardController>().AsSingle();
         }
     }
 }

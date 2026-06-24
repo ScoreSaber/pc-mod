@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Core.Platform;
+using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Players.Domain;
 using System;
 using System.Collections.Generic;
@@ -58,13 +59,11 @@ namespace ScoreSaber.Features.ScoreSubmission.Domain {
         internal string DeviceControllerRightIdentifier { get; set; }
 
         internal static ScoreSaberUploadData Create(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, LocalPlayerInfo playerInfo, string infoHash, float playOutcomeTime) {
-            string[] levelInfo = beatmapKey.levelId.Split('_');
-
             return new ScoreSaberUploadData {
                 GameMode = $"Solo{beatmapKey.beatmapCharacteristic.serializedName}",
                 Difficulty = BeatmapDifficultyMethods.DefaultRating(beatmapKey.difficulty),
                 InfoHash = infoHash,
-                LeaderboardId = levelInfo[2],
+                LeaderboardId = ScoreSaberBeatmapKey.GetSongHash(beatmapKey),
                 SongName = beatmapLevel.songName,
                 SongSubName = beatmapLevel.songSubName,
                 SongAuthorName = beatmapLevel.songAuthorName,

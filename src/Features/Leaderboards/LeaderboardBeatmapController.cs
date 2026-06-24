@@ -24,7 +24,7 @@ namespace ScoreSaber.Features.Leaderboards {
         }
 
         public void OnLeaderboardSet(BeatmapKey beatmapKey) {
-            if (!ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey)) {
+            if (!ScoreSaberBeatmapKey.IsSupported(beatmapKey)) {
                 _leaderboardSession.ClearBeatmap();
                 return;
             }

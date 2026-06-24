@@ -1,4 +1,3 @@
-using LeaderboardCore.Interfaces;
 using ScoreSaber.Core;
 using ScoreSaber.Features.Leaderboards.Services;
 using ScoreSaber.Features.Leaderboards.UI;

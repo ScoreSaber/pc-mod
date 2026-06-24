@@ -427,7 +427,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
         private bool RefreshRoomLeaderboard() {
             CompeteSongSelection song = _selectedRoom?.Song;
-            if (song == null || !ScoreSaberBeatmapKey.IsCustomLevel(song.BeatmapKey)) {
+            if (song == null || !ScoreSaberBeatmapKey.IsSupported(song.BeatmapKey)) {
                 return false;
             }
 
@@ -437,7 +437,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
         private void RestoreMenuLeaderboard() {
             BeatmapKey beatmapKey = _levelSelectionNavigationController.GetBeatmapKey();
-            if (ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey)) {
+            if (ScoreSaberBeatmapKey.IsSupported(beatmapKey)) {
                 _platformLeaderboardViewController.SetDataCompat(beatmapKey);
                 return;
             }
