@@ -23,6 +23,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
     internal class LudusSessionService : IInitializable, ITickable, IDisposable {
         private const float ReconnectMinDelaySeconds = 0.5f;
         private const float ReconnectMaxDelaySeconds = 10f;
+        private static readonly TimeSpan FreshGameSessionAuthGuard = TimeSpan.FromMinutes(3);
         private static readonly TimeSpan GameSessionReconnectRefreshInterval = TimeSpan.FromHours(3);
         private static readonly TimeSpan GameSessionRefreshRetryDelay = TimeSpan.FromMinutes(10);
         private static readonly Regex DisplayMarkupTagPattern = new Regex(@"<[^>\r\n]{1,128}>", RegexOptions.Compiled);
@@ -117,6 +118,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 () => CurrentLudusMatchId,
                 () => _pendingTournamentRoom,
                 ApplyClientContext,
+                Disconnect,
                 EnterTournamentRoom,
                 RequestAuthenticationRefresh,
                 () => _nextHeartbeatAt = Time.realtimeSinceStartup + _heartbeatIntervalSeconds,
@@ -264,9 +266,17 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             ChatMessagesChanged?.Invoke(CurrentChatMessages);
         }
 
-        private void RequestAuthenticationRefresh() {
+        private bool RequestAuthenticationRefresh() {
+            DateTime lastAuthenticatedAtUtc = _gameSessionService.LastAuthenticatedAtUtc;
+            if (lastAuthenticatedAtUtc != DateTime.MinValue && DateTime.UtcNow - lastAuthenticatedAtUtc < FreshGameSessionAuthGuard) {
+                _nextConnectionAuthRefreshAttemptAtUtc = lastAuthenticatedAtUtc + FreshGameSessionAuthGuard;
+                Plugin.Log.Warn("Ludus: ignoring authentication refresh request because the game session was refreshed recently.");
+                return false;
+            }
+
             _forceAuthenticationRefreshOnNextConnect = true;
             _nextConnectionAuthRefreshAttemptAtUtc = DateTime.MinValue;
+            return true;
         }
 
         private void UpdateViewerList(IReadOnlyList<LiveRoomViewerState> viewers) {

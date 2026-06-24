@@ -18,8 +18,16 @@ namespace ScoreSaber.Features.Live.Ludus.Packets.Handlers {
             if (string.Equals(envelope.ErrorCode, "auth_failed", StringComparison.OrdinalIgnoreCase)) {
                 session.NotifyStatusChanged(status);
                 Plugin.Log.Warn(status);
-                session.RequestAuthenticationRefresh();
-                session.ScheduleReconnect("authentication failed", 0.5f);
+                if (envelope.Retryable) {
+                    if (session.RequestAuthenticationRefresh()) {
+                        session.ScheduleReconnect("authentication failed", 0.5f);
+                    } else {
+                        session.ScheduleReconnect("authentication failed with a fresh game session", null);
+                    }
+                    return;
+                }
+
+                session.Disconnect();
                 return;
             }
 

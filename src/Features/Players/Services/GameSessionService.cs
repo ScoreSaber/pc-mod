@@ -16,6 +16,7 @@ namespace ScoreSaber.Features.Players.Services {
         public GameSession GameSession { get; private set; }
         public LoginStatus Status { get; private set; }
         public string StatusText { get; private set; } = string.Empty;
+        internal DateTime LastAuthenticatedAtUtc { get; private set; } = DateTime.MinValue;
         internal bool HasAuthenticatedSession => LocalPlayerInfo != null && GameSession != null && GameSession.IsAuthenticated;
         internal bool CanUseUploadProtocolV2 => _buildMetadata.IsOfficial || _buildMetadata.IsDevelopment;
         public event Action<LoginStatus, string> LoginStatusChanged;
@@ -190,6 +191,7 @@ namespace ScoreSaber.Features.Players.Services {
                     }
 
                     GameSession = authResult.Session;
+                    LastAuthenticatedAtUtc = DateTime.UtcNow;
                     playerInfo.playerKey = authResult.Session.SessionKey;
                     return true;
                 }

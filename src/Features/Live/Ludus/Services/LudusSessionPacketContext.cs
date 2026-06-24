@@ -18,8 +18,9 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private readonly Func<string> _getCurrentLudusMatchId;
         private readonly Func<CompeteRoom> _getPendingTournamentRoom;
         private readonly Action<DecodedLudusEnvelope> _applyClientContext;
+        private readonly Action _disconnect;
         private readonly Action<CompeteRoom> _enterTournamentRoom;
-        private readonly Action _requestAuthenticationRefresh;
+        private readonly Func<bool> _requestAuthenticationRefresh;
         private readonly Action _scheduleNextHeartbeat;
         private readonly Action<string, float?> _scheduleReconnect;
         private readonly Action<LudusPlayState, LudusDownloadState, string> _sendPresence;
@@ -39,8 +40,9 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             Func<string> getCurrentLudusMatchId,
             Func<CompeteRoom> getPendingTournamentRoom,
             Action<DecodedLudusEnvelope> applyClientContext,
+            Action disconnect,
             Action<CompeteRoom> enterTournamentRoom,
-            Action requestAuthenticationRefresh,
+            Func<bool> requestAuthenticationRefresh,
             Action scheduleNextHeartbeat,
             Action<string, float?> scheduleReconnect,
             Action<LudusPlayState, LudusDownloadState, string> sendPresence,
@@ -59,6 +61,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _getCurrentLudusMatchId = getCurrentLudusMatchId;
             _getPendingTournamentRoom = getPendingTournamentRoom;
             _applyClientContext = applyClientContext;
+            _disconnect = disconnect;
             _enterTournamentRoom = enterTournamentRoom;
             _requestAuthenticationRefresh = requestAuthenticationRefresh;
             _scheduleNextHeartbeat = scheduleNextHeartbeat;
@@ -89,8 +92,9 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         public string CurrentLudusMatchId => _getCurrentLudusMatchId();
         public CompeteRoom PendingTournamentRoom => _getPendingTournamentRoom();
         public void ApplyClientContext(DecodedLudusEnvelope envelope) => _applyClientContext(envelope);
+        public void Disconnect() => _disconnect();
         public void EnterTournamentRoom(CompeteRoom room) => _enterTournamentRoom(room);
-        public void RequestAuthenticationRefresh() => _requestAuthenticationRefresh();
+        public bool RequestAuthenticationRefresh() => _requestAuthenticationRefresh();
         public void ScheduleNextHeartbeat() => _scheduleNextHeartbeat();
         public void ScheduleReconnect(string reason, float? delayOverrideSeconds) => _scheduleReconnect(reason, delayOverrideSeconds);
         public void SendPresence(LudusPlayState playState, LudusDownloadState downloadState, string currentMapHash) =>
