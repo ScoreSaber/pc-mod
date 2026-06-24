@@ -19,6 +19,10 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         private static MethodBase TargetShowDefaultLeaderboard() {
             System.Type type = typeof(CustomLeaderboard).Assembly.GetType(NavigationButtonsType);
+            if (type == null) {
+                return null;
+            }
+
             return AccessTools.PropertyGetter(type, "ShowDefaultLeaderboard");
         }
 
