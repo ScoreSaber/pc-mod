@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="BeatSaberModdingTools.Tasks" Version="2.0.0-beta4" />
+    <PackageVersion Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" />
+  </ItemGroup>
+</Project>

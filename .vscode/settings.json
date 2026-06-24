@@ -1,0 +1,14 @@
+{
+    "files.exclude": {
+        ".config": true,
+        ".vs": true,
+        "src/bin": true,
+        "src/obj": true
+    },
+    "search.exclude": {
+        ".config": true,
+        ".vs": true,
+        "src/bin": true,
+        "src/obj": true
+    }
+}

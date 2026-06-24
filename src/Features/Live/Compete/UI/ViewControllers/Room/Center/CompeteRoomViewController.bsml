@@ -1,0 +1,90 @@
+<bg horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+  <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2">
+    <horizontal bg="panel-top" horizontal-fit="PreferredSize" pref-width="72">
+      <text text="~room-title" align="Center" font-size="6.5" overflow-mode="Ellipsis" />
+    </horizontal>
+
+    <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="72" spacing="2">
+      <vertical bg="round-rect-panel" bg-color="grey" pref-width="70" pref-height="52" pad="2" spacing="1" child-align="MiddleCenter">
+        <text text="Selected Song" align="Center" font-size="5" />
+        <vertical id="song-content" active="~song-active" pref-width="64" pref-height="34" child-align="MiddleCenter" spacing="1.2">
+          <horizontal id="song-summary-row" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-align="MiddleCenter" child-control-width="true" child-control-height="true" child-expand-width="false" child-expand-height="false" spacing="2">
+            <img id="song-cover" pref-width="14" pref-height="14" preserve-aspect="true" />
+            <vertical id="song-text-column" pref-width="34" child-align="MiddleLeft" child-control-width="true" child-expand-width="false">
+              <text id="song-name-text" text="~song-name" align="Left" font-size="3.9" overflow-mode="Ellipsis" />
+              <text id="song-detail-text" text="~song-detail" align="Left" font-size="2.6" overflow-mode="Ellipsis" />
+              <text id="song-difficulty-text" text="~song-difficulty" align="Left" font-size="2.6" overflow-mode="Ellipsis" />
+            </vertical>
+          </horizontal>
+          <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="0.6">
+            <vertical pref-width="6.3">
+              <img src="#ClockIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-duration" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <img src="#MetronomeIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-bpm" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <img src="#NPSIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-nps" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <img src="#GameNoteIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-notes" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <img src="#ObstacleIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-obstacles" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <img src="#BombIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-bombs" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <img src="#FastNotesIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-njs" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <img src="#MeasureIcon" preserve-aspect="true" pref-width="2.6" pref-height="2.6" />
+              <text text="~song-jump-distance" align="Center" font-size="1.9" />
+            </vertical>
+            <vertical pref-width="6.3">
+              <text text="*" align="Center" font-size="2.6" pref-height="2.6" />
+              <text text="~song-stars" align="Center" font-size="1.9" />
+            </vertical>
+          </horizontal>
+        </vertical>
+        <vertical active="~song-status-active" pref-width="60" pref-height="34" child-align="MiddleCenter">
+          <text text="~song-status" align="Center" font-size="4.2" word-wrapping="true" pref-width="52" />
+        </vertical>
+        <vertical active="~song-empty" pref-width="60" pref-height="34" child-align="MiddleCenter">
+          <text text="No song has been selected yet." align="Center" font-size="3.8" word-wrapping="true" />
+        </vertical>
+        <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="1">
+          <button text="Players" on-click="show-players" pref-width="18" pref-height="8" />
+          <button text="Leaderboard" on-click="show-leaderboard" pref-width="24" pref-height="8" />
+          <button text="~ready-text" on-click="toggle-ready" pref-width="21" pref-height="8" />
+        </horizontal>
+      </vertical>
+    </horizontal>
+  </vertical>
+
+  <modal show-event="show-organiser-prompt" hide-event="hide-organiser-prompt" size-delta-x="82" size-delta-y="42" click-off-closes="false">
+    <vertical pref-width="78" pref-height="34" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pad="2" spacing="2">
+      <text text="~prompt-message" align="Center" font-size="3.8" word-wrapping="true" pref-width="70" pref-height="16" />
+      <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2">
+        <button text="~prompt-secondary" on-click="prompt-secondary-clicked" pref-width="28" pref-height="8" />
+        <button text="~prompt-primary" on-click="prompt-primary-clicked" pref-width="28" pref-height="8" />
+      </horizontal>
+    </vertical>
+  </modal>
+
+  <modal show-event="show-map-start-countdown" hide-event="hide-map-start-countdown" size-delta-x="64" size-delta-y="44" click-off-closes="false">
+    <vertical pref-width="60" pref-height="40" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pad="2" spacing="1.5" child-align="MiddleCenter">
+      <text text="Map starting" align="Center" font-size="6" overflow-mode="Ellipsis" />
+      <text text="~map-start-countdown-number" align="Center" font-size="16" />
+      <text text="~map-start-countdown-detail" align="Center" font-size="4" overflow-mode="Ellipsis" />
+    </vertical>
+  </modal>
+</bg>

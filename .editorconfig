@@ -12,8 +12,7 @@ indent_style = space
 tab_width = 4
 
 # New line preferences
-end_of_line = crlf
-insert_final_newline = false
+insert_final_newline = true
 
 #### .NET Coding Conventions ####
 
@@ -219,3 +218,11 @@ dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.required_suffix = 
 dotnet_naming_style.begins_with_i.word_separator = 
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+[src/Core/Api/Generated/**/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+
+[src/Libraries/SevenZip/**/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

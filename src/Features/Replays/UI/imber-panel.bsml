@@ -1,0 +1,68 @@
+﻿<bg horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd">
+
+  <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="60" pref-height="40" pad="1" spacing="2">
+    <vertical horizontal-fit="MinSize" vertical-fit="PreferredSize" pref-width="60" pref-height="6">
+      <tab-selector id="tab-selector" tab-tag="page-tab" child-control-width="false" page-count="4" />
+    </vertical>
+    <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-height="0.3">
+      <image src="#WhitePixel" pref-width="60" pref-height="0.3" />
+    </vertical>
+    <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55" pref-height="10">
+      <tab tags="page-tab" tab-name="Player">
+        <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="10">
+          <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize">
+            <button text="~play-pause-text" pref-width="54" pref-height="8" on-click="pause-play" />
+          </horizontal>
+          <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize">
+            <button text="RESTART" pref-width="28" pref-height="8" on-click="restart" />
+            <button text="~loop-text" pref-width="28" pref-height="8" on-click="loop" />
+          </horizontal>
+        </vertical>
+      </tab>
+      <tab tags="page-tab" tab-name="Stats">
+        <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-height="15">
+          <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55">
+            <text text="PLAYER'S FPS" align="Left" italics="true" />
+            <text id="fps-text" text="0" align="Right" italics="true" />
+          </horizontal>
+          <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55">
+            <text text="LEFT SABER SPEED" align="Left" italics="true" />
+            <text id="left-speed-text" text="0.0 m/s" align="Right" italics="true" />
+          </horizontal>
+          <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55">
+            <text text="RIGHT SABER SPEED" align="Left" italics="true" />
+            <text id="right-speed-text" text="0.0 m/s" align="Right" italics="true" />
+          </horizontal>
+        </vertical>
+      </tab>
+      <tab tags="page-tab" tab-name="Position">
+        <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55">
+          <list-setting text="LOCATION" pref-width="55" value="location" options="locations" apply-on-change="true" />
+          <button text="JUMP" pref-width="40" italics="true" on-click="jump" />
+        </vertical>
+      </tab>
+      <tab tags="page-tab" tab-name="Time">
+        <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55">
+          <slider-setting text="Time Scale" overflow-mode="Overflow" word-wrapping="false" min="0.1" max="2" increment="0.05" value="time-sync" apply-on-change="true" formatter="format-time-percent" />
+        </vertical>
+      </tab>
+    </horizontal>
+    <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-height="0.3">
+      <image src="#WhitePixel" pref-width="60" pref-height="0.3" />
+    </vertical>
+    <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="55" pref-height="10">
+      <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="20">
+        <clickable-text text="👈" align="Capline" font-size="8" on-click="left-hand" />
+        <clickable-text text="👉" align="Capline" font-size="8" on-click="right-hand" />
+      </horizontal>
+      <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="30" />
+      <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="10">
+        <clickable-text text="❌" align="Capline" font-size="5" on-click="request-dismiss" />
+      </horizontal>
+    </horizontal>
+  </vertical>
+  
+  <bg id="bar-root">
+    
+  </bg>
+</bg>

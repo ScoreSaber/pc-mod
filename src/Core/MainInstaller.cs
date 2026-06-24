@@ -1,0 +1,33 @@
+﻿using ScoreSaber.Core.Api;
+using ScoreSaber.Core.BeatSaver;
+using ScoreSaber.Core.Compat;
+using ScoreSaber.Core.Presentation;
+using ScoreSaber.Features.Leaderboards;
+using ScoreSaber.Features.Live;
+using ScoreSaber.Features.MainMenu;
+using ScoreSaber.Features.Players;
+using ScoreSaber.Features.Replays;
+using ScoreSaber.Features.ScoreSubmission;
+using ScoreSaber.Features.Multiplayer;
+using Zenject;
+
+namespace ScoreSaber.Core {
+    internal class MainInstaller : Installer {
+
+        public override void InstallBindings() {
+            Container.BindInstance(new object()).WithId("ScoreSaberUIBindings").AsCached();
+            Container.Bind<IScoreSaberApiClient>().To<ScoreSaberApiClient>().AsSingle();
+            Container.Bind<BeatSaverService>().AsSingle();
+            Container.Bind<RemoteImageService>().AsSingle();
+            Container.Install<CompatInstaller>();
+            Container.Install<PlayersFeatureInstaller>();
+            Container.Install<ReplayFeatureInstaller>();
+            Container.Install<ScoreSubmissionFeatureInstaller>();
+            Container.Install<LeaderboardFeatureInstaller>();
+            Container.Install<LiveFeatureInstaller>();
+            Container.Install<MainMenuFeatureInstaller>();
+            Container.BindInterfacesTo<MultiplayerSessionController>().AsSingle();
+            Container.BindInterfacesTo<MultiplayerLeaderboardController>().AsSingle();
+        }
+    }
+}

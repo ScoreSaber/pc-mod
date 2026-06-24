@@ -2,69 +2,242 @@ name: Build
 
 on:
    workflow_dispatch:
+     inputs:
+       base_version:
+         description: Beat Saber base version to build
+         required: true
+         default: All
+         type: choice
+         options:
+         - All
+         - 1.29.0
+         - 1.37.1
+         - 1.38.0
+         - 1.40.0
+         - 1.42.0
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
-  Build:
+  Plan:
     runs-on: ubuntu-22.04
+    outputs:
+      versions: ${{ steps.plan.outputs.versions }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
+
+    - name: Plan build matrix
+      id: plan
+      run: |
+        selected="${{ inputs.base_version }}"
+        if [ "$selected" = "All" ]; then
+          matrix=$(jq -c '.versions' .github/version-matrix.json)
+        else
+          matrix=$(jq -c --arg selected "$selected" '[.versions[] | select(.base == $selected)]' .github/version-matrix.json)
+        fi
+
+        if [ "$matrix" = "[]" ]; then
+          echo "Unsupported base version: $selected" >&2
+          exit 1
+        fi
+
+        echo "versions=$matrix" >> "$GITHUB_OUTPUT"
+
+  Build:
+    needs: Plan
+    name: Build (${{ matrix.base }})
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.Plan.outputs.versions) }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
       
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
       
     - name: Read manifest and set game version
       id: read-json
       run: |
-        json_content=$(cat ${{github.workspace}}/ScoreSaber/manifest.json)
+        base_version="${{ matrix.base }}"
+        stripped_refs_version="$base_version"
+        if [ "$base_version" = "1.29.0" ]; then
+          stripped_refs_version="1.29.1"
+        fi
+        compatible_versions='${{ toJson(matrix.compatible) }}'
+        manifest="${{ github.workspace }}/src/Manifests/$base_version/manifest.json"
+        if [ ! -f "$manifest" ]; then
+          manifest="${{ github.workspace }}/src/manifest.json"
+        fi
+
+        json_content=$(cat "$manifest")
         game_version=$(echo "$json_content" | jq -r .gameVersion)
+        manifest_plugin_version=$(echo "$json_content" | jq -r .version)
+        plugin_version="$manifest_plugin_version"
+        if [[ "$plugin_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          plugin_version="$plugin_version.0"
+        fi
+        upload_version_hash=$(printf "%s%s" "$plugin_version" "$game_version" | md5sum | awk '{print $1}')
+        artifact_game_version=$(echo "$compatible_versions" | jq -r '.[0] + "-to-" + .[-1]')
+        short_sha=$(echo "${{ github.sha }}" | cut -c1-7)
+        artifact_name="ScoreSaber-v$manifest_plugin_version-bs$artifact_game_version-$short_sha"
+
+        supported_versions="[]"
+        for version in $(echo "$compatible_versions" | jq -r '.[]'); do
+          version_hash=$(printf "%s%s" "$plugin_version" "$version" | md5sum | awk '{print $1}')
+          supported_versions=$(echo "$supported_versions" | jq -c \
+            --arg gameVersion "$version" \
+            --arg uploadVersionHash "$version_hash" \
+            '. + [{ gameVersion: $gameVersion, uploadVersionHash: $uploadVersionHash }]')
+        done
+
+        echo "Base Version: $base_version"
+        echo "Stripped Refs Version: $stripped_refs_version"
         echo "Game Version: $game_version"
-        echo "::set-output name=game_version::$game_version"  
+        echo "Manifest Plugin Version: $manifest_plugin_version"
+        echo "Upload Plugin Version: $plugin_version"
+        echo "Artifact Name: $artifact_name.zip"
+        echo "Supported Versions: $supported_versions"
+        echo "base_version=$base_version" >> "$GITHUB_OUTPUT"
+        echo "stripped_refs_version=$stripped_refs_version" >> "$GITHUB_OUTPUT"
+        echo "game_version=$game_version" >> "$GITHUB_OUTPUT"
+        echo "manifest_plugin_version=$manifest_plugin_version" >> "$GITHUB_OUTPUT"
+        echo "plugin_version=$plugin_version" >> "$GITHUB_OUTPUT"
+        echo "artifact_name=$artifact_name" >> "$GITHUB_OUTPUT"
+        echo "upload_version_hash=$upload_version_hash" >> "$GITHUB_OUTPUT"
+        echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
+        echo "supported_versions=$supported_versions" >> "$GITHUB_OUTPUT"
+
+    - name: Register official build
+      id: official-build
+      shell: pwsh
+      run: |
+        $audience = [Uri]::EscapeDataString("scoresaber-upload-build-registration")
+        $oidcResponse = Invoke-RestMethod `
+          -Uri "$env:ACTIONS_ID_TOKEN_REQUEST_URL&audience=$audience" `
+          -Headers @{ Authorization = "Bearer $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN" }
+
+        $supportedVersions = '${{ steps.read-json.outputs.supported_versions }}' | ConvertFrom-Json
+        $buildId = "scoresaber-pc-${{ steps.read-json.outputs.base_version }}-${{ github.run_id }}-${{ github.run_attempt }}"
+        $body = @{
+          buildId = $buildId
+          pluginVersion = "${{ steps.read-json.outputs.plugin_version }}"
+          gameVersion = "${{ steps.read-json.outputs.game_version }}"
+          uploadVersionHash = "${{ steps.read-json.outputs.upload_version_hash }}"
+          supportedVersions = $supportedVersions
+          protocolVersion = 2
+          commitSha = "${{ github.sha }}"
+          sourceRepository = "${{ github.repository }}"
+          sourceRef = "${{ github.ref }}"
+          sourceWorkflowRef = "${{ github.workflow_ref }}"
+        } | ConvertTo-Json -Depth 8
+
+        $response = Invoke-RestMethod `
+          -Uri "https://scoresaber.com/api/v2/game/official-builds" `
+          -Method Post `
+          -ContentType "application/json" `
+          -Headers @{ Authorization = "Bearer $($oidcResponse.value)" } `
+          -Body $body
+
+        Write-Output "::add-mask::$($response.credential)"
+        "build_id=$($response.build.buildId)" >> $env:GITHUB_OUTPUT
+        "credential=$($response.credential)" >> $env:GITHUB_OUTPUT
         
     - name: Checkout stripped dlls
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: ScoreSaber/pc-ci-stripped
         token: ${{ secrets.CI_PAT }}
         path: Stripped
         sparse-checkout: |
-          Versions/${{ steps.read-json.outputs.game_version }}
+          Versions/${{ steps.read-json.outputs.stripped_refs_version }}
         sparse-checkout-cone-mode: false
         
     - name: Verify that stripped dlls actually exist
       run: |
-        if [ -z "$(ls -A Stripped/Versions/${{ steps.read-json.outputs.game_version }})" ]; then
+        if [ -z "$(ls -A Stripped/Versions/${{ steps.read-json.outputs.stripped_refs_version }})" ]; then
           echo "Error: Stripped dependencies folder is empty!"
           exit 1
         fi
         
     - name: Move stripped dlls to refs
-      run: mv Stripped/Versions/${{ steps.read-json.outputs.game_version }} Refs
+      run: mv Stripped/Versions/${{ steps.read-json.outputs.stripped_refs_version }} Refs
       
     - name: Acquire mod references
-      uses: Goobwabber/download-beatmods-deps@1.3
-      with:
-        manifest: ${{github.workspace}}/ScoreSaber/manifest.json
+      shell: pwsh
+      run: |
+        $gameVersion = "${{ steps.read-json.outputs.game_version }}"
+        $manifest = Get-Content "${{ steps.read-json.outputs.manifest }}" -Raw | ConvertFrom-Json
+        $deps = @($manifest.dependsOn.PSObject.Properties.Name) + "LeaderboardCore"
+
+        $response = Invoke-RestMethod -Uri "https://beatmods.com/api/mods?gameVersion=$gameVersion&status=verified"
+        foreach ($name in $deps) {
+          $entry = $response.mods | Where-Object { $_.mod.name -eq $name } | Select-Object -First 1
+          if ($null -eq $entry) {
+            throw "No verified version of '$name' on BeatMods for $gameVersion"
+          }
+
+          $version = $entry.latest
+          Write-Output "Downloading $name $($version.modVersion)..."
+          Invoke-WebRequest -Uri "https://beatmods.com/cdn/mod/$($version.zipHash).zip" -OutFile "$name.zip"
+          Expand-Archive -LiteralPath "$name.zip" -DestinationPath Refs -Force
+        }
         
     - name: Build
-      id: Build
       env:
         FrameworkPathOverride: /usr/lib/mono/4.8-api
-      run: dotnet build --configuration Release
+        ScoreSaberOfficialBuildId: ${{ steps.official-build.outputs.build_id }}
+        ScoreSaberOfficialBuildCredential: ${{ steps.official-build.outputs.credential }}
+      run: |
+        dotnet build ScoreSaber.sln \
+          --configuration Release \
+          -p:Platform="BS${{ steps.read-json.outputs.base_version }}" \
+          -p:ScoreSaberTargetVersion="${{ steps.read-json.outputs.base_version }}" \
+          -p:ScoreSaberUseLocalRefs=true \
+          -p:LocalRefsDir="${{ github.workspace }}/Refs" \
+          -p:GameReferences="${{ github.workspace }}/Refs" \
+          -p:Version="${{ steps.read-json.outputs.manifest_plugin_version }}" \
+          -p:AssemblyVersion="${{ steps.read-json.outputs.plugin_version }}" \
+          -p:FileVersion="${{ steps.read-json.outputs.plugin_version }}" \
+          -p:DisableCopyToGame=True \
+          -p:DisableZipRelease=False
+
+    - name: Find artifact
+      id: artifact
+      run: |
+        artifact_dir="src/bin/${{ steps.read-json.outputs.base_version }}/Release"
+        artifact_path="$(find "$artifact_dir" -path '*/zip/*.zip' -type f | sort | head -n 1)"
+        if [ -z "$artifact_path" ]; then
+          echo "No release zip found under $artifact_dir" >&2
+          find "$artifact_dir" -maxdepth 4 -type f | sort >&2
+          exit 1
+        fi
+
+        echo "Artifact: $artifact_path"
+        staging_dir="${{ runner.temp }}/${{ steps.read-json.outputs.artifact_name }}"
+        rm -rf "$staging_dir"
+        mkdir -p "$staging_dir"
+        unzip -q "$artifact_path" -d "$staging_dir"
+
+        echo "Staged artifact contents: $staging_dir"
+        echo "path=$staging_dir" >> "$GITHUB_OUTPUT"
+
+    - name: Check formatting
+      run: dotnet format whitespace ScoreSaber.sln --verify-no-changes --no-restore --exclude src/Core/Api/Generated src/Libraries/SevenZip
       
     - name: Git Status
       run: git status
       
-    - name: Echo file name
-      run: echo $BUILDTEXT \($ASSEMBLYNAME\)
-      env:
-        BUILDTEXT: Filename=${{ steps.Build.outputs.filename }}
-        ASSEMBLYNAME: AssemblyName=${{ steps.Build.outputs.assemblyname }}
-        
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
-        name: ${{ steps.Build.outputs.filename }}
-        path: ${{ steps.Build.outputs.artifactpath }}
+        name: ${{ steps.read-json.outputs.artifact_name }}
+        path: ${{ steps.artifact.outputs.path }}/*
+        if-no-files-found: error

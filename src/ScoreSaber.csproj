@@ -1,0 +1,477 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectGuid>{844132E4-CDFC-49D3-950D-38F62ED8B513}</ProjectGuid>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Platforms>AnyCPU;BS1.29.0;BS1.37.1;BS1.38.0;BS1.40.0;BS1.42.0</Platforms>
+    <ScoreSaberUserProjectFile>$(MSBuildProjectFullPath).user</ScoreSaberUserProjectFile>
+    <ScoreSaberUserBeatSaberDir Condition="'$(ScoreSaberUserBeatSaberDir)' == '' AND Exists('$(ScoreSaberUserProjectFile)')">$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(ScoreSaberUserProjectFile)')), '(?s)&lt;BeatSaberDir&gt;\s*(.*?)\s*&lt;/BeatSaberDir&gt;').Groups.get_Item(1).Value)</ScoreSaberUserBeatSaberDir>
+    <BeatSaberDir Condition="'$(ScoreSaberUserBeatSaberDir)' != ''">$(ScoreSaberUserBeatSaberDir)</BeatSaberDir>
+    <ScoreSaberDefaultTargetVersion Condition="'$(ScoreSaberDefaultTargetVersion)' == ''">1.42.0</ScoreSaberDefaultTargetVersion>
+    <ScoreSaberTargetVersionExplicit Condition="'$(ScoreSaberTargetVersion)' != ''">true</ScoreSaberTargetVersionExplicit>
+    <ScoreSaberSelectedBeatSaberDir Condition="'$(ScoreSaberSelectedBeatSaberDir)' == '' AND '$(BeatSaberDir)' != ''">$(BeatSaberDir)</ScoreSaberSelectedBeatSaberDir>
+    <ScoreSaberSelectedBeatSaberDir Condition="'$(ScoreSaberSelectedBeatSaberDir)' == '' AND '$(GameDirectory)' != ''">$(GameDirectory)</ScoreSaberSelectedBeatSaberDir>
+    <ScoreSaberSelectedBeatSaberDir Condition="'$(ScoreSaberSelectedBeatSaberDir)' == '' AND '$(GameReferences)' != ''">$(GameReferences)</ScoreSaberSelectedBeatSaberDir>
+    <ScoreSaberDetectedGameVersionRaw Condition="'$(ScoreSaberDetectedGameVersionRaw)' == '' AND '$(ScoreSaberSelectedBeatSaberDir)' != '' AND Exists('$(ScoreSaberSelectedBeatSaberDir)\BeatSaberVersion.txt')">$([System.IO.File]::ReadAllText('$(ScoreSaberSelectedBeatSaberDir)\BeatSaberVersion.txt').Trim())</ScoreSaberDetectedGameVersionRaw>
+    <ScoreSaberDetectedGameVersionRaw Condition="'$(ScoreSaberDetectedGameVersionRaw)' == '' AND '$(ScoreSaberSelectedBeatSaberDir)' != ''">$([System.IO.Path]::GetFileName($([System.Text.RegularExpressions.Regex]::Replace('$(ScoreSaberSelectedBeatSaberDir)', '[\\/]+$', ''))))</ScoreSaberDetectedGameVersionRaw>
+    <ScoreSaberDetectedGameVersion Condition="'$(ScoreSaberDetectedGameVersionRaw)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(ScoreSaberDetectedGameVersionRaw)', '_.*$', ''))</ScoreSaberDetectedGameVersion>
+    <ScoreSaberDetectedTargetVersion Condition="'$(ScoreSaberDetectedTargetVersion)' == '' AND $([System.Text.RegularExpressions.Regex]::IsMatch('$(ScoreSaberDetectedGameVersion)', '^1\.29\.[01]$'))">1.29.0</ScoreSaberDetectedTargetVersion>
+    <ScoreSaberDetectedTargetVersion Condition="'$(ScoreSaberDetectedTargetVersion)' == '' AND $([System.Text.RegularExpressions.Regex]::IsMatch('$(ScoreSaberDetectedGameVersion)', '^1\.37\.[12]$'))">1.37.1</ScoreSaberDetectedTargetVersion>
+    <ScoreSaberDetectedTargetVersion Condition="'$(ScoreSaberDetectedTargetVersion)' == '' AND $([System.Text.RegularExpressions.Regex]::IsMatch('$(ScoreSaberDetectedGameVersion)', '^(1\.38\.0|1\.39\.[01])$'))">1.38.0</ScoreSaberDetectedTargetVersion>
+    <ScoreSaberDetectedTargetVersion Condition="'$(ScoreSaberDetectedTargetVersion)' == '' AND $([System.Text.RegularExpressions.Regex]::IsMatch('$(ScoreSaberDetectedGameVersion)', '^1\.40\.[0-8]$'))">1.40.0</ScoreSaberDetectedTargetVersion>
+    <ScoreSaberDetectedTargetVersion Condition="'$(ScoreSaberDetectedTargetVersion)' == '' AND $([System.Text.RegularExpressions.Regex]::IsMatch('$(ScoreSaberDetectedGameVersion)', '^(1\.42\.[0-3]|1\.43\.0|1\.44\.0)$'))">1.42.0</ScoreSaberDetectedTargetVersion>
+    <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(ScoreSaberTargetVersionExplicit)' != 'true' AND '$(ScoreSaberDetectedTargetVersion)' != ''">$(ScoreSaberDetectedTargetVersion)</ScoreSaberTargetVersion>
+    <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(Platform)' == 'BS1.29.0'">1.29.0</ScoreSaberTargetVersion>
+    <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(Platform)' == 'BS1.37.1'">1.37.1</ScoreSaberTargetVersion>
+    <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(Platform)' == 'BS1.38.0'">1.38.0</ScoreSaberTargetVersion>
+    <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(Platform)' == 'BS1.40.0'">1.40.0</ScoreSaberTargetVersion>
+    <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(Platform)' == 'BS1.42.0'">1.42.0</ScoreSaberTargetVersion>
+    <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == ''">$(ScoreSaberDefaultTargetVersion)</ScoreSaberTargetVersion>
+    <ScoreSaberTargetDefine>BEAT_SABER_$([System.String]::Copy('$(ScoreSaberTargetVersion)').Replace('.', '_'))</ScoreSaberTargetDefine>
+    <ScoreSaberRefsRoot Condition="'$(ScoreSaberRefsRoot)' == '' AND Exists('$(RepositoryRoot)refs')">$(RepositoryRoot)refs</ScoreSaberRefsRoot>
+    <ScoreSaberRefsRoot Condition="'$(ScoreSaberRefsRoot)' == '' AND Exists('$(RepositoryRoot)Refs')">$(RepositoryRoot)Refs</ScoreSaberRefsRoot>
+    <ScoreSaberRefsRoot Condition="'$(ScoreSaberRefsRoot)' == ''">$(RepositoryRoot)refs</ScoreSaberRefsRoot>
+    <ScoreSaberVersionedRefsDir>$(ScoreSaberRefsRoot)\$(ScoreSaberTargetVersion)</ScoreSaberVersionedRefsDir>
+    <ScoreSaberDefaultLocalRefsDir Condition="'$(ScoreSaberDefaultLocalRefsDir)' == '' AND Exists('$(ScoreSaberVersionedRefsDir)\Beat Saber_Data\Managed')">$(ScoreSaberVersionedRefsDir)</ScoreSaberDefaultLocalRefsDir>
+    <ScoreSaberDefaultLocalRefsDir Condition="'$(ScoreSaberDefaultLocalRefsDir)' == '' AND '$(ScoreSaberTargetVersion)' == '$(ScoreSaberDefaultTargetVersion)' AND Exists('$(ScoreSaberRefsRoot)\Beat Saber_Data\Managed')">$(ScoreSaberRefsRoot)</ScoreSaberDefaultLocalRefsDir>
+    <LocalRefsDir Condition="'$(LocalRefsDir)' == '' AND '$(ScoreSaberUseLocalRefs)' == 'true' AND '$(ScoreSaberDefaultLocalRefsDir)' != ''">$(ScoreSaberDefaultLocalRefsDir)</LocalRefsDir>
+    <GameDirectory Condition="'$(BeatSaberDir)' != ''">$(BeatSaberDir)</GameDirectory>
+    <GameReferences Condition="'$(ScoreSaberUseLocalRefs)' != 'true' AND '$(BeatSaberDir)' != ''">$(BeatSaberDir)</GameReferences>
+    <GameDirectory Condition="'$(GameDirectory)' == '' AND '$(ScoreSaberTargetVersion)' == '1.29.0' AND '$(ScoreSaberGameDirectory1_29_0)' != ''">$(ScoreSaberGameDirectory1_29_0)</GameDirectory>
+    <GameDirectory Condition="'$(GameDirectory)' == '' AND '$(ScoreSaberTargetVersion)' == '1.37.1' AND '$(ScoreSaberGameDirectory1_37_1)' != ''">$(ScoreSaberGameDirectory1_37_1)</GameDirectory>
+    <GameDirectory Condition="'$(GameDirectory)' == '' AND '$(ScoreSaberTargetVersion)' == '1.38.0' AND '$(ScoreSaberGameDirectory1_38_0)' != ''">$(ScoreSaberGameDirectory1_38_0)</GameDirectory>
+    <GameDirectory Condition="'$(GameDirectory)' == '' AND '$(ScoreSaberTargetVersion)' == '1.40.0' AND '$(ScoreSaberGameDirectory1_40_0)' != ''">$(ScoreSaberGameDirectory1_40_0)</GameDirectory>
+    <GameDirectory Condition="'$(GameDirectory)' == '' AND '$(ScoreSaberTargetVersion)' == '1.42.0' AND '$(ScoreSaberGameDirectory1_42_0)' != ''">$(ScoreSaberGameDirectory1_42_0)</GameDirectory>
+    <GameReferences Condition="'$(GameReferences)' == '' AND '$(LocalRefsDir)' != ''">$(LocalRefsDir)</GameReferences>
+    <GameReferences Condition="'$(GameReferences)' == '' AND '$(GameDirectory)' != ''">$(GameDirectory)</GameReferences>
+    <GameReferences Condition="'$(GameReferences)' == '' AND '$(BeatSaberDir)' != ''">$(BeatSaberDir)</GameReferences>
+    <BeatSaberDir Condition="'$(BeatSaberDir)' == ''">$(GameReferences)</BeatSaberDir>
+    <ManifestPath Condition="'$(ManifestPath)' == '' AND Exists('$(MSBuildProjectDirectory)\Manifests\$(ScoreSaberTargetVersion)\manifest.json')">Manifests\$(ScoreSaberTargetVersion)\manifest.json</ManifestPath>
+    <ManifestPath Condition="'$(ManifestPath)' == ''">manifest.json</ManifestPath>
+    <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
+    <AssemblyName>ScoreSaber</AssemblyName>
+    <RootNamespace>ScoreSaber</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <BSMTProjectType>BSIPA</BSMTProjectType>
+    <SignAssembly>false</SignAssembly>
+    <ErrorReport>prompt</ErrorReport>
+    <Configurations>Debug;Release;Dev</Configurations>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>RELEASE;$(ScoreSaberTargetDefine)</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(Platform)' != 'AnyCPU' ">
+    <OutputPath>bin\$(ScoreSaberTargetVersion)\Release\</OutputPath>
+    <DefineConstants>RELEASE;$(ScoreSaberTargetDefine)</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\$(ScoreSaberTargetVersion)\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;$(ScoreSaberTargetDefine)</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dev|AnyCPU' ">
+    <OutputPath>bin\Dev\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;USE_HOT_RELOAD;$(ScoreSaberTargetDefine)</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Dev' AND '$(Platform)' != 'AnyCPU' ">
+    <OutputPath>bin\$(ScoreSaberTargetVersion)\Dev\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;USE_HOT_RELOAD;$(ScoreSaberTargetDefine)</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(NCrunch)' == '1'">
+    <DisableCopyToGame>True</DisableCopyToGame>
+    <DisableZipRelease>True</DisableZipRelease>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="**\*.1_29_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.29.0'" />
+    <Compile Remove="**\*.1_37_1.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.37.1'" />
+    <Compile Remove="**\*.1_38_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.38.0'" />
+    <Compile Remove="**\*.1_40_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.40.0'" />
+    <Compile Remove="**\*.1_42_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.42.0'" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="AdditionalContentModel.Interfaces" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\AdditionalContentModel.Interfaces.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\AdditionalContentModel.Interfaces.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BeatSaber.GameSettings" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.GameSettings.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.GameSettings.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BeatSaber.Settings" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Settings.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Settings.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BeatSaber.ViewSystem" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="BGLib.AppFlow" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BGLib.AppFlow.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BGLib.AppFlow.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BGLib.DotnetExtension" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BGLib.DotnetExtension.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BGLib.DotnetExtension.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BGLib.SaveDataCore" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BGLib.SaveDataCore.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BGLib.SaveDataCore.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BGLib.UnityExtension" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BGLib.UnityExtension.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BGLib.UnityExtension.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BGNetCore" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BGNetCore.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BGNetCore.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BGNet" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BGNet.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BGNet.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Oculus.Platform" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\Oculus.Platform.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Oculus.Platform.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BeatSaber.Multiplayer.Core" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Multiplayer.Core.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Multiplayer.Core.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BeatSaber.Destinations" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Destinations.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Destinations.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="OculusStudios.Platform.Core" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\OculusStudios.Platform.Core.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\OculusStudios.Platform.Core.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="com.rlabrecque.steamworks.net" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\com.rlabrecque.steamworks.net.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="BSML">
+      <HintPath>$(GameReferences)\Plugins\BSML.dll</HintPath>
+    </Reference>
+    <Reference Include="LeaderboardCore">
+      <HintPath Condition="Exists('$(GameReferences)\Plugins\LeaderboardCore.dll')">$(GameReferences)\Plugins\LeaderboardCore.dll</HintPath>
+      <HintPath Condition="!Exists('$(GameReferences)\Plugins\LeaderboardCore.dll')">$(GameDirectory)/Plugins/LeaderboardCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SongCore">
+      <HintPath>$(GameReferences)\Plugins\SongCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="Interactable" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\Interactable.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Interactable.dll</HintPath>
+    </Reference>
+    <Reference Include="Networking" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\Networking.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Networking.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="PlatformUserModel" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\PlatformUserModel.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\PlatformUserModel.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="SegmentedControl" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\SegmentedControl.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\SegmentedControl.dll</HintPath>
+    </Reference>
+    <Reference Include="SemVer">
+      <HintPath>$(GameReferences)\Libs\SemVer.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="SiraUtil">
+      <HintPath>$(GameReferences)\Plugins\SiraUtil.dll</HintPath>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GameReferences)\Libs\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="BeatmapCore">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BeatmapCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colors">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Colors.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Core">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DataModels" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\DataModels.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\DataModels.dll</HintPath>
+      <Private>False</Private>
+      <Publicize>True</Publicize>
+    </Reference>
+    <Reference Include="GameplayCore">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hive.Versioning">
+      <HintPath>$(GameReferences)\Libs\Hive.Versioning.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HMRendering">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\HMRendering.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath Condition="Exists('$(GameReferences)\IPA\Libs\Mono.Cecil.dll')">$(GameReferences)\IPA\Libs\Mono.Cecil.dll</HintPath>
+      <HintPath Condition="!Exists('$(GameReferences)\IPA\Libs\Mono.Cecil.dll')">$(GameReferences)\Libs\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="netstandard">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\netstandard.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GameReferences)\Libs\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>$(GameReferences)\Libs\protobuf-net.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Rendering">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Rendering.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Tweening" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\Tweening.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Tweening.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Unity.Mathematics.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Unity.XR.OpenXR" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\Unity.XR.OpenXR.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Unity.XR.OpenXR.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.DirectorModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.DirectorModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.SpatialTracking" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.SpatialTracking.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.SpatialTracking.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VRModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Main">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Main.dll</HintPath>
+      <Private>False</Private>
+      <Publicize>True</Publicize>
+    </Reference>
+    <Reference Include="HMLib">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\HMLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HMUI">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\HMUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IPA.Loader">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\IPA.Loader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.XRModule">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\UnityEngine.XRModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VRUI">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\VRUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Zenject">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Zenject.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Zenject-usage">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(ManifestPath)" LogicalName="$(AssemblyName).manifest.json" />
+    <EmbeddedResource Include="Features\Leaderboards\UI\PanelView.bsml" />
+    <EmbeddedResource Include="Features\Leaderboards\UI\ScoreSaberLeaderboardOverlayController.bsml" />
+    <EmbeddedResource Include="Features\Leaderboards\Adapters\LeaderboardCore\ScoreSaberLeaderboardCoreViewController.bsml" />
+    <EmbeddedResource Include="Features\MainMenu\Settings\ViewControllers\MainSettingsViewController.bsml" />
+    <EmbeddedResource Include="Features\MainMenu\MainFlow\GlobalLeaderboard\GlobalViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\Compete\UI\ViewControllers\Entry\CompeteModeSelectionViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\UI\ViewControllers\TournamentBrowserViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\Compete\UI\ViewControllers\Rooms\CompeteRoomListViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\Compete\UI\ViewControllers\Room\Center\CompeteRoomViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\Compete\UI\ViewControllers\Room\Left\CompetePlayerListViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\Ludus\UI\LiveChatFloatingViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\Compete\UI\ViewControllers\CodeEntry\CompeteCodeEntryViewController.bsml" />
+    <EmbeddedResource Include="Features\Live\Compete\UI\ViewControllers\Shared\CompeteLoadingViewController.bsml" />
+    <EmbeddedResource Include="Features\MainMenu\MainFlow\Teams\UI\TeamViewController.bsml" />
+    <EmbeddedResource Include="Features\MainMenu\MainFlow\FAQ\FAQViewController.bsml" />
+    <EmbeddedResource Include="Features\Players\Profile\ProfileDetailView.bsml" />
+    <EmbeddedResource Include="Features\MainMenu\MainFlow\Teams\UI\TeamHost.bsml" />
+    <EmbeddedResource Include="Features\Replays\UI\imber-panel.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\country.png" />
+    <EmbeddedResource Include="Resources\cyanisa.furry" />
+    <EmbeddedResource Include="Resources\info.png" />
+    <EmbeddedResource Include="Resources\light-sabers.png" />
+    <EmbeddedResource Include="Resources\pixel.png" />
+    <EmbeddedResource Include="Resources\replay.png" />
+    <EmbeddedResource Include="Resources\user.png" />
+    <EmbeddedResource Include="Resources\discord.png" />
+    <EmbeddedResource Include="Resources\github.png" />
+    <EmbeddedResource Include="Resources\twitch.png" />
+    <EmbeddedResource Include="Resources\twitter.png" />
+    <EmbeddedResource Include="Resources\youtube.png" />
+    <EmbeddedResource Include="Resources\logo.png" />
+    <EmbeddedResource Include="Resources\bsmg.jpg" />
+    <EmbeddedResource Include="Resources\logo-flushed.png" />
+    <EmbeddedResource Include="Resources\cmb.png" />
+    <EmbeddedResource Include="Resources\cmb-blush.png" />
+    <EmbeddedResource Include="Resources\logo-large.png" />
+    <EmbeddedResource Include="Resources\bri-ish.png" />
+    <EmbeddedResource Include="Resources\crown-bronze.png" />
+    <EmbeddedResource Include="Resources\crown-gold.png" />
+    <EmbeddedResource Include="Resources\crown-silver.png" />
+    <EmbeddedResource Include="Resources\crown-umby.png" />
+    <EmbeddedResource Include="Resources\crown-rain.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ScoreSaber.csproj.user" Condition="Exists('ScoreSaber.csproj.user')" Visible="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ScoreSaberOfficialBuildId)' != '' And '$(ScoreSaberOfficialBuildCredential)' != ''">
+    <AssemblyMetadata Include="ScoreSaberOfficialBuildId" Value="$(ScoreSaberOfficialBuildId)" />
+    <AssemblyMetadata Include="ScoreSaberOfficialBuildCredential" Value="$(ScoreSaberOfficialBuildCredential)" />
+    <AssemblyMetadata Include="ScoreSaberOfficialArtifactSha256" Value="$(ScoreSaberOfficialArtifactSha256)" Condition="'$(ScoreSaberOfficialArtifactSha256)' != ''" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ScoreSaberDevelopmentUploadToken)' != ''">
+    <AssemblyMetadata Include="ScoreSaberDevelopmentUploadToken" Value="$(ScoreSaberDevelopmentUploadToken)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ScoreSaberDevelopmentAuthNonce)' != ''">
+    <AssemblyMetadata Include="ScoreSaberDevelopmentAuthNonce" Value="$(ScoreSaberDevelopmentAuthNonce)" />
+    <AssemblyMetadata Include="ScoreSaberDevelopmentPlayerId" Value="$(ScoreSaberDevelopmentPlayerId)" Condition="'$(ScoreSaberDevelopmentPlayerId)' != ''" />
+    <AssemblyMetadata Include="ScoreSaberDevelopmentPlayerName" Value="$(ScoreSaberDevelopmentPlayerName)" Condition="'$(ScoreSaberDevelopmentPlayerName)' != ''" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ScoreSaberLudusUrl)' != ''">
+    <AssemblyMetadata Include="ScoreSaberLudusUrl" Value="$(ScoreSaberLudusUrl)" />
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="ScoreSaberWebsiteBaseUrl" Value="$(ScoreSaberWebsiteBaseUrl)" />
+    <AssemblyMetadata Include="ScoreSaberApiBaseUrl" Value="$(ScoreSaberApiBaseUrl)" />
+    <AssemblyMetadata Include="ScoreSaberCdnBaseUrl" Value="$(ScoreSaberCdnBaseUrl)" />
+  </ItemGroup>
+  <ItemGroup>
+    <OutputCopy Include="$(OutputPath)$(AssemblyName).dll" OutputPath="Plugins\$(AssemblyName).dll" />
+    <OutputCopy Include="$(OutputPath)$(AssemblyName).pdb" OutputPath="Plugins\$(AssemblyName).pdb" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BeatSaberModdingTools.Tasks">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

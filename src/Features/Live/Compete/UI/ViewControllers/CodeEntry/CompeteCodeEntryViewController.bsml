@@ -1,0 +1,19 @@
+<bg horizontal-fit="PreferredSize" vertical-fit="PreferredSize" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
+  <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2">
+    <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2" child-align="MiddleCenter">
+      <horizontal bg="round-rect-panel" bg-color="#00B8FF22" horizontal-fit="PreferredSize" pref-width="42" pref-height="12">
+        <text text="~join-code-display" align="Center" font-size="5.5" overflow-mode="Ellipsis" />
+      </horizontal>
+
+      <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" spacing="2">
+        <button text="Enter Code" click-event="open-code-keyboard" pref-width="26" pref-height="8" />
+        <button text="Paste" on-click="paste-code" pref-width="18" pref-height="8" />
+        <button text="Join" on-click="join-code" pref-width="18" pref-height="8" />
+      </horizontal>
+
+      <text text="~status" align="Center" font-size="2.8" pref-width="62" pref-height="10" word-wrapping="true" />
+    </vertical>
+  </vertical>
+
+  <modal-keyboard show-event="open-code-keyboard" click-off-closes="true" value="join-code" on-enter="code-entered" clear-on-open="false" />
+</bg>
