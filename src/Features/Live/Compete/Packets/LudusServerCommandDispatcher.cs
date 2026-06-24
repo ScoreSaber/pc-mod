@@ -21,6 +21,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         internal static LudusServerCommandDispatcher CreateDefault() {
             return new LudusServerCommandDispatcher(new ILudusServerCommandHandler[] {
                 new CreateRoomCommandHandler(),
+                new CloseRoomCommandHandler(),
                 new PromptCommandHandler(),
                 new LoadSongCommandHandler(),
                 new StartMapCommandHandler(),

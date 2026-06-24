@@ -91,6 +91,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             _roomViewController.PromptAnswered += PromptWasAnswered;
             _codeEntryViewController.JoinRequested += JoinViaCode;
             _ludusSession.RoomUpdated += RoomWasUpdated;
+            _ludusSession.RoomClosed += RoomWasClosed;
             _ludusSession.PromptReceived += ReceivePrompt;
             _ludusSession.MapStartCountdownChanged += MapStartCountdownWasChanged;
             _ludusSession.StatusChanged += LudusStatusChanged;
@@ -198,16 +199,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
         private void BackToRooms() {
             if (topViewController == _roomViewController) {
-                ClearPrompts();
-                _selectedRoom = null;
-                _rightPanelShowingLeaderboard = false;
-                _roomViewController.HideMapStartCountdown();
-                RestoreMenuLeaderboard();
-                _ludusSession.ReturnToPublicPresence();
-                SetLeftScreenViewController(null, ViewController.AnimationType.Out);
-                SetRightScreenViewController(null, ViewController.AnimationType.Out);
-                _roomTransitioning = true;
-                this.DismissView(_roomViewController, RoomTransitionFinished).RunTask();
+                LeaveRoomView(true);
             }
         }
 
@@ -404,6 +396,27 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             if (_rightPanelShowingLeaderboard && songChanged && !RefreshRoomLeaderboard()) {
                 ShowPlayersPanel(ViewController.AnimationType.In);
             }
+        }
+
+        private void RoomWasClosed() {
+            if (topViewController == _roomViewController) {
+                LeaveRoomView(false);
+            }
+        }
+
+        private void LeaveRoomView(bool returnToPublicPresence) {
+            ClearPrompts();
+            _selectedRoom = null;
+            _rightPanelShowingLeaderboard = false;
+            _roomViewController.HideMapStartCountdown();
+            RestoreMenuLeaderboard();
+            if (returnToPublicPresence) {
+                _ludusSession.ReturnToPublicPresence();
+            }
+            SetLeftScreenViewController(null, ViewController.AnimationType.Out);
+            SetRightScreenViewController(null, ViewController.AnimationType.Out);
+            _roomTransitioning = true;
+            this.DismissView(_roomViewController, RoomTransitionFinished).RunTask();
         }
 
         private void ShowPlayersPanel() => ShowPlayersPanel(ViewController.AnimationType.In);

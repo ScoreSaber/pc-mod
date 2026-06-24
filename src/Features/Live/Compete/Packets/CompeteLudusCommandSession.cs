@@ -16,6 +16,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         private readonly Action<CompeteRoom> _roomUpdated;
         private readonly Action<CompeteOrganizerPrompt> _promptReceived;
         private readonly Action<string> _statusChanged;
+        private readonly Action _closeTournamentRoom;
         private readonly Action<LudusDownloadState, string> _sendDownloadState;
         private readonly Action<LudusPlayState, LudusDownloadState, string> _sendPresence;
         private readonly Func<string, int, CancellationToken, CancellationToken> _beginMapStartCountdown;
@@ -36,6 +37,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
             Action<CompeteRoom> roomUpdated,
             Action<CompeteOrganizerPrompt> promptReceived,
             Action<string> statusChanged,
+            Action closeTournamentRoom,
             Action<LudusDownloadState, string> sendDownloadState,
             Action<LudusPlayState, LudusDownloadState, string> sendPresence,
             Func<string, int, CancellationToken, CancellationToken> beginMapStartCountdown,
@@ -55,6 +57,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
             _roomUpdated = roomUpdated;
             _promptReceived = promptReceived;
             _statusChanged = statusChanged;
+            _closeTournamentRoom = closeTournamentRoom;
             _sendDownloadState = sendDownloadState;
             _sendPresence = sendPresence;
             _beginMapStartCountdown = beginMapStartCountdown;
@@ -79,6 +82,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         public void NotifyRoomUpdated(CompeteRoom room) => _roomUpdated(room);
         public void NotifyPromptReceived(CompeteOrganizerPrompt prompt) => _promptReceived(prompt);
         public void NotifyStatusChanged(string status) => _statusChanged(status);
+        public void CloseTournamentRoom() => _closeTournamentRoom();
         public void SendDownloadState(LudusDownloadState state, string errorMessage = "") => _sendDownloadState(state, errorMessage);
         public void SendPresence(LudusPlayState playState, LudusDownloadState downloadState, string currentMapHash) => _sendPresence(playState, downloadState, currentMapHash);
         public CancellationToken BeginMapStartCountdown(string matchId, int delayMs, CancellationToken cancellationToken) =>

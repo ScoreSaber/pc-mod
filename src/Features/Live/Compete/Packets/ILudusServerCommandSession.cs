@@ -18,6 +18,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         void NotifyRoomUpdated(CompeteRoom room);
         void NotifyPromptReceived(CompeteOrganizerPrompt prompt);
         void NotifyStatusChanged(string status);
+        void CloseTournamentRoom();
         void SendDownloadState(LudusDownloadState state, string errorMessage = "");
         void SendPresence(LudusPlayState playState, LudusDownloadState downloadState, string currentMapHash);
         CancellationToken BeginMapStartCountdown(string matchId, int delayMs, CancellationToken cancellationToken);

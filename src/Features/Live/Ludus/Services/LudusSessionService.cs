@@ -31,6 +31,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         internal event Action<int> PlayerFollowRequested;
         internal event Action<IReadOnlyList<LiveRoomViewerState>> ViewerListUpdated;
         internal event Action<CompeteRoom> RoomUpdated;
+        internal event Action RoomClosed;
         internal event Action<CompeteOrganizerPrompt> PromptReceived;
         internal event Action<CompeteMapStartCountdown> MapStartCountdownChanged;
         internal event Action<IReadOnlyList<LiveChatEntry>> ChatMessagesChanged;
@@ -100,6 +101,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 room => RoomUpdated?.Invoke(room),
                 prompt => PromptReceived?.Invoke(prompt),
                 status => StatusChanged?.Invoke(status),
+                CloseTournamentRoomFromServer,
                 SendDownloadState,
                 SendPresence,
                 _mapStartCountdown.Begin,
@@ -225,6 +227,11 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _nextLudusUrl = null;
 
             ApplyDefaultSessionRoomContext();
+        }
+
+        private void CloseTournamentRoomFromServer() {
+            ReturnToPublicPresence();
+            RoomClosed?.Invoke();
         }
 
         internal void ApplyPublicLivePresencePreference() {
