@@ -10,6 +10,7 @@ namespace ScoreSaber.Features.Leaderboards.Domain {
         Loading,
         Loaded,
         Empty,
+        NoLeaderboard,
         NoPlayerScore,
         Error
     }

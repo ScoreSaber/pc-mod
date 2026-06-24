@@ -56,6 +56,15 @@ namespace ScoreSaber.Features.Leaderboards.Services {
             LeaderboardMap leaderboard;
             try {
                 leaderboard = await _leaderboardQueryService.GetLeaderboardData(maxScore, beatmapLevel, beatmapKey, scope, page, filterAroundCountry, cancellationToken);
+            } catch (GeneratedApiException ex) when (IsLeaderboardNotFoundResponse(ex)) {
+                return LeaderboardScreenState.Failed(
+                    LeaderboardScreenStatus.NoLeaderboard,
+                    "Play this level to create a ScoreSaber leaderboard",
+                    true,
+                    null,
+                    "Unranked",
+                    false,
+                    page);
             } catch (GeneratedApiException ex) when (IsNoPlayerScoreResponse(ex)) {
                 return LeaderboardScreenState.Failed(LeaderboardScreenStatus.NoPlayerScore, GetApiMessage(ex), true, null, string.Empty, false, page);
             } catch (GeneratedApiException ex) {
@@ -86,6 +95,9 @@ namespace ScoreSaber.Features.Leaderboards.Services {
         private static bool CanPageScope(LeaderboardScreenScope scope, bool filterAroundCountry) => scope != LeaderboardScreenScope.AroundPlayer || filterAroundCountry;
 
         private static bool IsNoPlayerScoreResponse(GeneratedApiException ex) => ex.StatusCode == 404 && GetApiMessage(ex).IndexOf("hasn't set a score", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        private static bool IsLeaderboardNotFoundResponse(GeneratedApiException ex) =>
+            ex.StatusCode == 404 && GetApiMessage(ex).IndexOf("Leaderboard not found", StringComparison.OrdinalIgnoreCase) >= 0;
 
         private static string GetApiMessage(GeneratedApiException ex) {
             if (!string.IsNullOrEmpty(ex.Response)) {

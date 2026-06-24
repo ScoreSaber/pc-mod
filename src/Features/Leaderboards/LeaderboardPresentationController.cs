@@ -71,7 +71,15 @@ namespace ScoreSaber.Features.Leaderboards {
         private void ShowLeaderboardError(LeaderboardScreenState state) {
             _avatarHost.ClearAvatars();
             _panelView.DismissLoadingPrompt();
-            _panelView.SetRankedStatus(state.Leaderboard != null ? state.RankedStatus : "Unavailable");
+            _panelView.SetRankedStatus(GetRankedStatusText(state));
+        }
+
+        private static string GetRankedStatusText(LeaderboardScreenState state) {
+            if (state.Leaderboard != null || state.Status == LeaderboardScreenStatus.NoLeaderboard) {
+                return state.RankedStatus;
+            }
+
+            return "Unavailable";
         }
 
         private void ResetAvatarCancellation() {

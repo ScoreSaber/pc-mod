@@ -250,6 +250,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         private static string GetErrorTitle(LeaderboardScreenStatus status) => status switch {
             LeaderboardScreenStatus.Empty => "No Scores",
+            LeaderboardScreenStatus.NoLeaderboard => "No Leaderboard Yet",
             LeaderboardScreenStatus.NoPlayerScore => "No Score Yet",
             _ => "ScoreSaber Unavailable"
         };
