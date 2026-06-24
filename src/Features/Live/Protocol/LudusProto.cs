@@ -55,6 +55,7 @@ namespace ScoreSaber.Features.Live.Protocol {
             string clientVersion,
             LudusRoomContextType initialRoomContext,
             bool publicLivePresenceOptOut,
+            List<LiveMod> mods,
             ulong sequence) {
 
             return Encode(sequence, null, new ProtoLudusEnvelope {
@@ -68,26 +69,29 @@ namespace ScoreSaber.Features.Live.Protocol {
                     ClientType = LudusClientType.LudusClientTypePlayer,
                     GameVersion = gameVersion ?? string.Empty,
                     ClientVersion = clientVersion ?? string.Empty,
+                    Mods = mods ?? new List<LiveMod>(),
                     InitialRoomContext = initialRoomContext,
                     PublicLivePresenceOptOut = publicLivePresenceOptOut
                 }
             });
         }
 
-        internal static byte[] EncodeJoinRoom(string matchId, string roomId, ulong sequence, string connectionId) {
+        internal static byte[] EncodeJoinRoom(string matchId, string roomId, List<LiveMod> mods, ulong sequence, string connectionId) {
             return Encode(sequence, connectionId, new ProtoLudusEnvelope {
                 JoinRoomRequest = new JoinRoomRequest {
                     MatchId = matchId ?? string.Empty,
-                    RoomId = roomId ?? string.Empty
+                    RoomId = roomId ?? string.Empty,
+                    Mods = mods ?? new List<LiveMod>()
                 }
             });
         }
 
-        internal static byte[] EncodeSetRoomContext(LudusRoomContextType roomContext, string tournamentId, ulong sequence, string connectionId) {
+        internal static byte[] EncodeSetRoomContext(LudusRoomContextType roomContext, string tournamentId, List<LiveMod> mods, ulong sequence, string connectionId) {
             return Encode(sequence, connectionId, new ProtoLudusEnvelope {
                 SetRoomContextRequest = new SetRoomContextRequest {
                     RoomContext = roomContext,
-                    TournamentId = tournamentId ?? string.Empty
+                    TournamentId = tournamentId ?? string.Empty,
+                    Mods = mods ?? new List<LiveMod>()
                 }
             });
         }

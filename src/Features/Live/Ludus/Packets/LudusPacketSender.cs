@@ -3,6 +3,7 @@ using ScoreSaber.Features.Live.Protocol;
 using ScoreSaber.Features.Players.Domain;
 using ScoreSaber.Live.V1;
 using System;
+using System.Collections.Generic;
 
 namespace ScoreSaber.Features.Live.Ludus.Packets {
     internal sealed class LudusPacketSender {
@@ -28,7 +29,8 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
             string gameVersion,
             string clientVersion,
             LudusRoomContextType initialRoomContext,
-            bool publicLivePresenceOptOut) {
+            bool publicLivePresenceOptOut,
+            List<LiveMod> mods) {
 
             _send(LudusProto.EncodeConnect(
                 string.Empty,
@@ -41,6 +43,7 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
                 clientVersion,
                 initialRoomContext,
                 publicLivePresenceOptOut,
+                mods,
                 NextSequence()));
         }
 
@@ -48,16 +51,16 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
             _send(LudusProto.EncodeHeartbeat(LastReceivedSequence, NextSequence(), connectionId));
         }
 
-        internal void SetRoomContext(LudusRoomContextType roomContext, string tournamentId, string connectionId) {
-            _send(LudusProto.EncodeSetRoomContext(roomContext, tournamentId, NextSequence(), connectionId));
+        internal void SetRoomContext(LudusRoomContextType roomContext, string tournamentId, List<LiveMod> mods, string connectionId) {
+            _send(LudusProto.EncodeSetRoomContext(roomContext, tournamentId, mods, NextSequence(), connectionId));
         }
 
         internal void SetClientType(LudusClientType clientType, string connectionId) {
             _send(LudusProto.EncodeSetClientType(clientType, NextSequence(), connectionId));
         }
 
-        internal void JoinRoom(string matchId, string connectionId) {
-            _send(LudusProto.EncodeJoinRoom(matchId, string.Empty, NextSequence(), connectionId));
+        internal void JoinRoom(string matchId, List<LiveMod> mods, string connectionId) {
+            _send(LudusProto.EncodeJoinRoom(matchId, string.Empty, mods, NextSequence(), connectionId));
         }
 
         internal void ReadyState(string matchId, bool ready, string connectionId) {

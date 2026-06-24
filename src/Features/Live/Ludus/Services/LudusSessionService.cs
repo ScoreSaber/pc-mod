@@ -257,8 +257,9 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             RequestClientType(LudusClientType.LudusClientTypePlayer);
             ApplyRoomContext(LudusRoomContextType.LudusRoomContextTypeTournament, room.TournamentId, room.Id);
             ChatMessagesChanged?.Invoke(CurrentChatMessages);
-            _outgoing.SetRoomContext(LudusRoomContextType.LudusRoomContextTypeTournament, room.TournamentId, _connectionId);
-            _outgoing.JoinRoom(room.Id, _connectionId);
+            List<LiveMod> installedMods = LudusInstalledMods.List();
+            _outgoing.SetRoomContext(LudusRoomContextType.LudusRoomContextTypeTournament, room.TournamentId, installedMods, _connectionId);
+            _outgoing.JoinRoom(room.Id, installedMods, _connectionId);
         }
 
         private void ApplyRoomContext(LudusRoomContextType roomContext, string tournamentId, string currentMatchId) {
@@ -518,7 +519,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 _runtimeInfo.GameVersion.ToString(),
                 _runtimeInfo.PluginVersion.ToString(),
                 DefaultSessionRoomContext(),
-                _settings.Current.publicLivePresenceOptOut);
+                _settings.Current.publicLivePresenceOptOut,
+                LudusInstalledMods.List());
         }
 
         private void PrepareConnectionAttempt(CancellationToken cancellationToken) {
@@ -571,7 +573,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             }
 
             LudusRoomContextType roomContext = DefaultSessionRoomContext();
-            _outgoing.SetRoomContext(roomContext, string.Empty, _connectionId);
+            _outgoing.SetRoomContext(roomContext, string.Empty, LudusInstalledMods.List(), _connectionId);
             RequestClientType(LudusClientType.LudusClientTypePlayer);
             ApplyRoomContext(roomContext, string.Empty, roomContext == LudusRoomContextType.LudusRoomContextTypePublicPresence ? PublicPresenceMatchId() : string.Empty);
             ChatMessagesChanged?.Invoke(CurrentChatMessages);

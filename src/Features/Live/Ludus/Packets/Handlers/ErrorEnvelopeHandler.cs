@@ -32,6 +32,13 @@ namespace ScoreSaber.Features.Live.Ludus.Packets.Handlers {
                 return;
             }
 
+            if (string.Equals(envelope.ErrorCode, "denied_mods", StringComparison.OrdinalIgnoreCase)) {
+                session.NotifyStatusChanged(envelope.ErrorMessage);
+                Plugin.Log.Warn(status);
+                session.CloseTournamentRoom();
+                return;
+            }
+
             if (IsUnavailableTournamentRoom(envelope, session)) {
                 session.NotifyStatusChanged("Room closed.");
                 Plugin.Log.Warn(status);

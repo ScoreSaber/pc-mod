@@ -23,6 +23,9 @@ namespace ScoreSaber.Live.V1
         [global::System.ComponentModel.DefaultValue("")]
         public string TournamentId { get; set; } = "";
 
+        [global::ProtoBuf.ProtoMember(3, Name = @"mods")]
+        public global::System.Collections.Generic.List<LiveMod> Mods { get; set; } = new global::System.Collections.Generic.List<LiveMod>();
+
     }
 
     [global::ProtoBuf.ProtoContract()]
@@ -62,6 +65,9 @@ namespace ScoreSaber.Live.V1
         [global::ProtoBuf.ProtoMember(2, Name = @"room_id")]
         [global::System.ComponentModel.DefaultValue("")]
         public string RoomId { get; set; } = "";
+
+        [global::ProtoBuf.ProtoMember(3, Name = @"mods")]
+        public global::System.Collections.Generic.List<LiveMod> Mods { get; set; } = new global::System.Collections.Generic.List<LiveMod>();
 
     }
 
