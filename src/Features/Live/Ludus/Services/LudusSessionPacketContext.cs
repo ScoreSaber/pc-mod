@@ -18,6 +18,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private readonly Func<string> _getCurrentLudusMatchId;
         private readonly Func<CompeteRoom> _getPendingTournamentRoom;
         private readonly Action<DecodedLudusEnvelope> _applyClientContext;
+        private readonly Action _closeTournamentRoom;
         private readonly Action _disconnect;
         private readonly Action<CompeteRoom> _enterTournamentRoom;
         private readonly Func<bool> _requestAuthenticationRefresh;
@@ -40,6 +41,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             Func<string> getCurrentLudusMatchId,
             Func<CompeteRoom> getPendingTournamentRoom,
             Action<DecodedLudusEnvelope> applyClientContext,
+            Action closeTournamentRoom,
             Action disconnect,
             Action<CompeteRoom> enterTournamentRoom,
             Func<bool> requestAuthenticationRefresh,
@@ -61,6 +63,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _getCurrentLudusMatchId = getCurrentLudusMatchId;
             _getPendingTournamentRoom = getPendingTournamentRoom;
             _applyClientContext = applyClientContext;
+            _closeTournamentRoom = closeTournamentRoom;
             _disconnect = disconnect;
             _enterTournamentRoom = enterTournamentRoom;
             _requestAuthenticationRefresh = requestAuthenticationRefresh;
@@ -92,6 +95,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         public string CurrentLudusMatchId => _getCurrentLudusMatchId();
         public CompeteRoom PendingTournamentRoom => _getPendingTournamentRoom();
         public void ApplyClientContext(DecodedLudusEnvelope envelope) => _applyClientContext(envelope);
+        public void CloseTournamentRoom() => _closeTournamentRoom();
         public void Disconnect() => _disconnect();
         public void EnterTournamentRoom(CompeteRoom room) => _enterTournamentRoom(room);
         public bool RequestAuthenticationRefresh() => _requestAuthenticationRefresh();

@@ -120,6 +120,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 () => CurrentLudusMatchId,
                 () => _pendingTournamentRoom,
                 ApplyClientContext,
+                CloseTournamentRoomFromServer,
                 Disconnect,
                 EnterTournamentRoom,
                 RequestAuthenticationRefresh,

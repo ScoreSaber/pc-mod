@@ -6,11 +6,11 @@
 
     <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-width="82" spacing="2">
       <text text="~room-list-subtitle" align="Center" font-size="3.2" pref-width="56" overflow-mode="Ellipsis" />
-      <button text="Refresh" on-click="refresh-rooms" pref-width="22" pref-height="8" />
+      <button text="Refresh" on-click="refresh-rooms" pref-width="22" pref-height="8" interactable="~can-refresh" />
     </horizontal>
 
     <vertical pref-width="82" pref-height="52" pad-left="0" pad-right="2" pad-top="2" pad-bottom="2">
-      <custom-list active="~has-rooms" id="room-list" list-width="80" visible-cells="4" cell-size="12" contents="rooms" select-cell="room-selected" show-scrollbar="true">
+      <custom-list active="~rooms-active" id="room-list" list-width="80" visible-cells="4" cell-size="12" contents="rooms" select-cell="room-selected" show-scrollbar="true">
         <stack pref-width="80" pref-height="12" min-width="80">
           <vertical horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="80" pref-height="12" min-width="80" spacing="0">
             <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" child-control-width="true" child-expand-width="false" pref-width="80" pref-height="10.8" min-width="80" spacing="2">
@@ -26,6 +26,10 @@
           </vertical>
         </stack>
       </custom-list>
+
+      <vertical active="~rooms-refreshing" pref-width="68" pref-height="38" child-align="MiddleCenter">
+        <text text="Refreshing rooms..." align="Center" font-size="4" word-wrapping="true" />
+      </vertical>
 
       <vertical active="~rooms-empty" pref-width="68" pref-height="38" child-align="MiddleCenter">
         <text text="No rooms are available for you yet. Ask an organiser to add you when a match is ready." align="Center" font-size="4" word-wrapping="true" />

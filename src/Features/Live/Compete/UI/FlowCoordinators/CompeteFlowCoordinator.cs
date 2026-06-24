@@ -180,7 +180,11 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         }
 
         private void SelectRoom(CompeteRoom room) {
-            EnterRoom(room, false).RunTask();
+            if (_roomTransitioning || _loadingTransitioning) {
+                return;
+            }
+
+            EnterRoom(room, false, RoomJoinFailed).RunTask();
         }
 
         private void BackToModeSelection() {
@@ -235,7 +239,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             }
         }
 
-        private async Task LoadRooms(bool present) {
+        private async Task LoadRooms(bool present, string refreshingStatus = null) {
             if (_selectedTournament == null) {
                 return;
             }
@@ -252,14 +256,24 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             }
 
             try {
+                await OnMainThread(() => {
+                    _roomListViewController.SetStatus(refreshingStatus);
+                    _roomListViewController.SetRefreshing(true);
+                });
                 IReadOnlyList<CompeteRoom> rooms = await _directoryService.GetJoinableRooms(_selectedTournament.Id, CancellationToken.None);
-                await OnMainThread(() => _roomListViewController.SetRooms(rooms));
+                await OnMainThread(() => {
+                    _roomListViewController.SetRooms(rooms);
+                    _roomListViewController.SetStatus(string.Empty);
+                });
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Failed to refresh live rooms: {ex.Message}");
+                await OnMainThread(() => _roomListViewController.SetStatus("Couldn't refresh rooms."));
+            } finally {
+                await OnMainThread(() => _roomListViewController.SetRefreshing(false));
             }
         }
 
-        private async Task EnterRoom(CompeteRoom room, bool roomAlreadyLoaded) {
+        private async Task EnterRoom(CompeteRoom room, bool roomAlreadyLoaded, Action<Exception> failed = null) {
             _roomTransitioning = true;
             await PresentWithLoading(
                 _roomViewController,
@@ -282,7 +296,8 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                     SetLeftScreenViewController(_gameplaySetupViewController, ViewController.AnimationType.In);
                     ShowPlayersPanel(ViewController.AnimationType.In);
                 },
-                RoomTransitionFinished);
+                RoomTransitionFinished,
+                failed);
         }
 
         private async Task JoinViaCodeAsync(string code) {
@@ -291,7 +306,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                 CompeteRoom room = await _directoryService.GetRoomByInviteCode(code, CancellationToken.None);
                 _selectedTournament = null;
                 _codeEntryViewController.SetStatus(string.Empty);
-                await EnterRoom(room, true);
+                await EnterRoom(room, true, _ => _codeEntryViewController.SetStatus("That room could not be joined."));
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Failed to join live room by code: {ex.Message}");
                 await OnMainThread(() => _codeEntryViewController.SetStatus("No room was found for that code."));
@@ -303,7 +318,8 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             string loadingMessage,
             Func<CancellationToken, Task> load,
             Action beforeShowTarget = null,
-            Action finishedCallback = null) {
+            Action finishedCallback = null,
+            Action<Exception> failedCallback = null) {
 
             if (_loadingTransitioning) {
                 return;
@@ -320,6 +336,12 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                 await Task.Delay(LoadingTransitionDelayMs, token);
                 await load(token);
                 await OnMainThread(() => {
+                    if (token.IsCancellationRequested) {
+                        _loadingTransitioning = false;
+                        _roomTransitioning = false;
+                        return;
+                    }
+
                     beforeShowTarget?.Invoke();
                     ReplaceTopViewController(viewController, () => {
                         _loadingTransitioning = false;
@@ -328,12 +350,16 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                 });
             } catch (OperationCanceledException) {
                 _loadingTransitioning = false;
+                _roomTransitioning = false;
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Live compete load failed: {ex.Message}");
                 await OnMainThread(() => {
-                    _loadingViewController.SetMessage($"Failed: {ex.Message}");
                     _loadingTransitioning = false;
                     _roomTransitioning = false;
+                    failedCallback?.Invoke(ex);
+                    if (topViewController == _loadingViewController) {
+                        this.DismissView(_loadingViewController).RunTask();
+                    }
                 });
             }
         }
@@ -401,7 +427,31 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         private void RoomWasClosed() {
             if (topViewController == _roomViewController) {
                 LeaveRoomView(false);
+                RefreshRoomsAfterClose();
+                return;
             }
+
+            if (_roomTransitioning && topViewController == _loadingViewController) {
+                _loadingCancellation?.Cancel();
+                _selectedRoom = null;
+                _loadingTransitioning = false;
+                _roomTransitioning = false;
+                this.DismissView(_loadingViewController).RunTask();
+                if (_selectedTournament == null) {
+                    _codeEntryViewController.SetStatus("That room could not be joined.");
+                } else {
+                    RefreshRoomsAfterClose();
+                }
+            }
+        }
+
+        private void RoomJoinFailed(Exception ex) {
+            Plugin.Log.Warn($"Failed to join live room: {ex.Message}");
+            LoadRooms(false, "That room could not be joined. Refreshing rooms...").RunTask();
+        }
+
+        private void RefreshRoomsAfterClose() {
+            LoadRooms(false, "Room closed. Refreshing rooms...").RunTask();
         }
 
         private void LeaveRoomView(bool returnToPublicPresence) {

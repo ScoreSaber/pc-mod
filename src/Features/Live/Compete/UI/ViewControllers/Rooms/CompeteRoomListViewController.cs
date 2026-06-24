@@ -23,6 +23,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.ViewControllers.Rooms {
         private string _title = "Rooms";
         private string _subtitle = "Rooms you have permission to join";
         private bool _hasRooms;
+        private bool _refreshing;
 
         [UIValue("room-list-title")]
         private string title {
@@ -36,18 +37,36 @@ namespace ScoreSaber.Features.Live.Compete.UI.ViewControllers.Rooms {
             set => SetValue(ref _subtitle, value, nameof(subtitle));
         }
 
-        [UIValue("has-rooms")]
+        [UIValue("rooms-active")]
+        private bool roomsActive => hasRooms && !refreshing;
+
+        [UIValue("rooms-refreshing")]
+        private bool refreshing {
+            get => _refreshing;
+            set {
+                _refreshing = value;
+                NotifyPropertyChanged();
+                NotifyPropertyChanged(nameof(roomsActive));
+                NotifyPropertyChanged(nameof(roomsEmpty));
+                NotifyPropertyChanged(nameof(canRefresh));
+            }
+        }
+
+        [UIValue("can-refresh")]
+        private bool canRefresh => !refreshing;
+
         private bool hasRooms {
             get => _hasRooms;
             set {
                 _hasRooms = value;
                 NotifyPropertyChanged();
+                NotifyPropertyChanged(nameof(roomsActive));
                 NotifyPropertyChanged(nameof(roomsEmpty));
             }
         }
 
         [UIValue("rooms-empty")]
-        private bool roomsEmpty => !hasRooms;
+        private bool roomsEmpty => !hasRooms && !refreshing;
 
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
             base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
@@ -69,13 +88,30 @@ namespace ScoreSaber.Features.Live.Compete.UI.ViewControllers.Rooms {
             ReloadList();
         }
 
+        internal void SetRefreshing(bool value) {
+            refreshing = value;
+            ReloadList();
+        }
+
+        internal void SetStatus(string value) {
+            subtitle = string.IsNullOrEmpty(value) ? "Rooms you have permission to join" : value;
+        }
+
         [UIAction("refresh-rooms")]
         private void RefreshClicked() {
+            if (refreshing) {
+                return;
+            }
+
             RefreshRequested?.Invoke();
         }
 
         [UIAction("room-selected")]
         private void SelectRoom(TableView tableView, CompeteRoomCell cell) {
+            if (refreshing) {
+                return;
+            }
+
             RoomSelected?.Invoke(cell.Room);
         }
 

@@ -15,6 +15,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         CompeteRoom PendingTournamentRoom { get; }
 
         void ApplyClientContext(DecodedLudusEnvelope envelope);
+        void CloseTournamentRoom();
         void Disconnect();
         void EnterTournamentRoom(CompeteRoom room);
         bool RequestAuthenticationRefresh();
