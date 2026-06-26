@@ -12,18 +12,20 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             }
         }
 
-        internal void Drain() {
+        internal int Drain(int maxActions) {
+            int processed = 0;
             while (true) {
                 Action action;
                 lock (_lock) {
-                    if (_actions.Count == 0) {
-                        return;
+                    if (_actions.Count == 0 || processed >= maxActions) {
+                        return _actions.Count;
                     }
 
                     action = _actions.Dequeue();
                 }
 
                 action();
+                processed++;
             }
         }
     }

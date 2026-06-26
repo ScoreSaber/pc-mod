@@ -23,6 +23,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
     internal class LudusSessionService : IInitializable, ITickable, IDisposable {
         private const float ReconnectMinDelaySeconds = 0.5f;
         private const float ReconnectMaxDelaySeconds = 10f;
+        private const int GameplayMainThreadQueueActionBudget = 8;
+        private const float MainThreadQueueBacklogLogIntervalSeconds = 2f;
         private const int TournamentJoinAckTimeoutMs = 3000;
         private static readonly TimeSpan FreshGameSessionAuthGuard = TimeSpan.FromMinutes(3);
         private static readonly TimeSpan GameSessionReconnectRefreshInterval = TimeSpan.FromHours(3);
@@ -41,6 +43,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private readonly SettingsService _settings;
         private readonly GameSessionService _gameSessionService;
         private readonly ScoreSaberRuntimeInfo _runtimeInfo;
+        private readonly CompeteGameplayState _competeGameplayState;
         private readonly LiveReplayStreamingService _replayStreamingService;
         private readonly LudusMainThreadQueue _mainThread;
         private readonly LudusSessionTransport _transport;
@@ -61,6 +64,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private Task _connectTask;
         private float _heartbeatIntervalSeconds = 5f;
         private float _nextHeartbeatAt;
+        private float _nextMainThreadQueueBacklogLogAt;
         private string _nextLudusUrl;
         private float _nextReconnectAt;
         private int _reconnectAttempt;
@@ -80,11 +84,13 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             CompeteDirectoryService directoryService,
             CompeteGameplayLauncher gameplayLauncher,
             CompeteGameplayControl gameplayControl,
+            CompeteGameplayState competeGameplayState,
             LiveReplayStreamingService replayStreamingService) {
 
             _settings = settings;
             _gameSessionService = gameSessionService;
             _runtimeInfo = runtimeInfo;
+            _competeGameplayState = competeGameplayState;
             _replayStreamingService = replayStreamingService;
             _mainThread = new LudusMainThreadQueue();
             _transport = new LudusSessionTransport(_mainThread);
@@ -169,7 +175,12 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         }
 
         public void Tick() {
-            _mainThread.Drain();
+            int actionBudget = _competeGameplayState.IsLiveGameplayActive ? GameplayMainThreadQueueActionBudget : int.MaxValue;
+            int remainingActions = _mainThread.Drain(actionBudget);
+            if (remainingActions > 0 && _competeGameplayState.IsLiveGameplayActive && Time.realtimeSinceStartup >= _nextMainThreadQueueBacklogLogAt) {
+                _nextMainThreadQueueBacklogLogAt = Time.realtimeSinceStartup + MainThreadQueueBacklogLogIntervalSeconds;
+                Plugin.Log.Warn($"Ludus: deferred {remainingActions} main-thread messages during live gameplay.");
+            }
             ReconnectIfDue();
             SendHeartbeatIfDue();
         }
