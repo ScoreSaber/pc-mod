@@ -31,6 +31,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
         private CompeteDirectoryService _directoryService;
         private LudusSessionService _ludusSession;
+        private CompeteGameplayState _competeGameplayState;
         private CompeteModeSelectionViewController _modeSelectionViewController;
         private TournamentBrowserViewController _tournamentBrowserViewController;
         private CompeteRoomListViewController _roomListViewController;
@@ -49,13 +50,18 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         private bool _roomTransitioning;
         private bool _loadingTransitioning;
         private bool _tournamentBrowserEventsSubscribed;
+        private bool _roomUiPending;
+        private bool _roomUiPendingSongChanged;
+        private bool _roomClosedDuringGameplay;
         private string _roomCloseStatus;
+        private string _gameplayRoomCloseStatus;
         private CancellationTokenSource _loadingCancellation;
 
         [Inject]
         internal void Construct(
             CompeteDirectoryService directoryService,
             LudusSessionService ludusSession,
+            CompeteGameplayState competeGameplayState,
             CompeteModeSelectionViewController modeSelectionViewController,
             TournamentBrowserViewController tournamentBrowserViewController,
             CompeteRoomListViewController roomListViewController,
@@ -70,6 +76,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
             _directoryService = directoryService;
             _ludusSession = ludusSession;
+            _competeGameplayState = competeGameplayState;
             _modeSelectionViewController = modeSelectionViewController;
             _tournamentBrowserViewController = tournamentBrowserViewController;
             _roomListViewController = roomListViewController;
@@ -96,6 +103,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
             _ludusSession.PromptReceived += ReceivePrompt;
             _ludusSession.MapStartCountdownChanged += MapStartCountdownWasChanged;
             _ludusSession.StatusChanged += LudusStatusChanged;
+            _competeGameplayState.LiveGameplayActiveChanged += LiveGameplayActiveChanged;
         }
 
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -384,7 +392,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         }
 
         private void DrainPromptQueue() {
-            if (topViewController != _roomViewController || !_roomViewController.ReadyForPrompt || _roomTransitioning || _promptShowing) {
+            if (_competeGameplayState.IsLiveGameplayActive || topViewController != _roomViewController || !_roomViewController.ReadyForPrompt || _roomTransitioning || _promptShowing) {
                 return;
             }
 
@@ -424,20 +432,70 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
 
             bool songChanged = SongChanged(_selectedRoom.Song, room.Song);
             _selectedRoom = room;
+            if (!CanRenderRoomUi()) {
+                _roomUiPending = true;
+                _roomUiPendingSongChanged |= songChanged;
+                return;
+            }
+
+            RenderRoomUi(room, songChanged);
+        }
+
+        private bool CanRenderRoomUi() {
+            return !_competeGameplayState.IsLiveGameplayActive && topViewController == _roomViewController;
+        }
+
+        private void RenderRoomUi(CompeteRoom room, bool songChanged) {
             _roomViewController.SetRoom(room);
             _playerListViewController.SetRoom(room);
             if (_rightPanelShowingLeaderboard && songChanged && !RefreshRoomLeaderboard()) {
                 ShowPlayersPanel(ViewController.AnimationType.In);
             }
+            _roomUiPending = false;
+            _roomUiPendingSongChanged = false;
+        }
+
+        private void ApplyPendingRoomUi() {
+            if (!_roomUiPending || _selectedRoom == null || !CanRenderRoomUi()) {
+                return;
+            }
+
+            RenderRoomUi(_selectedRoom, _roomUiPendingSongChanged);
+        }
+
+        private void LiveGameplayActiveChanged(bool active) {
+            if (active) {
+                return;
+            }
+
+            if (_roomClosedDuringGameplay) {
+                _roomClosedDuringGameplay = false;
+                string status = _gameplayRoomCloseStatus;
+                _gameplayRoomCloseStatus = null;
+                HandleRoomWasClosed(status);
+                return;
+            }
+
+            ApplyPendingRoomUi();
+            DrainPromptQueue();
         }
 
         private void RoomWasClosed() {
             string roomCloseStatus = _roomCloseStatus;
-            if (_roomTransitioning && topViewController == _loadingViewController && IsTournamentJoinBlockedStatus(roomCloseStatus)) {
+            _roomCloseStatus = null;
+            if (_competeGameplayState.IsLiveGameplayActive) {
+                _roomClosedDuringGameplay = true;
+                _gameplayRoomCloseStatus = roomCloseStatus;
                 return;
             }
 
-            _roomCloseStatus = null;
+            HandleRoomWasClosed(roomCloseStatus);
+        }
+
+        private void HandleRoomWasClosed(string roomCloseStatus) {
+            if (_roomTransitioning && topViewController == _loadingViewController && IsTournamentJoinBlockedStatus(roomCloseStatus)) {
+                return;
+            }
 
             if (topViewController == _roomViewController) {
                 LeaveRoomView(false);
@@ -477,6 +535,8 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         private void LeaveRoomView(bool returnToPublicPresence) {
             ClearPrompts();
             _selectedRoom = null;
+            _roomUiPending = false;
+            _roomUiPendingSongChanged = false;
             _rightPanelShowingLeaderboard = false;
             _roomViewController.HideMapStartCountdown();
             RestoreMenuLeaderboard();
@@ -546,6 +606,10 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
         }
 
         private void MapStartCountdownWasChanged(CompeteMapStartCountdown countdown) {
+            if (_competeGameplayState.IsLiveGameplayActive) {
+                return;
+            }
+
             if (countdown == null) {
                 _roomViewController.HideMapStartCountdown();
                 return;
