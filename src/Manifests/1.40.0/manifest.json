@@ -6,7 +6,7 @@
   "icon": "ScoreSaber.logo.png",
   "id": "ScoreSaber",
   "name": "ScoreSaber",
-  "version": "3.3.23",
+  "version": "3.3.24",
   "dependsOn": {
     "BSIPA": "^4.3.6",
     "BeatSaberMarkupLanguage": "^1.12.5",
