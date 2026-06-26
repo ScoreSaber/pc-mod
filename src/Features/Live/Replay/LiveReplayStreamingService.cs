@@ -26,6 +26,7 @@ namespace ScoreSaber.Features.Live.Replay {
         private string _streamId;
         private bool _recording;
         private bool _streaming;
+        private bool _streamingStoppedByBackpressure;
         private bool _playerFollowRequested;
         private int _followViewerCount;
         private bool _playingPresenceSent;
@@ -80,6 +81,7 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private void ResetStream() {
             _streaming = false;
+            _streamingStoppedByBackpressure = false;
             _playerFollowRequested = false;
             _followViewerCount = 0;
             _playingPresenceSent = false;

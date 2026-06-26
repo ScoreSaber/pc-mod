@@ -8,10 +8,10 @@ using System.Collections.Generic;
 namespace ScoreSaber.Features.Live.Ludus.Packets {
     internal sealed class LudusPacketSender {
         private readonly Action<byte[]> _send;
-        private readonly Action<Func<byte[]>> _sendDeferred;
+        private readonly Func<Func<byte[]>, bool, bool> _sendDeferred;
         private ulong _outgoingSequence = 1;
 
-        internal LudusPacketSender(Action<byte[]> send, Action<Func<byte[]>> sendDeferred) {
+        internal LudusPacketSender(Action<byte[]> send, Func<Func<byte[]>, bool, bool> sendDeferred) {
             _send = send;
             _sendDeferred = sendDeferred;
         }
@@ -83,9 +83,14 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
             _send(LudusProto.EncodePresence(playState, downloadState, currentMatchId, currentMapHash, NextSequence(), connectionId));
         }
 
-        internal void ReplayPacket(ReplayStreamPacket packet, string connectionId) {
-            ulong sequence = NextSequence();
-            _sendDeferred(() => LudusProto.EncodeReplayPacket(packet, sequence, connectionId));
+        internal bool ReplayPacket(ReplayStreamPacket packet, string connectionId, bool canDrop) {
+            ulong sequence = _outgoingSequence;
+            if (!_sendDeferred(() => LudusProto.EncodeReplayPacket(packet, sequence, connectionId), canDrop)) {
+                return false;
+            }
+
+            _outgoingSequence++;
+            return true;
         }
 
         private ulong NextSequence() => _outgoingSequence++;

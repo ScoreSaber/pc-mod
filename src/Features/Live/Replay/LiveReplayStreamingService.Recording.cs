@@ -18,6 +18,7 @@ namespace ScoreSaber.Features.Live.Replay {
             _hsvConfig = hsvConfig;
             _recording = true;
             _streaming = false;
+            _streamingStoppedByBackpressure = false;
             _streamId = string.Empty;
             _nextSequence = 1;
             _chunkCount = 0;
@@ -168,6 +169,10 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private bool CanRecordEvent() {
             if (!_recording) {
+                return false;
+            }
+
+            if (_streamingStoppedByBackpressure) {
                 return false;
             }
 

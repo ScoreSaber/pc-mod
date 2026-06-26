@@ -19,7 +19,9 @@ namespace ScoreSaber.Features.Live.Replay {
             }
 
             try {
-                Flush();
+                if (!Flush()) {
+                    return;
+                }
                 _ludus.SendReplayPacket(new ReplayStreamPacket {
                     StreamId = _streamId,
                     PlayerId = _ludus.LocalPlayerId,
@@ -54,7 +56,9 @@ namespace ScoreSaber.Features.Live.Replay {
             }
 
             try {
-                Flush();
+                if (!Flush()) {
+                    return;
+                }
                 ulong lastCommittedSequence = _nextSequence > 1 ? _nextSequence - 1 : 0;
                 _ludus.SendReplayPacket(new ReplayStreamPacket {
                     StreamId = _streamId,
@@ -90,7 +94,7 @@ namespace ScoreSaber.Features.Live.Replay {
         }
 
         private void TryStartStreaming() {
-            if (_streaming || !_recording || _ludus == null || !_ludus.IsConnectedToLudus) {
+            if (_streaming || _streamingStoppedByBackpressure || !_recording || _ludus == null || !_ludus.IsConnectedToLudus) {
                 return;
             }
 
@@ -193,7 +197,9 @@ namespace ScoreSaber.Features.Live.Replay {
                 return;
             }
 
-            Flush();
+            if (!Flush()) {
+                return;
+            }
             _pendingBatch.PauseEvents.Add(new ReplayPauseEvent {
                 Paused = _paused,
                 TimeSeconds = songTime,
@@ -201,34 +207,72 @@ namespace ScoreSaber.Features.Live.Replay {
             });
             _counts.PauseEvents++;
             MarkEventTime(songTime);
-            Flush();
+            if (!Flush()) {
+                return;
+            }
             _pauseStatePublished = true;
             _publishedPausedState = _paused;
             Plugin.Log.Info(_paused ? "Live replay: Pause event sent." : "Live replay: Resume event sent.");
         }
 
-        private void Flush() {
+        private bool Flush() {
             if (_pendingEventCount == 0 || _ludus == null || !_ludus.IsConnectedToLudus || string.IsNullOrEmpty(_streamId)) {
-                return;
+                return true;
             }
 
-            _chunkCount++;
-            _ludus.SendReplayPacket(new ReplayStreamPacket {
+            ulong sequence = _nextSequence;
+            var packet = new ReplayStreamPacket {
                 StreamId = _streamId,
                 PlayerId = _ludus.LocalPlayerId,
                 MatchId = _ludus.CurrentLudusMatchId,
                 Chunk = new ReplayChunk {
-                    Cursor = Cursor(_nextSequence++, _pendingBatch.MaxTimeSeconds),
+                    Cursor = Cursor(sequence, _pendingBatch.MaxTimeSeconds),
                     Events = _pendingBatch,
                     CumulativeEventCounts = CloneCounts(_counts),
                     ReplayExtensions = _pendingExtensions
                 }
-            });
+            };
+
+            if (!_ludus.SendReplayPacket(packet, true)) {
+                return FailStreamDueToBackpressure();
+            }
+
+            _nextSequence++;
+            _chunkCount++;
             ResetBatch();
+            return true;
+        }
+
+        private bool FailStreamDueToBackpressure() {
+            int backlog = _ludus?.DeferredReplaySendBacklog ?? 0;
+            try {
+                ulong lastCommittedSequence = _nextSequence > 1 ? _nextSequence - 1 : 0;
+                _ludus?.SendReplayPacket(new ReplayStreamPacket {
+                    StreamId = _streamId,
+                    PlayerId = _ludus.LocalPlayerId,
+                    MatchId = _ludus.CurrentLudusMatchId,
+                    Failure = new ReplayStreamFailure {
+                        LastCommittedCursor = Cursor(lastCommittedSequence, _lastStreamSongTime),
+                        Reason = ReplayFailureReason.ReplayFailureReasonInternalError,
+                        State = ReplayStreamState.ReplayStreamStateFailed,
+                        Message = $"Replay send backlog exceeded ({backlog} queued).",
+                        CanResume = false
+                    }
+                });
+                Plugin.Log.Warn($"Live replay: Stream stopped because replay send backlog exceeded ({backlog} queued).");
+            } catch (Exception ex) {
+                Plugin.Log.Warn($"Failed to report live replay backpressure: {ex.Message}");
+            }
+
+            TrySendIdlePresence();
+            ResetStream();
+            _streamingStoppedByBackpressure = true;
+            return false;
         }
 
         private void RestartStreamAfterConnectionLoss() {
             _streaming = false;
+            _streamingStoppedByBackpressure = false;
             _playingPresenceSent = false;
             _pauseStatePublished = false;
             _publishedPausedState = false;
@@ -242,6 +286,7 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private void ResetPublicStreamState() {
             _streaming = false;
+            _streamingStoppedByBackpressure = false;
             _followViewerCount = 0;
             _playingPresenceSent = false;
             _pauseStatePublished = false;
