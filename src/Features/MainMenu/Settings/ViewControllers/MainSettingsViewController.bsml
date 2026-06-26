@@ -21,30 +21,21 @@
 			</modifier-container>
 		</tab>
 		<tab tab-name='Replays' tags='tabs'>
-			<vertical>
-				<modifier-container child-expand-width='true' horizontal-fit='PreferredSize'>
-					<toggle-setting  text='Save Local Replays' id='saveLocalReplaysSetting' value='saveLocalReplays' apply-on-change='true' />
-					<toggle-setting  text='Camera smoothing' id='replayCameraSmoothingSetting' value='replayCameraSmoothing' apply-on-change='true' />
-					<toggle-setting  text='Override handedness' id='replayOverrideHandednessSetting' value='replayOverrideHandedness' apply-on-change='true' hover-hint='This might break replays with modded requirements!'/>
-					<toggle-setting  text='Use Recorded Player Settings' id='useRecordedPlayerSettingsSetting' value='useRecordedPlayerSettings' apply-on-change='true' hover-hint='Use recorded colors, jump distance, environment, lights, and arc preferences when available.' />
-					<toggle-setting  text='Share HSV Profile' id='shareReplayHsvProfilesSetting' value='shareHsvProfiles' bind-value='true' apply-on-change='true' hover-hint='Include your selected HitScoreVisualizer profile in replay files and live streams.' />
-					<slider-setting  show-buttons='true' increment='0.1' min='60' max='120' text='Camera FOV' value='replayCameraFOV' apply-on-change='true' hover-hint='This only applies to the base game camera!' />
-				</modifier-container>
-				<modifier-container child-expand-width='true' horizontal-fit='PreferredSize'>
-					<horizontal spacing='2'>
-						<slider-setting preferred-width='65' size-delta-x='65' show-buttons='true' increment='0.1' min='-180' max='180'  text='X Rot' value='currentXValueRotation' bind-value='true' apply-on-change='true' />
-						<slider-setting preferred-width='65' size-delta-x='65' show-buttons='true' increment='0.01' min='-10' max='10'  text='X Offset' value='currentXValueOffset' bind-value='true' apply-on-change='true' />
-					</horizontal>
-					<horizontal spacing='2'>
-						<slider-setting preferred-width='65' size-delta-x='65' show-buttons='true' increment='0.1' min='-180' max='180'  text='Y Rot' value='currentYValueRotation' bind-value='true' apply-on-change='true' />
-						<slider-setting preferred-width='65' size-delta-x='65' show-buttons='true' increment='0.01' min='-10' max='10'  text='Y Offset' value='currentYValueOffset' bind-value='true' apply-on-change='true' />
-					</horizontal>
-					<horizontal spacing='2'>
-						<slider-setting preferred-width='65' size-delta-x='65' show-buttons='true' increment='0.1' min='-180' max='180'  text='Z Rot' value='currentZValueRotation' bind-value='true' apply-on-change='true' />
-						<slider-setting preferred-width='65' size-delta-x='65' show-buttons='true' increment='0.01' min='-10' max='10'  text='Z Offset' value='currentZValueOffset' bind-value='true' apply-on-change='true' />
-					</horizontal>
-				</modifier-container>
-			</vertical>
+			<scroll-view preferred-width='100' preferred-height='44' size-delta-x='100' size-delta-y='44' anchor-min-x='0.5' anchor-min-y='0.5' anchor-max-x='0.5' anchor-max-y='0.5' child-expand-width='false' spacing='0.5'>
+				<toggle-setting text='Save Local Replays' id='saveLocalReplaysSetting' value='saveLocalReplays' apply-on-change='true' />
+				<toggle-setting text='Camera smoothing' id='replayCameraSmoothingSetting' value='replayCameraSmoothing' apply-on-change='true' />
+				<toggle-setting text='Override handedness' id='replayOverrideHandednessSetting' value='replayOverrideHandedness' apply-on-change='true' hover-hint='This might break replays with modded requirements!'/>
+				<toggle-setting text='Use Recorded Player Settings' id='useRecordedPlayerSettingsSetting' value='useRecordedPlayerSettings' apply-on-change='true' hover-hint='Use recorded colors, jump distance, environment, lights, and arc preferences when available.' />
+				<toggle-setting text='Share HSV Profile' id='shareReplayHsvProfilesSetting' value='shareHsvProfiles' bind-value='true' apply-on-change='true' hover-hint='Include your selected HitScoreVisualizer profile in replay files and live streams.' />
+				<slider-setting show-buttons='true' increment='0.1' min='60' max='120' text='Camera FOV' value='replayCameraFOV' apply-on-change='true' hover-hint='This only applies to the base game camera!' />
+				<slider-setting show-buttons='true' increment='0.1' min='-180' max='180'  text='X Rot' value='currentXValueRotation' bind-value='true' apply-on-change='true' />
+				<slider-setting show-buttons='true' increment='0.01' min='-10' max='10'  text='X Offset' value='currentXValueOffset' bind-value='true' apply-on-change='true' />
+				<slider-setting show-buttons='true' increment='0.1' min='-180' max='180'  text='Y Rot' value='currentYValueRotation' bind-value='true' apply-on-change='true' />
+				<slider-setting show-buttons='true' increment='0.01' min='-10' max='10'  text='Y Offset' value='currentYValueOffset' bind-value='true' apply-on-change='true' />
+				<slider-setting show-buttons='true' increment='0.1' min='-180' max='180'  text='Z Rot' value='currentZValueRotation' bind-value='true' apply-on-change='true' />
+				<slider-setting show-buttons='true' increment='0.01' min='-10' max='10'  text='Z Offset' value='currentZValueOffset' bind-value='true' apply-on-change='true' />
+				<vertical preferred-height='4' />
+			</scroll-view>
 		</tab>
 	</horizontal>
 </bg>
