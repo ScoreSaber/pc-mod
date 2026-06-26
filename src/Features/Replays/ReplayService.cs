@@ -22,20 +22,46 @@ namespace ScoreSaber.Features.Replays {
             Plugin.Log.Debug($"New play started with id: {playId}");
         }
 
-        public async Task<ReplaySerializationResult> WriteReplay() {
+        public void DiscardReplay() {
             if (_replayRecorder == null) {
+                return;
+            }
+
+            Plugin.Log.Debug($"Discarding replay with id: {_currentPlayId}");
+            _replayRecorder.StopRecording();
+            ClearRecorder(_currentPlayId, _replayRecorder);
+        }
+
+        public async Task<ReplaySerializationResult> WriteReplay() {
+            Recorder recorder = _replayRecorder;
+            string playId = _currentPlayId;
+            if (recorder == null) {
                 Plugin.Log.Debug("Skipping replay write because no recorder is active");
                 return null;
             }
 
-            _replayRecorder.StopRecording();
+            recorder.StopRecording();
 
-            Plugin.Log.Debug($"Writing replay with id: {_currentPlayId}");
-            var replayFile = _replayRecorder.Export();
-            byte[] serializedReplay = await _replayFileCodec.Write(replayFile);
-            Plugin.Log.Debug($"Replay written: {_currentPlayId}");
-            ReplaySerialized?.Invoke(serializedReplay);
-            return new ReplaySerializationResult(serializedReplay, replayFile.metadata.FailTime);
+            Plugin.Log.Debug($"Writing replay with id: {playId}");
+            var replayFile = recorder.Export();
+            float failTime = replayFile.metadata.FailTime;
+            try {
+                byte[] serializedReplay = await _replayFileCodec.Write(replayFile);
+                Plugin.Log.Debug($"Replay written: {playId}");
+                ReplaySerialized?.Invoke(serializedReplay);
+                return new ReplaySerializationResult(serializedReplay, failTime);
+            } finally {
+                ClearRecorder(playId, recorder);
+            }
+        }
+
+        private void ClearRecorder(string playId, Recorder recorder) {
+            if (_currentPlayId != playId || !ReferenceEquals(_replayRecorder, recorder)) {
+                return;
+            }
+
+            _currentPlayId = null;
+            _replayRecorder = null;
         }
     }
 

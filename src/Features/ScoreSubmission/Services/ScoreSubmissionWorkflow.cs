@@ -54,7 +54,12 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
             return result;
         }
 
-        internal Task WriteReplayOnly(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, float playOutcomeTime) => Task.CompletedTask;
+        internal void DiscardReplay() => _replayService.DiscardReplay();
+
+        internal Task WriteReplayOnly(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, float playOutcomeTime) {
+            _replayService.DiscardReplay();
+            return Task.CompletedTask;
+        }
 
         private async Task<ReplaySerializationResult> WriteSerializedReplay(Action<ScoreSubmissionStatus> statusChanged) {
             Report(statusChanged, ScoreUploadStatus.Packaging, "Packaging replay...");

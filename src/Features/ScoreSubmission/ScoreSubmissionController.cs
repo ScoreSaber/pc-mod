@@ -81,6 +81,7 @@ namespace ScoreSaber.Features.ScoreSubmission {
 
                 switch (decision.Action) {
                     case ScoreSubmissionAction.Ignore:
+                        _submissionWorkflow.DiscardReplay();
                         return;
                     case ScoreSubmissionAction.WriteReplayOnly:
                         WriteReplayOnly(request);

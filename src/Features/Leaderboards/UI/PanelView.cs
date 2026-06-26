@@ -144,6 +144,12 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             Disabled?.Invoke();
         }
 
+        protected override void OnDestroy() {
+            BsmlCompat.DestroySprite(_denyahSprite);
+            _denyahSprite = null;
+            base.OnDestroy();
+        }
+
         public override void Parsed() {
             base.Parsed();
             IsReady = true;

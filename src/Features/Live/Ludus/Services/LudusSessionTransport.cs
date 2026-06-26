@@ -58,8 +58,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             ClientWebSocket socket = _socket;
             CancellationTokenSource cancellation = _cancellation;
             lock (_sendTaskLock) {
-                _sendTask = SendAfter(_sendTask, socket, cancellation, bytes);
-                _sendTask.RunTask();
+                QueueSendTask(SendAfter(PendingSendTask(), socket, cancellation, bytes));
             }
         }
 
@@ -76,23 +75,28 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 }
 
                 _deferredSendBacklog++;
-                _sendTask = SendAfter(_sendTask, socket, cancellation, bytesFactory, CompleteDeferredSend);
-                _sendTask.RunTask();
+                QueueSendTask(SendAfter(PendingSendTask(), socket, cancellation, bytesFactory, CompleteDeferredSend));
             }
 
             return true;
         }
 
         internal void DisposeSocket() {
+            CancellationTokenSource cancellation = _cancellation;
             try {
-                _cancellation?.Cancel();
+                cancellation?.Cancel();
                 _socket?.Dispose();
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Failed to close ludus socket: {ex.Message}");
+            } finally {
+                cancellation?.Dispose();
             }
 
             _socket = null;
             _cancellation = null;
+            lock (_sendTaskLock) {
+                _sendTask = Task.CompletedTask;
+            }
         }
 
         private async Task ReceiveLoop(ClientWebSocket socket, CancellationTokenSource cancellation) {
@@ -196,6 +200,26 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
 
         private static bool CanSendToSocket(ClientWebSocket socket, CancellationTokenSource cancellation) {
             return socket != null && cancellation != null && socket.State == WebSocketState.Open;
+        }
+
+        private Task PendingSendTask() {
+            if (_sendTask.IsCompleted) {
+                _sendTask = Task.CompletedTask;
+            }
+
+            return _sendTask;
+        }
+
+        private void QueueSendTask(Task sendTask) {
+            _sendTask = sendTask;
+            sendTask.ContinueWith(task => {
+                lock (_sendTaskLock) {
+                    if (ReferenceEquals(_sendTask, task)) {
+                        _sendTask = Task.CompletedTask;
+                    }
+                }
+            }, TaskContinuationOptions.ExecuteSynchronously);
+            sendTask.RunTask();
         }
 
         private void CompleteDeferredSend() {

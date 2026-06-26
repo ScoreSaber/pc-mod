@@ -36,6 +36,18 @@ namespace ScoreSaber.Core.Compat {
             return Utilities.LoadSpriteFromTexture(texture);
         }
 
+        internal static void DestroySprite(Sprite sprite) {
+            if (sprite == null) {
+                return;
+            }
+
+            Texture2D texture = sprite.texture;
+            UnityEngine.Object.Destroy(sprite);
+            if (texture != null) {
+                UnityEngine.Object.Destroy(texture);
+            }
+        }
+
 #if BEAT_SABER_1_29_0 || BEAT_SABER_1_37_1
         internal static BSMLParser Parser => BSMLParser.instance;
 

@@ -183,6 +183,8 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
             if (_scopeControl != null) {
                 _scopeControl.didSelectCellEvent -= ScopeSegmentedControlDidSelectCell;
             }
+            BsmlCompat.DestroySprite(_countryIcon);
+            _countryIcon = null;
         }
 
         [UIAction("up-clicked")]
