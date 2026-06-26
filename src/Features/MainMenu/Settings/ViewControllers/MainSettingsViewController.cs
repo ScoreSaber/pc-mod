@@ -1,9 +1,12 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
+using HMUI;
+using IPA.Utilities;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Live.Ludus.Services;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Zenject;
 
 namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
@@ -12,11 +15,46 @@ namespace ScoreSaber.Features.MainMenu.Settings.ViewControllers {
         private SettingsService _settings;
         private LudusSessionService _ludusSession;
 
+#if BEAT_SABER_1_29_0
+        [UIComponent("replay-settings-scroll")]
+        private readonly ScrollView _replaySettingsScroll = null;
+#endif
+
         [Inject]
         internal void Construct(SettingsService settings, LudusSessionService ludusSession) {
             _settings = settings;
             _ludusSession = ludusSession;
         }
+
+#if BEAT_SABER_1_29_0
+        [UIAction("#post-parse")]
+        private void Parsed() {
+            if (_replaySettingsScroll == null) {
+                return;
+            }
+
+            // 1.29 clones the release notes scroll view with its template offsets intact.
+            RectTransform scrollRect = _replaySettingsScroll.transform as RectTransform;
+            if (scrollRect != null) {
+                Vector2 center = new Vector2(0.5f, 0.5f);
+                scrollRect.anchorMin = center;
+                scrollRect.anchorMax = center;
+                scrollRect.pivot = center;
+                scrollRect.anchoredPosition = Vector2.zero;
+                scrollRect.sizeDelta = new Vector2(100f, 44f);
+            }
+
+            RectTransform viewport = _replaySettingsScroll.GetField<RectTransform, ScrollView>("_viewport");
+            if (viewport == null) {
+                return;
+            }
+
+            viewport.anchorMin = Vector2.zero;
+            viewport.anchorMax = Vector2.one;
+            viewport.anchoredPosition = Vector2.zero;
+            viewport.sizeDelta = Vector2.zero;
+        }
+#endif
 
         // NORMAL SETTINGS
         [UIValue("showScorePP")]

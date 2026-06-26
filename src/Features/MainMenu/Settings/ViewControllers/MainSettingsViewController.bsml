@@ -21,7 +21,7 @@
 			</modifier-container>
 		</tab>
 		<tab tab-name='Replays' tags='tabs'>
-			<scroll-view preferred-width='100' preferred-height='44' size-delta-x='100' size-delta-y='44' anchor-min-x='0.5' anchor-min-y='0.5' anchor-max-x='0.5' anchor-max-y='0.5' child-expand-width='false' spacing='0.5'>
+			<scroll-view id='replay-settings-scroll' preferred-width='100' preferred-height='44' size-delta-x='100' size-delta-y='44' anchor-min-x='0.5' anchor-min-y='0.5' anchor-max-x='0.5' anchor-max-y='0.5' child-expand-width='false' spacing='0.5'>
 				<toggle-setting text='Save Local Replays' id='saveLocalReplaysSetting' value='saveLocalReplays' apply-on-change='true' />
 				<toggle-setting text='Camera smoothing' id='replayCameraSmoothingSetting' value='replayCameraSmoothing' apply-on-change='true' />
 				<toggle-setting text='Override handedness' id='replayOverrideHandednessSetting' value='replayOverrideHandedness' apply-on-change='true' hover-hint='This might break replays with modded requirements!'/>
