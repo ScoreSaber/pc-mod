@@ -25,8 +25,14 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
         private FloatingScreen _screen;
         private Vector3 _baseScale = Vector3.one;
         private float _appliedOverlayScale = -1f;
+        private IReadOnlyList<LiveChatEntry> _pendingMessages = Array.Empty<LiveChatEntry>();
+        private string _pendingStatus;
+        private int _pendingViewerCount = int.MinValue;
         private bool _hasChatMessages;
         private bool _visible;
+        private bool _messagesDirty;
+        private bool _statusDirty;
+        private bool _viewerCountDirty;
 
         internal LiveChatOverlayController(
             SettingsService settings,
@@ -57,18 +63,22 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
             _ludusSession.StatusChanged += StatusChanged;
             _ludusSession.ViewerListUpdated += ViewerListUpdated;
             _ludusSession.PlayerFollowRequested += PlayerFollowRequested;
-            _hasChatMessages = HasChatMessages(_ludusSession.CurrentChatMessages);
-            _viewController.SetMessages(_ludusSession.CurrentChatMessages);
-            UpdateViewerCount(_ludusSession.CurrentViewerCount);
+            StoreMessages(_ludusSession.CurrentChatMessages);
+            StoreViewerCount(_ludusSession.CurrentViewerCount);
             Plugin.Log.Info($"Live chat overlay initialized. enabled={_settings.Current.liveChatOverlayEnabled} connected={_ludusSession.IsConnectedToLudus}");
             ApplyVisibility(false);
         }
 
         public void Tick() {
-            _viewController.RefreshLayoutSettings();
-            UpdateViewerCount(_ludusSession.CurrentViewerCount);
             ApplyOverlayScale(false);
             ApplyVisibility(true);
+            if (!_visible) {
+                return;
+            }
+
+            _viewController.RefreshLayoutSettings();
+            StoreViewerCount(_ludusSession.CurrentViewerCount);
+            FlushViewStateIfVisible();
         }
 
         public void Dispose() {
@@ -83,25 +93,63 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
         }
 
         private void ChatMessagesChanged(IReadOnlyList<LiveChatEntry> messages) {
-            _hasChatMessages = HasChatMessages(messages);
-            _viewController.SetMessages(messages);
+            StoreMessages(messages);
             ApplyVisibility(true);
         }
 
         private void StatusChanged(string status) {
-            _viewController.SetStatus(status);
+            if (_pendingStatus == status) {
+                return;
+            }
+
+            _pendingStatus = status;
+            _statusDirty = true;
+            FlushViewStateIfVisible();
         }
 
         private void ViewerListUpdated(IReadOnlyList<LiveRoomViewerState> viewers) {
-            UpdateViewerCount(viewers?.Count ?? 0);
+            StoreViewerCount(viewers?.Count ?? 0);
         }
 
         private void PlayerFollowRequested(int viewerCount) {
-            UpdateViewerCount(viewerCount);
+            StoreViewerCount(viewerCount);
         }
 
-        private void UpdateViewerCount(int viewerCount) {
-            _viewController.SetViewerCount(_ludusSession.IsInPublicPresence ? viewerCount : -1);
+        private void StoreMessages(IReadOnlyList<LiveChatEntry> messages) {
+            _pendingMessages = messages?.ToArray() ?? Array.Empty<LiveChatEntry>();
+            _hasChatMessages = HasChatMessages(_pendingMessages);
+            _messagesDirty = true;
+            FlushViewStateIfVisible();
+        }
+
+        private void StoreViewerCount(int viewerCount) {
+            int nextViewerCount = _ludusSession.IsInPublicPresence ? viewerCount : -1;
+            if (_pendingViewerCount == nextViewerCount) {
+                return;
+            }
+
+            _pendingViewerCount = nextViewerCount;
+            _viewerCountDirty = true;
+            FlushViewStateIfVisible();
+        }
+
+        private void FlushViewStateIfVisible() {
+            if (!_visible) {
+                return;
+            }
+
+            if (_messagesDirty) {
+                _viewController.SetMessages(_pendingMessages);
+                _messagesDirty = false;
+            }
+            if (_statusDirty) {
+                _viewController.SetStatus(_pendingStatus);
+                _statusDirty = false;
+            }
+            if (_viewerCountDirty) {
+                _viewController.SetViewerCount(_pendingViewerCount);
+                _viewerCountDirty = false;
+            }
         }
 
         private void ApplyOverlayScale(bool force) {
@@ -132,6 +180,7 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
             _visible = shouldShow;
             if (_visible) {
                 _screen.gameObject.SetActive(true);
+                FlushViewStateIfVisible();
                 _screen.SetRootViewController(_viewController, animated ? ViewController.AnimationType.In : ViewController.AnimationType.None);
                 _viewController.ResumeStatusAutoClear();
                 Plugin.Log.Info($"Live chat overlay shown. connected={_ludusSession.IsConnectedToLudus}");
