@@ -9,7 +9,7 @@ using Zenject;
 
 namespace ScoreSaber.Core.Presentation {
 
-    internal class RemoteImageService {
+    internal class RemoteImageService : IDisposable {
         private const int MaxSpriteCacheSize = 150;
 
         private readonly Dictionary<string, Sprite> _cachedSprites = new Dictionary<string, Sprite>();
@@ -43,48 +43,84 @@ namespace ScoreSaber.Core.Presentation {
         }
 
         private IEnumerator GetSprite(string url, Action<Sprite> onSuccess, Action<string> onFailure, CancellationToken cancellationToken) {
-            var handler = new DownloadHandlerTexture();
-            var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
-            request.downloadHandler = handler;
-            yield return request.SendWebRequest();
+            using (var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET)) {
+                var handler = new DownloadHandlerTexture();
+                request.downloadHandler = handler;
+                request.disposeDownloadHandlerOnDispose = true;
 
-            while (!request.isDone) {
+                AsyncOperation operation = request.SendWebRequest();
+                while (!operation.isDone) {
+                    if (cancellationToken.IsCancellationRequested) {
+                        request.Abort();
+                        onFailure?.Invoke("Cancelled");
+                        yield break;
+                    }
+
+                    yield return null;
+                }
+
                 if (cancellationToken.IsCancellationRequested) {
                     onFailure?.Invoke("Cancelled");
                     yield break;
                 }
-                yield return null;
-            }
 
-            if (request.IsProtocolError() || request.IsConnectionError()) {
-                onFailure?.Invoke(request.error);
-                yield break;
-            }
+                if (request.IsProtocolError() || request.IsConnectionError()) {
+                    onFailure?.Invoke(request.error);
+                    yield break;
+                }
 
-            if (!string.IsNullOrEmpty(request.error)) {
-                onFailure?.Invoke(request.error);
-                yield break;
-            }
+                if (!string.IsNullOrEmpty(request.error)) {
+                    onFailure?.Invoke(request.error);
+                    yield break;
+                }
 
-            Sprite sprite = Sprite.Create(handler.texture, new Rect(0, 0, handler.texture.width, handler.texture.height), Vector2.one * 0.5f);
-            AddSpriteToCache(url, sprite);
-            onSuccess?.Invoke(sprite);
+                Texture2D texture = handler.texture;
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
+                AddSpriteToCache(url, sprite);
+                onSuccess?.Invoke(sprite);
+            }
         }
 
         private void MaintainSpriteCache() {
             while (_cachedSprites.Count > MaxSpriteCacheSize) {
                 string oldestUrl = _spriteCacheQueue.Dequeue();
-                _cachedSprites.Remove(oldestUrl);
+                if (_cachedSprites.TryGetValue(oldestUrl, out Sprite sprite)) {
+                    _cachedSprites.Remove(oldestUrl);
+                    DestroySprite(sprite);
+                }
             }
         }
 
         private void AddSpriteToCache(string url, Sprite sprite) {
             if (_cachedSprites.ContainsKey(url)) {
+                DestroySprite(sprite);
                 return;
             }
 
             _cachedSprites.Add(url, sprite);
             _spriteCacheQueue.Enqueue(url);
+            MaintainSpriteCache();
+        }
+
+        public void Dispose() {
+            foreach (Sprite sprite in _cachedSprites.Values) {
+                DestroySprite(sprite);
+            }
+
+            _cachedSprites.Clear();
+            _spriteCacheQueue.Clear();
+        }
+
+        private static void DestroySprite(Sprite sprite) {
+            if (sprite == null) {
+                return;
+            }
+
+            Texture2D texture = sprite.texture;
+            UnityEngine.Object.Destroy(sprite);
+            if (texture != null) {
+                UnityEngine.Object.Destroy(texture);
+            }
         }
     }
 }

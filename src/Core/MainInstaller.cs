@@ -18,7 +18,7 @@ namespace ScoreSaber.Core {
             Container.BindInstance(new object()).WithId("ScoreSaberUIBindings").AsCached();
             Container.Bind<IScoreSaberApiClient>().To<ScoreSaberApiClient>().AsSingle();
             Container.Bind<BeatSaverService>().AsSingle();
-            Container.Bind<RemoteImageService>().AsSingle();
+            Container.BindInterfacesAndSelfTo<RemoteImageService>().AsSingle();
             Container.Install<CompatInstaller>();
             Container.Install<PlayersFeatureInstaller>();
             Container.Install<ReplayFeatureInstaller>();
