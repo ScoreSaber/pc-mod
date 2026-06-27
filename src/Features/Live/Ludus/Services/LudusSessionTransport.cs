@@ -7,14 +7,11 @@ using System.Threading.Tasks;
 
 namespace ScoreSaber.Features.Live.Ludus.Services {
     internal sealed class LudusSessionTransport {
-        private const int MaxDeferredSendBacklog = 8;
-
         private readonly LudusMainThreadQueue _mainThread;
         private readonly object _sendTaskLock = new object();
         private ClientWebSocket _socket;
         private CancellationTokenSource _cancellation;
         private Task _sendTask = Task.CompletedTask;
-        private int _deferredSendBacklog;
 
         internal LudusSessionTransport(LudusMainThreadQueue mainThread) {
             _mainThread = mainThread;
@@ -28,13 +25,6 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
 
         internal bool IsOpen => _socket != null && _socket.State == WebSocketState.Open;
         internal CancellationToken Token => _cancellation?.Token ?? CancellationToken.None;
-        internal int DeferredSendBacklog {
-            get {
-                lock (_sendTaskLock) {
-                    return _deferredSendBacklog;
-                }
-            }
-        }
 
         internal void Prepare(CancellationToken cancellationToken) {
             DisposeSocket();
@@ -62,7 +52,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             }
         }
 
-        internal bool SendDeferred(Func<byte[]> bytesFactory, bool canDrop) {
+        internal bool SendDeferred(Func<byte[]> bytesFactory) {
             if (bytesFactory == null) {
                 return false;
             }
@@ -70,12 +60,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             ClientWebSocket socket = _socket;
             CancellationTokenSource cancellation = _cancellation;
             lock (_sendTaskLock) {
-                if (canDrop && _deferredSendBacklog >= MaxDeferredSendBacklog) {
-                    return false;
-                }
-
-                _deferredSendBacklog++;
-                QueueSendTask(SendAfter(PendingSendTask(), socket, cancellation, bytesFactory, CompleteDeferredSend));
+                QueueSendTask(SendAfter(PendingSendTask(), socket, cancellation, bytesFactory));
             }
 
             return true;
@@ -132,34 +117,30 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             });
         }
 
-        private async Task SendAfter(Task previousSend, ClientWebSocket socket, CancellationTokenSource cancellation, Func<byte[]> bytesFactory, Action completed) {
+        private async Task SendAfter(Task previousSend, ClientWebSocket socket, CancellationTokenSource cancellation, Func<byte[]> bytesFactory) {
             try {
-                try {
-                    await previousSend.ConfigureAwait(false);
-                } catch {
-                }
-
-                if (socket != _socket || cancellation != _cancellation) {
-                    return;
-                }
-
-                if (!CanSendToSocket(socket, cancellation)) {
-                    _mainThread.Enqueue(() => ReconnectRequested?.Invoke("socket is not open"));
-                    return;
-                }
-
-                byte[] bytes;
-                try {
-                    bytes = bytesFactory();
-                } catch (Exception ex) {
-                    _mainThread.Enqueue(() => SendFailed?.Invoke(ex.Message));
-                    return;
-                }
-
-                await SendAsync(socket, cancellation, bytes).ConfigureAwait(false);
-            } finally {
-                completed?.Invoke();
+                await previousSend.ConfigureAwait(false);
+            } catch {
             }
+
+            if (socket != _socket || cancellation != _cancellation) {
+                return;
+            }
+
+            if (!CanSendToSocket(socket, cancellation)) {
+                _mainThread.Enqueue(() => ReconnectRequested?.Invoke("socket is not open"));
+                return;
+            }
+
+            byte[] bytes;
+            try {
+                bytes = bytesFactory();
+            } catch (Exception ex) {
+                _mainThread.Enqueue(() => SendFailed?.Invoke(ex.Message));
+                return;
+            }
+
+            await SendAsync(socket, cancellation, bytes).ConfigureAwait(false);
         }
 
         private async Task SendAfter(Task previousSend, ClientWebSocket socket, CancellationTokenSource cancellation, byte[] bytes) {
@@ -222,12 +203,5 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             sendTask.RunTask();
         }
 
-        private void CompleteDeferredSend() {
-            lock (_sendTaskLock) {
-                if (_deferredSendBacklog > 0) {
-                    _deferredSendBacklog--;
-                }
-            }
-        }
     }
 }

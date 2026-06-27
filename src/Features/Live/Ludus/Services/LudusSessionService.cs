@@ -164,7 +164,6 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         internal IReadOnlyList<LiveRoomViewerState> CurrentViewers => _currentViewers;
         internal int CurrentViewerCount => _currentViewers.Count;
         internal IReadOnlyList<LiveChatEntry> CurrentChatMessages => _chatMessages.MessagesFor(CurrentLudusMatchId);
-        internal int DeferredReplaySendBacklog => _transport.DeferredSendBacklog;
 
         public void Initialize() {
             Plugin.Log.Info("Ludus session initialized.");
@@ -415,7 +414,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             }
         }
 
-        internal bool SendReplayPacket(ReplayStreamPacket packet, bool canDrop = false) {
+        internal bool SendReplayPacket(ReplayStreamPacket packet) {
             if (packet == null || !IsConnectedToLudus) {
                 return false;
             }
@@ -427,7 +426,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 packet.MatchId = _currentMatchId;
             }
 
-            return _outgoing.ReplayPacket(packet, _connectionId, canDrop);
+            return _outgoing.ReplayPacket(packet, _connectionId);
         }
 
         private string GetLocalPlayerId() => _gameSessionService.LocalPlayerInfo?.playerId ?? _gameSessionService.GameSession?.PlayerId ?? string.Empty;
