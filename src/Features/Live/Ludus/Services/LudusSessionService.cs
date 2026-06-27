@@ -2,6 +2,7 @@ using ScoreSaber.Core;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Live.Compete.Domain;
 using ScoreSaber.Features.Live.Compete.Packets;
+using ScoreSaber.Features.Live.Compete.Packets.Handlers;
 using ScoreSaber.Features.Live.Compete.Services;
 using ScoreSaber.Features.Live.Ludus.Domain;
 using ScoreSaber.Features.Live.Ludus.Packets;
@@ -50,6 +51,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private readonly LudusPacketSender _outgoing;
         private readonly LudusMapStartCountdown _mapStartCountdown;
         private readonly LudusChatMessageBuffer _chatMessages;
+        private readonly ILudusServerCommandSession _commandSession;
         private readonly ILudusSessionPacketContext _packetContext;
         private readonly LudusPacketDispatcher<ILudusSessionPacketContext> _packetDispatcher;
 
@@ -96,7 +98,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _transport = new LudusSessionTransport(_mainThread);
             _outgoing = new LudusPacketSender(_transport.Send, _transport.SendDeferred);
             _mapStartCountdown = new LudusMapStartCountdown(_mainThread, () => _tournamentRoom?.Id ?? string.Empty);
-            ILudusServerCommandSession commandSession = new CompeteLudusCommandSession(
+            _commandSession = new CompeteLudusCommandSession(
                 () => LocalPlayerId,
                 () => _tournamentRoom,
                 room => _tournamentRoom = room,
@@ -143,7 +145,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 url => _nextLudusUrl = url,
                 messages => ChatMessagesChanged?.Invoke(messages),
                 status => StatusChanged?.Invoke(status));
-            _packetDispatcher = CompeteLudusPacketDispatcher.CreateDefault(commandSession, _chatMessages);
+            _packetDispatcher = CompeteLudusPacketDispatcher.CreateDefault(_commandSession, _chatMessages);
 
             _transport.MessageReceived += bytes => _packetDispatcher.Handle(_packetContext, bytes);
             _transport.ReceiveFailed += ReceiveFailed;
@@ -214,6 +216,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             } finally {
                 ClearPendingTournamentJoin(pendingJoin);
             }
+
+            EnsureTournamentRoomSongReady(_tournamentRoom);
         }
 
         internal void Disconnect() {
@@ -289,6 +293,19 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             List<LiveMod> installedMods = LudusInstalledMods.List();
             _outgoing.SetRoomContext(LudusRoomContextType.LudusRoomContextTypeTournament, room.TournamentId, installedMods, _connectionId);
             _outgoing.JoinRoom(room.Id, installedMods, _connectionId);
+        }
+
+        private void EnsureTournamentRoomSongReady(CompeteRoom room) {
+            if (room?.Song == null || room.Song.BeatmapLevel != null) {
+                return;
+            }
+
+            LiveSongCommand song = LoadSongCommandHandler.SongCommandFromSelection(room.Song);
+            if (song == null) {
+                return;
+            }
+
+            LoadSongCommandHandler.EnsureSongReady(_commandSession, song).RunTask();
         }
 
         private Task<CompeteRoom> BeginPendingTournamentJoin(CompeteRoom room) {

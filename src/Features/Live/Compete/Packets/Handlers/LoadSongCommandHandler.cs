@@ -15,26 +15,34 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
         }
 
         internal static async Task LoadSong(ILudusServerCommandSession session, ServerCommand command) {
-            if (session.TournamentRoom == null || command.Song == null) {
-                return;
+            await EnsureSongReady(session, command?.Song);
+        }
+
+        internal static async Task<bool> EnsureSongReady(ILudusServerCommandSession session, LiveSongCommand song) {
+            if (session.TournamentRoom == null || song == null) {
+                return false;
+            }
+
+            if (session.TournamentRoom.Song?.BeatmapLevel != null && MatchesSong(session.TournamentRoom.Song, song)) {
+                return true;
             }
 
             CancellationToken cancellationToken = session.ConnectionCancellationToken;
-            CompeteSongSelection installed = await session.SongService.ResolveInstalled(command.Song, cancellationToken);
+            CompeteSongSelection installed = await session.SongService.ResolveInstalled(song, cancellationToken);
             if (installed != null) {
                 if (session.TournamentRoom == null) {
-                    return;
+                    return false;
                 }
 
                 session.TournamentRoom = session.TournamentRoom.WithSong(installed);
                 session.NotifyRoomUpdated(session.TournamentRoom);
                 session.SendDownloadState(LudusDownloadState.LudusDownloadStateDownloaded);
-                return;
+                return true;
             }
 
-            CompeteSongSelection preview = await session.SongService.CreatePreview(command.Song, cancellationToken);
+            CompeteSongSelection preview = await session.SongService.CreatePreview(song, cancellationToken);
             if (session.TournamentRoom == null) {
-                return;
+                return false;
             }
 
             session.TournamentRoom = session.TournamentRoom.WithSongStatus(preview ?? session.TournamentRoom.Song, "Downloading map...");
@@ -42,28 +50,50 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
             session.SendDownloadState(LudusDownloadState.LudusDownloadStateDownloading);
 
             try {
-                CompeteSongSelection song = await session.SongService.ResolveOrDownload(command.Song, cancellationToken);
-                if (song == null) {
+                CompeteSongSelection resolved = await session.SongService.ResolveOrDownload(song, cancellationToken);
+                if (resolved == null || resolved.BeatmapLevel == null) {
                     throw new InvalidOperationException("SongCore could not resolve the downloaded song");
                 }
 
                 if (session.TournamentRoom == null) {
-                    return;
+                    return false;
                 }
 
-                session.TournamentRoom = session.TournamentRoom.WithSong(song);
+                session.TournamentRoom = session.TournamentRoom.WithSong(resolved);
                 session.NotifyRoomUpdated(session.TournamentRoom);
                 session.SendDownloadState(LudusDownloadState.LudusDownloadStateDownloaded);
+                return true;
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Failed to load live room song: {ex.Message}");
                 if (session.TournamentRoom == null) {
-                    return;
+                    return false;
                 }
 
                 session.TournamentRoom = session.TournamentRoom.WithSongStatus(preview ?? session.TournamentRoom.Song, "Map download failed.");
                 session.NotifyRoomUpdated(session.TournamentRoom);
                 session.SendDownloadState(LudusDownloadState.LudusDownloadStateError, ex.Message);
+                return false;
             }
+        }
+
+        internal static LiveSongCommand SongCommandFromSelection(CompeteSongSelection song) {
+            if (song == null || string.IsNullOrEmpty(song.MapHash)) {
+                return null;
+            }
+
+            return new LiveSongCommand {
+                Hash = song.MapHash,
+                Difficulty = song.Difficulty,
+                Characteristic = song.Characteristic
+            };
+        }
+
+        private static bool MatchesSong(CompeteSongSelection selection, LiveSongCommand song) {
+            if (selection == null || song == null) {
+                return false;
+            }
+
+            return string.Equals(selection.MapHash, song.Hash, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -21,7 +21,10 @@ namespace ScoreSaber.Features.Live.Compete.Services {
         private readonly BeatSaverService _beatSaver;
         private readonly IScoreSaberApiClient _apiClient;
         private readonly BeatmapLevelsModel _beatmapLevelsModel;
-        private static TaskCompletionSource<bool> _songsLoadedCompletion;
+        private static readonly object _songsLoadedLock = new object();
+        private static readonly List<TaskCompletionSource<bool>> _songsLoadedCompletions = new List<TaskCompletionSource<bool>>();
+        private static readonly object _mapDownloadsLock = new object();
+        private static readonly Dictionary<string, Task> _mapDownloadsByHash = new Dictionary<string, Task>(StringComparer.OrdinalIgnoreCase);
 
         internal CompeteSongService(BeatSaverService beatSaver, IScoreSaberApiClient apiClient, BeatmapLevelsModel beatmapLevelsModel) {
             _beatSaver = beatSaver;
@@ -39,9 +42,20 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             BeatSaverMap map = await TryFetchBeatSaverMap(song, cancellationToken);
             BeatSaverVersion version = _beatSaver.SelectVersion(map, SongHash(song));
             LiveSongDetails details = MergeSongDetails(scoreSaberDetails, BuildBeatSaverSongDetails(song, map, version));
-            await _beatSaver.DownloadMapByHash(SongHash(song), version, cancellationToken);
+            await DownloadAndRefresh(SongHash(song), version, cancellationToken);
+
+            CompeteSongSelection resolved = await ResolveInstalled(song, details, cancellationToken);
+            if (resolved != null) {
+                return resolved;
+            }
+
             await RefreshSongs(cancellationToken);
-            return await ResolveInstalled(song, details, cancellationToken) ?? CreatePreview(song, details);
+            resolved = await ResolveInstalled(song, details, cancellationToken);
+            if (resolved == null) {
+                throw new InvalidOperationException("SongCore could not resolve the downloaded song");
+            }
+
+            return resolved;
         }
 
         internal async Task<CompeteSongSelection> ResolveInstalled(LiveSongCommand song, CancellationToken cancellationToken) {
@@ -221,28 +235,104 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 details?.DownloadUrl ?? string.Empty);
         }
 
+        private async Task DownloadAndRefresh(string hash, BeatSaverVersion version, CancellationToken cancellationToken) {
+            string normalizedHash = BeatSaverService.NormalizeHash(hash);
+            Task downloadTask;
+            lock (_mapDownloadsLock) {
+                if (!_mapDownloadsByHash.TryGetValue(normalizedHash, out downloadTask)) {
+                    downloadTask = DownloadAndRefreshCore(normalizedHash, version, cancellationToken);
+                    _mapDownloadsByHash[normalizedHash] = downloadTask;
+                }
+            }
+
+            try {
+                await downloadTask;
+            } finally {
+                lock (_mapDownloadsLock) {
+                    Task currentTask;
+                    if (_mapDownloadsByHash.TryGetValue(normalizedHash, out currentTask) && ReferenceEquals(currentTask, downloadTask)) {
+                        _mapDownloadsByHash.Remove(normalizedHash);
+                    }
+                }
+            }
+        }
+
+        private async Task DownloadAndRefreshCore(string hash, BeatSaverVersion version, CancellationToken cancellationToken) {
+            await _beatSaver.DownloadMapByHash(hash, version, cancellationToken);
+            await RefreshSongs(cancellationToken);
+        }
+
         private static async Task RefreshSongs(CancellationToken cancellationToken) {
+            await WaitForCurrentSongRefresh(cancellationToken);
+            await StartSongRefresh(cancellationToken);
+        }
+
+        private static async Task WaitForCurrentSongRefresh(CancellationToken cancellationToken) {
+            if (!Loader.AreSongsLoading) {
+                return;
+            }
+
+            TaskCompletionSource<bool> songsLoaded = new TaskCompletionSource<bool>();
+            Delegate handler;
+            EventInfo songsLoadedEvent = RegisterSongsLoadedWait(songsLoaded, out handler);
+            try {
+                if (Loader.AreSongsLoading) {
+                    await WaitForSongsLoaded(songsLoaded, cancellationToken);
+                }
+            } finally {
+                UnregisterSongsLoadedWait(songsLoadedEvent, handler, songsLoaded);
+            }
+        }
+
+        private static async Task StartSongRefresh(CancellationToken cancellationToken) {
             var songsLoaded = new TaskCompletionSource<bool>();
-            EventInfo songsLoadedEvent = typeof(Loader).GetEvent("SongsLoadedEvent");
-            MethodInfo handlerMethod = typeof(CompeteSongService).GetMethod(nameof(SongsLoaded), BindingFlags.NonPublic | BindingFlags.Static);
-            Delegate handler = Delegate.CreateDelegate(songsLoadedEvent.EventHandlerType, handlerMethod);
+            Delegate handler;
+            EventInfo songsLoadedEvent = RegisterSongsLoadedWait(songsLoaded, out handler);
 
-            _songsLoadedCompletion = songsLoaded;
-            songsLoadedEvent.AddEventHandler(null, handler);
-            await UnityMainThreadTaskScheduler.Factory.StartNew(() => Loader.Instance.RefreshSongs(false));
+            try {
+                await UnityMainThreadTaskScheduler.Factory.StartNew(() => Loader.Instance.RefreshSongs(false));
+                await WaitForSongsLoaded(songsLoaded, cancellationToken);
+            } finally {
+                UnregisterSongsLoadedWait(songsLoadedEvent, handler, songsLoaded);
+            }
+        }
 
+        private static async Task WaitForSongsLoaded(TaskCompletionSource<bool> songsLoaded, CancellationToken cancellationToken) {
             Task timeout = Task.Delay(SongRefreshTimeoutMs, cancellationToken);
             Task completed = await Task.WhenAny(songsLoaded.Task, timeout);
-            songsLoadedEvent.RemoveEventHandler(null, handler);
-            _songsLoadedCompletion = null;
             if (completed != songsLoaded.Task) {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw new TimeoutException("Timed out waiting for SongCore to refresh songs");
             }
         }
 
+        private static EventInfo RegisterSongsLoadedWait(TaskCompletionSource<bool> songsLoaded, out Delegate handler) {
+            EventInfo songsLoadedEvent = typeof(Loader).GetEvent("SongsLoadedEvent");
+            MethodInfo handlerMethod = typeof(CompeteSongService).GetMethod(nameof(SongsLoaded), BindingFlags.NonPublic | BindingFlags.Static);
+            handler = Delegate.CreateDelegate(songsLoadedEvent.EventHandlerType, handlerMethod);
+            lock (_songsLoadedLock) {
+                _songsLoadedCompletions.Add(songsLoaded);
+            }
+            songsLoadedEvent.AddEventHandler(null, handler);
+            return songsLoadedEvent;
+        }
+
+        private static void UnregisterSongsLoadedWait(EventInfo songsLoadedEvent, Delegate handler, TaskCompletionSource<bool> songsLoaded) {
+            songsLoadedEvent.RemoveEventHandler(null, handler);
+            lock (_songsLoadedLock) {
+                _songsLoadedCompletions.Remove(songsLoaded);
+            }
+        }
+
         private static void SongsLoaded(object loader, object songs) {
-            _songsLoadedCompletion?.TrySetResult(true);
+            TaskCompletionSource<bool>[] completions;
+            lock (_songsLoadedLock) {
+                completions = _songsLoadedCompletions.ToArray();
+            }
+
+            foreach (TaskCompletionSource<bool> completion in completions) {
+                completion.TrySetResult(true);
+            }
         }
 
         private static CompeteSongSelection CreateSongSelection(BeatmapLevel level, BeatmapKey key, LiveSongCommand song, LiveSongDetails scoreSaberDetails) {
@@ -275,17 +365,26 @@ namespace ScoreSaber.Features.Live.Compete.Services {
 
         private static BeatmapKey? FindBeatmapKey(BeatmapLevel level, LiveSongCommand song) {
             BeatmapDifficulty difficulty;
-            bool hasDifficulty = Enum.TryParse(song.Difficulty, true, out difficulty);
+            bool hasDifficulty = Enum.TryParse(BeatSaverService.NormalizeDifficulty(song?.Difficulty), true, out difficulty);
+            string characteristic = NormalizeCharacteristicName(song?.Characteristic);
+            BeatmapKey? difficultyMatch = null;
 
             foreach (BeatmapKey key in level.GetBeatmapKeys()) {
                 if (hasDifficulty && key.difficulty != difficulty) {
                     continue;
                 }
 
-                return key;
+                if (!difficultyMatch.HasValue) {
+                    difficultyMatch = key;
+                }
+
+                string keyCharacteristic = key.beatmapCharacteristic == null ? string.Empty : key.beatmapCharacteristic.serializedName;
+                if (string.IsNullOrEmpty(characteristic) || NormalizeCharacteristicName(keyCharacteristic) == characteristic) {
+                    return key;
+                }
             }
 
-            return level.GetBeatmapKeys().FirstOrDefault();
+            return difficultyMatch ?? level.GetBeatmapKeys().FirstOrDefault();
         }
 
         private static MapDetailsResponseLeaderboardsItem SelectLeaderboard(MapDetailsResponse map, LiveSongCommand song) {

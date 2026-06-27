@@ -22,8 +22,11 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
 
             CancellationToken cancellationToken = session.ConnectionCancellationToken;
             try {
-                if ((session.TournamentRoom.Song == null || session.TournamentRoom.Song.BeatmapLevel == null) && command.Song != null) {
-                    await LoadSongCommandHandler.LoadSong(session, command);
+                if (session.TournamentRoom.Song == null || session.TournamentRoom.Song.BeatmapLevel == null) {
+                    LiveSongCommand song = command.Song ?? LoadSongCommandHandler.SongCommandFromSelection(session.TournamentRoom.Song);
+                    if (song != null) {
+                        await LoadSongCommandHandler.EnsureSongReady(session, song);
+                    }
                 }
 
                 if (session.TournamentRoom?.Song?.BeatmapLevel == null) {
