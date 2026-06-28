@@ -326,8 +326,8 @@ namespace ScoreSaber.Features.Live.Replay {
             return value > 0 ? (uint)value : 0;
         }
 
-        private static long UnixNowMs() {
-            return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        private long UnixNowMs() {
+            return _clock.UnixTimeMilliseconds();
         }
     }
 }

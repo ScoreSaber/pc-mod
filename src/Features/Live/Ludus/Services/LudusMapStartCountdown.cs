@@ -1,4 +1,5 @@
 using ScoreSaber.Core;
+using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Live.Compete.Domain;
 using System;
 using System.Threading;
@@ -8,14 +9,16 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
     internal sealed class LudusMapStartCountdown {
         private readonly LudusMainThreadQueue _mainThread;
         private readonly Func<string> _defaultMatchId;
+        private readonly ScoreSaberClock _clock;
 
         private CancellationTokenSource _cancellation;
         private string _matchId = string.Empty;
         private int _version;
 
-        internal LudusMapStartCountdown(LudusMainThreadQueue mainThread, Func<string> defaultMatchId) {
+        internal LudusMapStartCountdown(LudusMainThreadQueue mainThread, Func<string> defaultMatchId, ScoreSaberClock clock) {
             _mainThread = mainThread;
             _defaultMatchId = defaultMatchId;
+            _clock = clock;
         }
 
         internal event Action<CompeteMapStartCountdown> Changed;
@@ -27,8 +30,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             if (delayMs > 0) {
                 int version = ++_version;
-                long startsAtUnixMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + delayMs;
-                Run(_matchId, startsAtUnixMs, version, _cancellation.Token).RunTask();
+                long startDeadlineMs = _clock.MonotonicMilliseconds() + delayMs;
+                Run(_matchId, startDeadlineMs, version, _cancellation.Token).RunTask();
             }
 
             return _cancellation.Token;
@@ -63,12 +66,12 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             Changed?.Invoke(null);
         }
 
-        private async Task Run(string matchId, long startsAtUnixMs, int version, CancellationToken cancellationToken) {
+        private async Task Run(string matchId, long startDeadlineMs, int version, CancellationToken cancellationToken) {
             int lastSeconds = -1;
 
             try {
                 while (true) {
-                    int remainingSeconds = RemainingSeconds(startsAtUnixMs);
+                    int remainingSeconds = RemainingSeconds(startDeadlineMs);
                     if (remainingSeconds != lastSeconds) {
                         lastSeconds = remainingSeconds;
                         EnqueueChanged(matchId, remainingSeconds, version);
@@ -100,8 +103,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             return !string.IsNullOrEmpty(matchId) ? matchId : _defaultMatchId();
         }
 
-        private static int RemainingSeconds(long startsAtUnixMs) {
-            long remainingMs = startsAtUnixMs - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        private int RemainingSeconds(long startDeadlineMs) {
+            long remainingMs = startDeadlineMs - _clock.MonotonicMilliseconds();
             return remainingMs <= 0 ? 0 : Math.Max(1, (int)Math.Ceiling(remainingMs / 1000d));
         }
     }

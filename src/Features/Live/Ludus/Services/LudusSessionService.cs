@@ -1,5 +1,6 @@
 using ScoreSaber.Core;
 using ScoreSaber.Core.Configuration;
+using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Live.Compete.Domain;
 using ScoreSaber.Features.Live.Compete.Packets;
 using ScoreSaber.Features.Live.Compete.Packets.Handlers;
@@ -82,6 +83,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             SettingsService settings,
             GameSessionService gameSessionService,
             ScoreSaberRuntimeInfo runtimeInfo,
+            ScoreSaberClock clock,
             CompeteSongService songService,
             CompeteDirectoryService directoryService,
             CompeteGameplayLauncher gameplayLauncher,
@@ -96,8 +98,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _replayStreamingService = replayStreamingService;
             _mainThread = new LudusMainThreadQueue();
             _transport = new LudusSessionTransport(_mainThread);
-            _outgoing = new LudusPacketSender(_transport.Send, _transport.SendDeferred);
-            _mapStartCountdown = new LudusMapStartCountdown(_mainThread, () => _tournamentRoom?.Id ?? string.Empty);
+            _outgoing = new LudusPacketSender(_transport.Send, _transport.SendDeferred, clock);
+            _mapStartCountdown = new LudusMapStartCountdown(_mainThread, () => _tournamentRoom?.Id ?? string.Empty, clock);
             _commandSession = new CompeteLudusCommandSession(
                 () => LocalPlayerId,
                 () => _tournamentRoom,
@@ -145,7 +147,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 url => _nextLudusUrl = url,
                 messages => ChatMessagesChanged?.Invoke(messages),
                 status => StatusChanged?.Invoke(status));
-            _packetDispatcher = CompeteLudusPacketDispatcher.CreateDefault(_commandSession, _chatMessages);
+            _packetDispatcher = CompeteLudusPacketDispatcher.CreateDefault(_commandSession, _chatMessages, clock);
 
             _transport.MessageReceived += bytes => _packetDispatcher.Handle(_packetContext, bytes);
             _transport.ReceiveFailed += ReceiveFailed;

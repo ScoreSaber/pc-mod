@@ -1,4 +1,5 @@
 using ScoreSaber.Core.Compat;
+using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Live.Compete.Domain;
 using ScoreSaber.Live.V1;
 using System;
@@ -14,20 +15,23 @@ namespace ScoreSaber.Features.Live.Compete.Services {
         private readonly MenuTransitionsHelper _menuTransitionsHelper;
         private readonly EnvironmentsListModel _environmentsListModel;
         private readonly CompeteGameplayState _gameplayState;
+        private readonly ScoreSaberClock _clock;
 
         internal CompeteGameplayLauncher(
             PlayerDataModel playerDataModel,
             MenuTransitionsHelper menuTransitionsHelper,
             EnvironmentsListModel environmentsListModel,
-            CompeteGameplayState gameplayState) {
+            CompeteGameplayState gameplayState,
+            ScoreSaberClock clock) {
 
             _playerDataModel = playerDataModel;
             _menuTransitionsHelper = menuTransitionsHelper;
             _environmentsListModel = environmentsListModel;
             _gameplayState = gameplayState;
+            _clock = clock;
         }
 
-        internal async Task Start(CompeteRoom room, ServerCommand command, CancellationToken cancellationToken) {
+        internal async Task Start(CompeteRoom room, int delayMs, CancellationToken cancellationToken) {
             if (room == null) {
                 throw new ArgumentNullException(nameof(room));
             }
@@ -37,7 +41,6 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 throw new InvalidOperationException("Live room song is not installed");
             }
 
-            int delayMs = StartDelayMs(command);
             if (delayMs > 0) {
                 await Task.Delay(delayMs, cancellationToken);
             }
@@ -107,12 +110,12 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 smallCubes: false);
         }
 
-        internal static int StartDelayMs(ServerCommand command) {
+        internal int StartDelayMs(ServerCommand command) {
             if (command == null) {
                 return 0;
             }
 
-            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long now = _clock.UnixTimeMilliseconds();
             if (command.StartTimeUnixMs > now) {
                 return ClampDelay(command.StartTimeUnixMs - now);
             }

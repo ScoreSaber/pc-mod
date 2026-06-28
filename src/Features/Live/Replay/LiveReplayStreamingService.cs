@@ -1,4 +1,5 @@
 using ScoreSaber.Core;
+using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Live.Compete.Services;
 using ScoreSaber.Features.Live.Ludus.Services;
 using ScoreSaber.Features.Replays.Format;
@@ -16,6 +17,7 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private readonly ScoreSaberRuntimeInfo _runtimeInfo;
         private readonly CompeteGameplayState _competeGameplayState;
+        private readonly ScoreSaberClock _clock;
 
         private LudusSessionService _ludus;
         private ReplayMetadataSource _metadata;
@@ -40,9 +42,10 @@ namespace ScoreSaber.Features.Live.Replay {
         private float _pendingBatchStartedAt;
         private uint _lastMaxScore;
 
-        internal LiveReplayStreamingService(ScoreSaberRuntimeInfo runtimeInfo, CompeteGameplayState competeGameplayState) {
+        internal LiveReplayStreamingService(ScoreSaberRuntimeInfo runtimeInfo, CompeteGameplayState competeGameplayState, ScoreSaberClock clock) {
             _runtimeInfo = runtimeInfo;
             _competeGameplayState = competeGameplayState;
+            _clock = clock;
             ResetBatch();
             ResetCounts();
         }

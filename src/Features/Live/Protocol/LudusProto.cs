@@ -26,6 +26,7 @@ namespace ScoreSaber.Features.Live.Protocol {
         internal LudusRoomContextType RoomContext { get; set; }
         internal string TournamentId { get; set; }
         internal string CurrentMatchId { get; set; }
+        internal long ServerTimeUnixMs { get; set; }
         internal int HeartbeatIntervalMs { get; set; }
         internal LudusClientType ClientType { get; set; } = LudusClientType.LudusClientTypePlayer;
         internal string ReconnectWebSocketUrl { get; set; }
@@ -42,7 +43,6 @@ namespace ScoreSaber.Features.Live.Protocol {
 
     internal static class LudusProto {
         private const int ProtocolVersion = 1;
-        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         internal static byte[] EncodeConnect(
             string authToken,
@@ -56,9 +56,10 @@ namespace ScoreSaber.Features.Live.Protocol {
             LudusRoomContextType initialRoomContext,
             bool publicLivePresenceOptOut,
             List<LiveMod> mods,
+            long clientTimeUnixMs,
             ulong sequence) {
 
-            return Encode(sequence, null, new ProtoLudusEnvelope {
+            return Encode(sequence, null, clientTimeUnixMs, new ProtoLudusEnvelope {
                 ConnectRequest = new ConnectRequest {
                     AuthToken = authToken ?? string.Empty,
                     SessionId = sessionId ?? string.Empty,
@@ -76,8 +77,8 @@ namespace ScoreSaber.Features.Live.Protocol {
             });
         }
 
-        internal static byte[] EncodeJoinRoom(string matchId, string roomId, List<LiveMod> mods, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeJoinRoom(string matchId, string roomId, List<LiveMod> mods, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 JoinRoomRequest = new JoinRoomRequest {
                     MatchId = matchId ?? string.Empty,
                     RoomId = roomId ?? string.Empty,
@@ -86,8 +87,8 @@ namespace ScoreSaber.Features.Live.Protocol {
             });
         }
 
-        internal static byte[] EncodeSetRoomContext(LudusRoomContextType roomContext, string tournamentId, List<LiveMod> mods, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeSetRoomContext(LudusRoomContextType roomContext, string tournamentId, List<LiveMod> mods, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 SetRoomContextRequest = new SetRoomContextRequest {
                     RoomContext = roomContext,
                     TournamentId = tournamentId ?? string.Empty,
@@ -96,16 +97,16 @@ namespace ScoreSaber.Features.Live.Protocol {
             });
         }
 
-        internal static byte[] EncodeSetClientType(LudusClientType clientType, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeSetClientType(LudusClientType clientType, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 SetClientTypeRequest = new SetClientTypeRequest {
                     ClientType = clientType
                 }
             });
         }
 
-        internal static byte[] EncodeLeaveRoom(string matchId, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeLeaveRoom(string matchId, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 LeaveRoomRequest = new LeaveRoomRequest {
                     MatchId = matchId ?? string.Empty
                 }
@@ -117,10 +118,11 @@ namespace ScoreSaber.Features.Live.Protocol {
             LudusDownloadState downloadState,
             string currentRoomId,
             string currentMapHash,
+            long clientTimeUnixMs,
             ulong sequence,
             string connectionId) {
 
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 PresenceUpdate = new PresenceUpdate {
                     PlayState = playState,
                     DownloadState = downloadState,
@@ -130,15 +132,15 @@ namespace ScoreSaber.Features.Live.Protocol {
             });
         }
 
-        internal static byte[] EncodeReplayPacket(ReplayStreamPacket packet, ulong sequence, string connectionId) {
+        internal static byte[] EncodeReplayPacket(ReplayStreamPacket packet, long clientTimeUnixMs, ulong sequence, string connectionId) {
             packet.ConnectionId = connectionId ?? string.Empty;
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 ReplayPacket = packet
             });
         }
 
-        internal static byte[] EncodeReadyState(string matchId, bool ready, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeReadyState(string matchId, bool ready, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 ReadyStateUpdate = new ReadyStateUpdate {
                     MatchId = matchId ?? string.Empty,
                     ReadyState = ready ? LudusReadyState.LudusReadyStateReady : LudusReadyState.LudusReadyStateNotReady
@@ -146,8 +148,8 @@ namespace ScoreSaber.Features.Live.Protocol {
             });
         }
 
-        internal static byte[] EncodeDownloadState(string matchId, LudusDownloadState state, string errorMessage, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeDownloadState(string matchId, LudusDownloadState state, string errorMessage, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 DownloadStateUpdate = new DownloadStateUpdate {
                     MatchId = matchId ?? string.Empty,
                     DownloadState = state,
@@ -161,22 +163,23 @@ namespace ScoreSaber.Features.Live.Protocol {
             string matchId,
             string playerId,
             bool accepted,
+            long clientTimeUnixMs,
             ulong sequence,
             string connectionId) {
 
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 PromptResponse = new PromptResponse {
                     CommandId = commandId ?? string.Empty,
                     MatchId = matchId ?? string.Empty,
                     PlayerId = playerId ?? string.Empty,
                     Accepted = accepted,
-                    RespondedAtUnixMs = UnixNowMs()
+                    RespondedAtUnixMs = clientTimeUnixMs
                 }
             });
         }
 
-        internal static byte[] EncodeChatMessage(string matchId, string text, string senderDisplayName, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeChatMessage(string matchId, string text, string senderDisplayName, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 ChatMessageRequest = new LiveChatMessageRequest {
                     MatchId = matchId ?? string.Empty,
                     Text = text ?? string.Empty,
@@ -185,8 +188,8 @@ namespace ScoreSaber.Features.Live.Protocol {
             });
         }
 
-        internal static byte[] EncodeHeartbeat(ulong lastReceivedSequence, ulong sequence, string connectionId) {
-            return Encode(sequence, connectionId, new ProtoLudusEnvelope {
+        internal static byte[] EncodeHeartbeat(ulong lastReceivedSequence, long clientTimeUnixMs, ulong sequence, string connectionId) {
+            return Encode(sequence, connectionId, clientTimeUnixMs, new ProtoLudusEnvelope {
                 Heartbeat = new Heartbeat {
                     LastReceivedSequence = lastReceivedSequence
                 }
@@ -205,7 +208,8 @@ namespace ScoreSaber.Features.Live.Protocol {
             }
 
             var envelope = new DecodedLudusEnvelope {
-                Sequence = frame.Sequence
+                Sequence = frame.Sequence,
+                ServerTimeUnixMs = frame.ServerTimeUnixMs
             };
 
             if (frame.ConnectAccepted != null) {
@@ -277,20 +281,16 @@ namespace ScoreSaber.Features.Live.Protocol {
             return envelope;
         }
 
-        private static byte[] Encode(ulong sequence, string connectionId, ProtoLudusEnvelope envelope) {
+        private static byte[] Encode(ulong sequence, string connectionId, long clientTimeUnixMs, ProtoLudusEnvelope envelope) {
             envelope.ProtocolVersion = ProtocolVersion;
             envelope.MessageId = Guid.NewGuid().ToString("N");
             envelope.ConnectionId = connectionId ?? string.Empty;
             envelope.Sequence = sequence;
-            envelope.ClientTimeUnixMs = UnixNowMs();
+            envelope.ClientTimeUnixMs = clientTimeUnixMs;
             using (var stream = new MemoryStream()) {
                 Serializer.Serialize(stream, envelope);
                 return stream.ToArray();
             }
-        }
-
-        private static long UnixNowMs() {
-            return (long)(DateTime.UtcNow - UnixEpoch).TotalMilliseconds;
         }
     }
 }

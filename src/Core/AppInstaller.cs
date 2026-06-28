@@ -1,4 +1,5 @@
 ﻿using ScoreSaber.Core.Presentation;
+using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Live.Compete.Services;
 using ScoreSaber.Features.Live.Replay;
 using ScoreSaber.Features.Replays;
@@ -14,6 +15,7 @@ namespace ScoreSaber.Core {
             Container.BindInstance(Plugin.Instance.ReplayState).AsSingle();
 
             Container.Bind<ScoreSaberUIMaterials>().AsSingle();
+            Container.BindInterfacesAndSelfTo<ScoreSaberClock>().AsSingle().NonLazy();
             Container.Bind<ReplayFileCodec>().AsSingle();
             Container.Bind<ReplayService>().AsSingle().NonLazy();
             Container.Bind<CompeteGameplayState>().AsSingle();

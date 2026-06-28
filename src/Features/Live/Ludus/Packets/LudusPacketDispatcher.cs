@@ -1,3 +1,4 @@
+using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Live.Protocol;
 using System.Collections.Generic;
 
@@ -13,9 +14,11 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
 
     internal sealed class LudusPacketDispatcher<TSession> where TSession : ILudusPacketSession {
         private readonly Dictionary<LudusEnvelopeType, ILudusEnvelopeHandler<TSession>> _handlers;
+        private readonly ScoreSaberClock _clock;
 
-        internal LudusPacketDispatcher(IEnumerable<ILudusEnvelopeHandler<TSession>> handlers) {
+        internal LudusPacketDispatcher(IEnumerable<ILudusEnvelopeHandler<TSession>> handlers, ScoreSaberClock clock) {
             _handlers = new Dictionary<LudusEnvelopeType, ILudusEnvelopeHandler<TSession>>();
+            _clock = clock;
             foreach (ILudusEnvelopeHandler<TSession> handler in handlers) {
                 _handlers[handler.Type] = handler;
             }
@@ -27,6 +30,7 @@ namespace ScoreSaber.Features.Live.Ludus.Packets {
                 return;
             }
 
+            _clock.RecordLudusServerTime(envelope.ServerTimeUnixMs);
             if (envelope.Sequence > session.LastReceivedSequence) {
                 session.LastReceivedSequence = envelope.Sequence;
             }

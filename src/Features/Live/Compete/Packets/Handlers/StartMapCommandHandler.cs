@@ -34,11 +34,11 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 }
 
                 CompeteRoom room = session.TournamentRoom;
-                int delayMs = CompeteGameplayLauncher.StartDelayMs(command);
+                int delayMs = session.GameplayLauncher.StartDelayMs(command);
                 cancellationToken = session.BeginMapStartCountdown(command.MatchId, delayMs, cancellationToken);
                 session.NotifyStatusChanged(delayMs > 0 ? "Map starting soon..." : "Starting map...");
                 Plugin.Log.Info($"Ludus: Starting room map {room.Song.Name} for {room.Id}.");
-                await session.GameplayLauncher.Start(room, command, cancellationToken);
+                await session.GameplayLauncher.Start(room, delayMs, cancellationToken);
                 if (!await session.GameplayLauncher.WaitForMapStartReady(room.Id, room.Song.MapHash, cancellationToken)) {
                     return;
                 }
