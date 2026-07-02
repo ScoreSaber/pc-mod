@@ -69,7 +69,7 @@ namespace ScoreSaber.Core.Configuration {
         }
 
         private static void Upgrade(Settings settings) {
-            if (settings.spectatorPositions == null) {
+            if (settings.spectatorPositions == null || settings.spectatorPositions.Count == 0) {
                 settings.SetDefaultSpectatorPositions();
             }
             if (settings.locationFilterMode == null) {

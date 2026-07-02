@@ -109,27 +109,21 @@ namespace ScoreSaber.Features.Replays.Playback {
                 return;
             }
 
-            bool foundPoseThisFrame = false;
+            if (Input.GetKeyDown(KeyCode.H))
+                _saberEnabled = !_saberEnabled;
+
             while (audioTimeSyncController.songTime >= _poses[_nextIndex].Time) {
-                foundPoseThisFrame = true;
-                VRPoseGroup activePose = _poses[_nextIndex++];
+                _nextIndex++;
 
                 if (ReachedEnd())
                     return;
-
-                VRPoseGroup nextPose = _poses[_nextIndex];
-                UpdatePoses(activePose, nextPose);
             }
-            if (!foundPoseThisFrame && _nextIndex > 0 && !ReachedEnd()) {
-                VRPoseGroup previousGroup = _poses[_nextIndex - 1];
-                UpdatePoses(previousGroup, _poses[_nextIndex]);
+            if (_nextIndex > 0) {
+                UpdatePoses(_poses[_nextIndex - 1], _poses[_nextIndex]);
             }
         }
 
         private void UpdatePoses(VRPoseGroup activePose, VRPoseGroup nextPose) {
-
-            if (Input.GetKeyDown(KeyCode.H))
-                _saberEnabled = !_saberEnabled;
 
             float lerpTime = (audioTimeSyncController.songTime - activePose.Time) / Mathf.Max(0.000001f, nextPose.Time - activePose.Time);
 

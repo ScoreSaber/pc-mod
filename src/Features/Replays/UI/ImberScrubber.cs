@@ -107,8 +107,8 @@ namespace ScoreSaber.Features.Replays.UI {
         private void MainNode_PositionDidChange(float value) {
 
             _bar.barFill = value;
-            DidCalculateNewTime?.Invoke(_audioTimeSyncController.songLength * value);
-            _bar.currentTime = _audioTimeSyncController.songLength * value;
+            DidCalculateNewTime?.Invoke(_audioTimeSyncController.songEndTime * value);
+            _bar.currentTime = _audioTimeSyncController.songEndTime * value;
             _loopNode.min = value + _minNodeDistance;
         }
 
@@ -196,7 +196,7 @@ namespace ScoreSaber.Features.Replays.UI {
         private void ClickedBackground(float value) {
 
             if (!_mainNode.isBeingDragged) {
-                DidCalculateNewTime?.Invoke(_audioTimeSyncController.songLength * value);
+                DidCalculateNewTime?.Invoke(_audioTimeSyncController.songEndTime * value);
             }
         }
 

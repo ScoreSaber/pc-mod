@@ -21,6 +21,7 @@ namespace ScoreSaber.Features.Live.Replay {
 
         private LudusSessionService _ludus;
         private ReplayMetadataSource _metadata;
+        private bool _canUsePublicPresence;
         private byte[] _hsvConfig;
         private StreamReplayEventBatch _pendingBatch;
         private List<ReplayExtension> _pendingExtensions;

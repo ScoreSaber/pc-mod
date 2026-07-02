@@ -97,9 +97,18 @@ namespace ScoreSaber.Features.Replays.UI {
         [UIAction("replay-click")]
         protected void ClickedReplayButton() {
 
-            _replayLoader.Load(_serializedReplay, _beatmapLevel, _beatmapKey, _levelCompletionResults.gameplayModifiers, _gameSessionService.LocalPlayerInfo.playerName).RunTask();
             watchReplayButton.interactable = false;
+            WatchReplay().RunTask();
+        }
 
+        private async Task WatchReplay() {
+
+            try {
+                await _replayLoader.Load(_serializedReplay, _beatmapLevel, _beatmapKey, _levelCompletionResults.gameplayModifiers, _gameSessionService.LocalPlayerInfo.playerName);
+            } catch (Exception ex) {
+                Plugin.Log.Error($"Failed to start replay: {ex}");
+                watchReplayButton.interactable = true;
+            }
         }
     }
 }

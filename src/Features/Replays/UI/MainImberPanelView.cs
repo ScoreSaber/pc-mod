@@ -48,8 +48,13 @@ namespace ScoreSaber.Features.Replays.UI {
             }
         }
 
+        private bool _visible;
         public bool visibility {
-            set => _floatingScreen.SetRootViewController(value ? this : null, value ? AnimationType.In : AnimationType.Out);
+            get => _visible;
+            set {
+                _visible = value;
+                _floatingScreen.SetRootViewController(value ? this : null, value ? AnimationType.In : AnimationType.Out);
+            }
         }
 
         private string _playPauseText = "PAUSE";

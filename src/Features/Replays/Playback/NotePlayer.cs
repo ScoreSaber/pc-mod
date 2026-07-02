@@ -62,7 +62,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             }
         }
 
-        private bool HandleActiveEvent<T>(NoteEvent activeEvent, IEnumerable<T> controllers) where T : NoteController {
+        private bool HandleActiveEvent<T>(NoteEvent activeEvent, List<T> controllers) where T : NoteController {
             foreach (T controller in controllers) {
                 if (HandleEvent(activeEvent, controller)) {
                     return true;
@@ -72,7 +72,7 @@ namespace ScoreSaber.Features.Replays.Playback {
             return false;
         }
 
-        private bool HandleMissEvent<T>(NoteEvent activeEvent, IEnumerable<T> controllers) where T : NoteController {
+        private bool HandleMissEvent<T>(NoteEvent activeEvent, List<T> controllers) where T : NoteController {
             foreach (T controller in controllers) {
                 if (DoesNoteMatchID(activeEvent.NoteID, controller.noteData)) {
                     HarmonyPatches.ReplayNoteMissEventGuard.Allow(controller);

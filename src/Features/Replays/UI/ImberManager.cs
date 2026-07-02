@@ -48,7 +48,7 @@ namespace ScoreSaber.Features.Replays.UI {
             _positions = _settings.Current.spectatorPositions.Select(sp => sp.name);
             _mainImberPanelView.Setup(initData.timeScale, 90, _positions.First(), _positions);
             _imberScrubber.Setup(file.metadata.FailTime, file.metadata.Modifiers.Contains("NF"));
-            _initialTimeScale = file.noteKeyframes.FirstOrDefault().TimeSyncTimescale;
+            _initialTimeScale = file.noteKeyframes.Count > 0 ? file.noteKeyframes[0].TimeSyncTimescale : 1f;
         }
 
         public void Initialize() {
@@ -90,7 +90,7 @@ namespace ScoreSaber.Features.Replays.UI {
 
         private void ImberSpecsReporter_DidReport(int fps, float leftSaberSpeed, float rightSaberSpeed) {
 
-            if (_mainImberPanelView.didParse) {
+            if (_mainImberPanelView.didParse && _mainImberPanelView.visibility) {
                 _mainImberPanelView.fps = fps;
                 _mainImberPanelView.leftSaberSpeed = leftSaberSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale);
                 _mainImberPanelView.rightSaberSpeed = rightSaberSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale);
@@ -186,6 +186,7 @@ namespace ScoreSaber.Features.Replays.UI {
             _mainImberPanelView.DidClickRestart -= MainImberPanelView_DidClickRestart;
             _mainImberPanelView.DidPositionJump -= MainImberPanelView_DidPositionJump;
             _mainImberPanelView.DidClickLoop -= MainImberPanelView_DidClickLoop;
+            _mainImberPanelView.DidPositionTabVisibilityChange -= MainImberPanelView_DidPositionTabVisibilityChange;
         }
     }
 }

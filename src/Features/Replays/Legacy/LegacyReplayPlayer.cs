@@ -30,9 +30,10 @@ namespace ScoreSaber.Features.Replays.Legacy {
 
         public int cutOrMissedNotes;
         private int _lastKeyframeIndex;
-        private int _multiplier;
+        private int _cursorIndex;
+        private int _multiplier = 1;
         private int _multiplierIncreaseProgress;
-        private int _multiplierIncreaseMaxProgress;
+        private int _multiplierIncreaseMaxProgress = 2;
         private int _playbackPreviousCombo;
         private int _playbackPreviousScore;
         private bool _initialFPFCState;
@@ -115,12 +116,22 @@ namespace ScoreSaber.Features.Replays.Legacy {
 
         public void Tick() {
 
+            if (_keyframes.Count < 2) {
+                return;
+            }
+
             float time = _audioTimeSyncController.songTime;
-            int keyframeIndex = 0;
+            int keyframeIndex = _cursorIndex;
+
+            if (keyframeIndex > 0 && time < _keyframes[keyframeIndex]._time) {
+                keyframeIndex = 0;
+            }
 
             while (keyframeIndex < (_keyframes.Count - 2) && _keyframes[keyframeIndex + 1]._time < time) {
                 keyframeIndex++;
             }
+
+            _cursorIndex = keyframeIndex;
 
             Z.Keyframe keyframe1 = _keyframes[keyframeIndex];
             Z.Keyframe keyframe2 = _keyframes[keyframeIndex + 1];

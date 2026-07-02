@@ -47,6 +47,10 @@ namespace ScoreSaber.Features.Replays {
             float failTime = replayFile.metadata.FailTime;
             try {
                 byte[] serializedReplay = await _replayFileCodec.Write(replayFile);
+                if (serializedReplay == null) {
+                    Plugin.Log.Warn($"Replay serialization failed: {playId}");
+                    return null;
+                }
                 Plugin.Log.Debug($"Replay written: {playId}");
                 ReplaySerialized?.Invoke(serializedReplay);
                 return new ReplaySerializationResult(serializedReplay, failTime);

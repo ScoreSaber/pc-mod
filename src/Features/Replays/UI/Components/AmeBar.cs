@@ -16,8 +16,16 @@ namespace ScoreSaber.Features.Replays.UI.Components {
             set => _fillBarTransform.anchorMax = new Vector2(Mathf.Lerp(-1f, 1f, value), _fillBarTransform.anchorMax.y);
         }
 
+        private int _lastCurrentTimeSecond = -1;
         public float currentTime {
-            set => _currentTimeText.text = string.Format("{0}:{1:00}", (int)value / 60, value % 60f);
+            set {
+                int second = (int)value;
+                if (second == _lastCurrentTimeSecond) {
+                    return;
+                }
+                _lastCurrentTimeSecond = second;
+                _currentTimeText.text = string.Format("{0}:{1:00}", second / 60, second % 60);
+            }
         }
 
         public float endTime {

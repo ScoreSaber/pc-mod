@@ -21,16 +21,21 @@ namespace ScoreSaber.Features.Replays.UI {
         const int _headerOffset = 20;
         private float _initialTimeScale;
 
-        private int _fps;
-        private string _leftSaberSpeed;
-        private string _rightSaberSpeed;
+        private string _fpsLine = "Player's FPS: 0";
+        private string _leftSaberLine = "Left Saber Speed:";
+        private string _rightSaberLine = "Right Saber Speed:";
+        private string _songTimeLine = "Current Song Time: 0:00";
+        private string _timeScaleLine = "Current Time Scale:";
+        private int _lastFps = -1;
+        private int _lastSongTimeSecond = -1;
+        private float _lastTimeScale = -1f;
 
         protected void Start() {
 
             _headerStyle = new GUIStyle();
             _headerStyle.fontSize = 16;
             _headerStyle.normal.textColor = Color.white;
-            _initialTimeScale = _file.noteKeyframes.FirstOrDefault().TimeSyncTimescale;
+            _initialTimeScale = _file.noteKeyframes.Count > 0 ? _file.noteKeyframes[0].TimeSyncTimescale : 1f;
             _posePlayer.DidUpdatePose += PosePlayer_DidUpdatePose;
         }
 
@@ -41,9 +46,18 @@ namespace ScoreSaber.Features.Replays.UI {
 
         private void PosePlayer_DidUpdatePose(VRPoseGroup pose) {
 
-            _fps = pose.FPS;
-            _leftSaberSpeed = $"{_saberManager.leftSaber.GetMovementDataForLogic().bladeSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale):0.0} m/s";
-            _rightSaberSpeed = $"{_saberManager.rightSaber.GetMovementDataForLogic().bladeSpeed * (_initialTimeScale / _audioTimeSyncController.timeScale):0.0} m/s";
+            if (_settings.Current.hideReplayUI) {
+                return;
+            }
+
+            if (pose.FPS != _lastFps) {
+                _lastFps = pose.FPS;
+                _fpsLine = $"Player's FPS: {pose.FPS}";
+            }
+
+            float timeScaleRatio = _initialTimeScale / _audioTimeSyncController.timeScale;
+            _leftSaberLine = $"Left Saber Speed: {_saberManager.leftSaber.GetMovementDataForLogic().bladeSpeed * timeScaleRatio:0.0} m/s";
+            _rightSaberLine = $"Right Saber Speed: {_saberManager.rightSaber.GetMovementDataForLogic().bladeSpeed * timeScaleRatio:0.0} m/s";
         }
 
         protected void OnGUI() {
@@ -58,11 +72,24 @@ namespace ScoreSaber.Features.Replays.UI {
                 DrawLabel("Hide Sabers: H");
                 DrawLabel("Hide Desktop Replay UI: C");
                 DrawLabel("Replay Player Status -", header: true);
-                DrawLabel($"Current Song Time: {string.Format("{0}:{1:00}", (int)_audioTimeSyncController.songTime / 60, _audioTimeSyncController.songTime % 60f)}");
-                DrawLabel($"Current Time Scale: {_audioTimeSyncController.timeScale:P0}");
-                DrawLabel($"Player's FPS: {_fps}");
-                DrawLabel($"Left Saber Speed: {_leftSaberSpeed}");
-                DrawLabel($"Right Saber Speed: {_rightSaberSpeed}");
+
+                int songSecond = (int)_audioTimeSyncController.songTime;
+                if (songSecond != _lastSongTimeSecond) {
+                    _lastSongTimeSecond = songSecond;
+                    _songTimeLine = $"Current Song Time: {songSecond / 60}:{songSecond % 60:00}";
+                }
+
+                float timeScale = _audioTimeSyncController.timeScale;
+                if (timeScale != _lastTimeScale) {
+                    _lastTimeScale = timeScale;
+                    _timeScaleLine = $"Current Time Scale: {timeScale:P0}";
+                }
+
+                DrawLabel(_songTimeLine);
+                DrawLabel(_timeScaleLine);
+                DrawLabel(_fpsLine);
+                DrawLabel(_leftSaberLine);
+                DrawLabel(_rightSaberLine);
             }
         }
 

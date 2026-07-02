@@ -100,7 +100,7 @@ namespace ScoreSaber.Features.Live.Replay {
                 return;
             }
 
-            bool canUsePublicPresence = CanUsePublicPresenceForCurrentLevel();
+            bool canUsePublicPresence = _canUsePublicPresence;
             if (_ludus.IsInPublicPresence && !canUsePublicPresence) {
                 return;
             }
@@ -152,7 +152,7 @@ namespace ScoreSaber.Features.Live.Replay {
                 return;
             }
 
-            if (_ludus.IsInPublicPresence && !CanUsePublicPresenceForCurrentLevel()) {
+            if (_ludus.IsInPublicPresence && !_canUsePublicPresence) {
                 return;
             }
 

@@ -15,6 +15,7 @@ namespace ScoreSaber.Features.Live.Replay {
     internal partial class LiveReplayStreamingService {
         internal void Begin(ReplayMetadataSource metadata, byte[] hsvConfig) {
             _metadata = metadata;
+            _canUsePublicPresence = CanUsePublicPresenceForCurrentLevel();
             _hsvConfig = hsvConfig;
             _recording = true;
             _streaming = false;
