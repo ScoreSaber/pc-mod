@@ -21,6 +21,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
             }
 
             CancellationToken cancellationToken = session.ConnectionCancellationToken;
+            bool countdownBegun = false;
             try {
                 if (session.TournamentRoom.Song == null || session.TournamentRoom.Song.BeatmapLevel == null) {
                     LiveSongCommand song = command.Song ?? LoadSongCommandHandler.SongCommandFromSelection(session.TournamentRoom.Song);
@@ -36,6 +37,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 CompeteRoom room = session.TournamentRoom;
                 int delayMs = session.GameplayLauncher.StartDelayMs(command);
                 cancellationToken = session.BeginMapStartCountdown(command.MatchId, delayMs, cancellationToken);
+                countdownBegun = true;
                 session.NotifyStatusChanged(delayMs > 0 ? "Map starting soon..." : "Starting map...");
                 Plugin.Log.Info($"Ludus: Starting room map {room.Song.Name} for {room.Id}.");
                 await session.GameplayLauncher.Start(room, delayMs, cancellationToken);
@@ -49,7 +51,9 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 session.NotifyStatusChanged($"Failed to start map: {ex.Message}");
                 Plugin.Log.Warn($"Ludus: Failed to start map: {ex.Message}");
             } finally {
-                session.CompletePendingMapStart(command.MatchId);
+                if (countdownBegun) {
+                    session.CompletePendingMapStart(command.MatchId, cancellationToken);
+                }
             }
         }
 

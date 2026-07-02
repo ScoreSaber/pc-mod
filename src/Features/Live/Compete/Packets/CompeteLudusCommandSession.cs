@@ -21,7 +21,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         private readonly Action<LudusPlayState, LudusDownloadState, string> _sendPresence;
         private readonly Func<string, int, CancellationToken, CancellationToken> _beginMapStartCountdown;
         private readonly Func<string, bool> _tryCancelPendingMapStart;
-        private readonly Action<string> _completePendingMapStart;
+        private readonly Action<string, CancellationToken> _completePendingMapStart;
 
         internal CompeteLudusCommandSession(
             Func<string> localPlayerId,
@@ -42,7 +42,7 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
             Action<LudusPlayState, LudusDownloadState, string> sendPresence,
             Func<string, int, CancellationToken, CancellationToken> beginMapStartCountdown,
             Func<string, bool> tryCancelPendingMapStart,
-            Action<string> completePendingMapStart) {
+            Action<string, CancellationToken> completePendingMapStart) {
 
             _localPlayerId = localPlayerId;
             _getTournamentRoom = getTournamentRoom;
@@ -88,6 +88,6 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         public CancellationToken BeginMapStartCountdown(string matchId, int delayMs, CancellationToken cancellationToken) =>
             _beginMapStartCountdown(matchId, delayMs, cancellationToken);
         public bool TryCancelPendingMapStart(string matchId) => _tryCancelPendingMapStart(matchId);
-        public void CompletePendingMapStart(string matchId) => _completePendingMapStart(matchId);
+        public void CompletePendingMapStart(string matchId, CancellationToken countdownToken) => _completePendingMapStart(matchId, countdownToken);
     }
 }

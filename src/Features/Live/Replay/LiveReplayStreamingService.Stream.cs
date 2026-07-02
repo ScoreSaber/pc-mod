@@ -59,17 +59,15 @@ namespace ScoreSaber.Features.Live.Replay {
                 if (!Flush()) {
                     return;
                 }
-                ulong lastCommittedSequence = _nextSequence > 1 ? _nextSequence - 1 : 0;
                 _ludus.SendReplayPacket(new ReplayStreamPacket {
                     StreamId = _streamId,
                     PlayerId = _ludus.LocalPlayerId,
                     MatchId = _ludus.CurrentLudusMatchId,
-                    Failure = new ReplayStreamFailure {
-                        LastCommittedCursor = Cursor(lastCommittedSequence, _lastStreamSongTime),
-                        Reason = ReplayFailureReason.ReplayFailureReasonClientDisconnected,
-                        State = ReplayStreamState.ReplayStreamStateFailed,
-                        Message = "Public live presence disabled.",
-                        CanResume = false
+                    End = new ReplayStreamEnd {
+                        Cursor = Cursor(_nextSequence++, _lastStreamSongTime),
+                        Completion = ReplayCompletion.ReplayCompletionAborted,
+                        ChunkCount = _chunkCount,
+                        CumulativeEventCounts = CloneCounts(_counts)
                     }
                 });
                 Plugin.Log.Info("Live replay: Public presence stream stopped.");

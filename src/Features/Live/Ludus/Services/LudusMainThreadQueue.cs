@@ -24,7 +24,11 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                     action = _actions.Dequeue();
                 }
 
-                action();
+                try {
+                    action();
+                } catch (Exception ex) {
+                    Plugin.Log.Error($"Ludus main thread action failed: {ex}");
+                }
                 processed++;
             }
         }

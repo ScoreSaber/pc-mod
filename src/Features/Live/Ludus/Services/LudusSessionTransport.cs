@@ -70,6 +70,11 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             CancellationTokenSource cancellation = _cancellation;
             try {
                 cancellation?.Cancel();
+            } catch (Exception ex) {
+                Plugin.Log.Warn($"Failed to cancel ludus socket: {ex.Message}");
+            }
+
+            try {
                 _socket?.Dispose();
             } catch (Exception ex) {
                 Plugin.Log.Warn($"Failed to close ludus socket: {ex.Message}");

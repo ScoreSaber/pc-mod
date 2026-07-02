@@ -23,6 +23,6 @@ namespace ScoreSaber.Features.Live.Compete.Packets {
         void SendPresence(LudusPlayState playState, LudusDownloadState downloadState, string currentMapHash);
         CancellationToken BeginMapStartCountdown(string matchId, int delayMs, CancellationToken cancellationToken);
         bool TryCancelPendingMapStart(string matchId);
-        void CompletePendingMapStart(string matchId);
+        void CompletePendingMapStart(string matchId, CancellationToken countdownToken);
     }
 }

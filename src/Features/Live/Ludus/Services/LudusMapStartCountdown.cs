@@ -46,8 +46,8 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             return true;
         }
 
-        internal void Complete(string matchId) {
-            if (_cancellation != null && Matches(matchId)) {
+        internal void Complete(string matchId, CancellationToken countdownToken) {
+            if (_cancellation != null && Matches(matchId) && _cancellation.Token == countdownToken) {
                 Cancel();
             }
         }
