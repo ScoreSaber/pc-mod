@@ -33,12 +33,12 @@ namespace ScoreSaber.Features.Live.Compete.Services {
         }
 
         internal async Task<CompeteSongSelection> ResolveOrDownload(LiveSongCommand song, CancellationToken cancellationToken) {
-            CompeteSongSelection installed = await ResolveInstalled(song, cancellationToken);
+            LiveSongDetails scoreSaberDetails = await TryFetchScoreSaberSongDetails(song, cancellationToken);
+            CompeteSongSelection installed = await ResolveInstalled(song, scoreSaberDetails, cancellationToken);
             if (installed != null) {
                 return installed;
             }
 
-            LiveSongDetails scoreSaberDetails = await TryFetchScoreSaberSongDetails(song, cancellationToken);
             BeatSaverMap map = await TryFetchBeatSaverMap(song, cancellationToken);
             BeatSaverVersion version = _beatSaver.SelectVersion(map, SongHash(song));
             LiveSongDetails details = MergeSongDetails(scoreSaberDetails, BuildBeatSaverSongDetails(song, map, version));
@@ -63,6 +63,11 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             return await ResolveInstalled(song, scoreSaberDetails, cancellationToken);
         }
 
+        internal async Task<CompeteSongSelection> ResolveInstalledAfterRefresh(LiveSongCommand song, CancellationToken cancellationToken) {
+            LiveSongDetails scoreSaberDetails = await TryFetchScoreSaberSongDetails(song, cancellationToken);
+            return await ResolveInstalledAfterRefresh(song, scoreSaberDetails, cancellationToken);
+        }
+
         private async Task<CompeteSongSelection> ResolveInstalled(LiveSongCommand song, LiveSongDetails scoreSaberDetails, CancellationToken cancellationToken) {
             string hash = SongHash(song);
             if (string.IsNullOrEmpty(hash)) {
@@ -80,6 +85,11 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             }
 
             return CreateSongSelection(level, key.Value, song, scoreSaberDetails);
+        }
+
+        private async Task<CompeteSongSelection> ResolveInstalledAfterRefresh(LiveSongCommand song, LiveSongDetails scoreSaberDetails, CancellationToken cancellationToken) {
+            await RefreshSongs(cancellationToken);
+            return await ResolveInstalled(song, scoreSaberDetails, cancellationToken);
         }
 
         internal async Task<CompeteSongSelection> CreatePreview(LiveSongCommand song, CancellationToken cancellationToken) {

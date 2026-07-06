@@ -64,6 +64,18 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 session.SendDownloadState(LudusDownloadState.LudusDownloadStateDownloaded);
                 return true;
             } catch (Exception ex) {
+                CompeteSongSelection installedAfterRefresh = await ResolveInstalledAfterDownloadFailure(session, song, cancellationToken);
+                if (installedAfterRefresh != null) {
+                    if (session.TournamentRoom == null) {
+                        return false;
+                    }
+
+                    session.TournamentRoom = session.TournamentRoom.WithSong(installedAfterRefresh);
+                    session.NotifyRoomUpdated(session.TournamentRoom);
+                    session.SendDownloadState(LudusDownloadState.LudusDownloadStateDownloaded);
+                    return true;
+                }
+
                 Plugin.Log.Warn($"Failed to load live room song: {ex.Message}");
                 if (session.TournamentRoom == null) {
                     return false;
@@ -86,6 +98,17 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 Difficulty = song.Difficulty,
                 Characteristic = song.Characteristic
             };
+        }
+
+        private static async Task<CompeteSongSelection> ResolveInstalledAfterDownloadFailure(ILudusServerCommandSession session, LiveSongCommand song, CancellationToken cancellationToken) {
+            try {
+                return await session.SongService.ResolveInstalledAfterRefresh(song, cancellationToken);
+            } catch (OperationCanceledException) {
+                throw;
+            } catch (Exception refreshEx) {
+                Plugin.Log.Warn($"Failed to refresh local live room songs: {refreshEx.Message}");
+                return null;
+            }
         }
 
         private static bool MatchesSong(CompeteSongSelection selection, LiveSongCommand song) {
