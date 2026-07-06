@@ -11,6 +11,7 @@ using ScoreSaber.Features.Live.Compete.UI.Cells;
 using ScoreSaber.Features.Players.Profile;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using Zenject;
@@ -63,6 +64,10 @@ namespace ScoreSaber.Features.Live.Compete.UI.ViewControllers.Room.Left {
         private bool hasPlayers {
             get => _hasPlayers;
             set {
+                if (_hasPlayers == value) {
+                    return;
+                }
+
                 _hasPlayers = value;
                 NotifyPropertyChanged();
                 NotifyPropertyChanged(nameof(playersEmpty));
@@ -100,29 +105,80 @@ namespace ScoreSaber.Features.Live.Compete.UI.ViewControllers.Room.Left {
         }
 
         internal void SetRoom(CompeteRoom room) {
-            _players.Clear();
-            _teamOnePlayers.Clear();
-            _teamTwoPlayers.Clear();
+            bool nextTeamMode = room.PlayerListMode == CompetePlayerListMode.Teams;
+            CompeteTeam nextTeamOne = room.Teams.Count > 0 ? room.Teams[0] : FallbackTeamOne;
+            CompeteTeam nextTeamTwo = room.Teams.Count > 1 ? room.Teams[1] : FallbackTeamTwo;
+            CompetePlayer[] nextPlayers = room.Players.ToArray();
+            CompetePlayer[] nextRegularPlayers = nextTeamMode ? Array.Empty<CompetePlayer>() : nextPlayers;
+            CompetePlayer[] nextTeamOnePlayers = nextTeamMode
+                ? nextPlayers.Where(player => player.TeamId == nextTeamOne.Id).ToArray()
+                : Array.Empty<CompetePlayer>();
+            CompetePlayer[] nextTeamTwoPlayers = nextTeamMode
+                ? nextPlayers.Where(player => player.TeamId != nextTeamOne.Id).ToArray()
+                : Array.Empty<CompetePlayer>();
 
-            _teamMode = room.PlayerListMode == CompetePlayerListMode.Teams;
-            _teamOne = room.Teams.Count > 0 ? room.Teams[0] : FallbackTeamOne;
-            _teamTwo = room.Teams.Count > 1 ? room.Teams[1] : FallbackTeamTwo;
-            foreach (CompetePlayer player in room.Players) {
-                var cell = new CompetePlayerCell(player, _materials, ShowProfile);
-                if (_teamMode) {
-                    (player.TeamId == _teamOne.Id ? _teamOnePlayers : _teamTwoPlayers).Add(cell);
-                    continue;
-                }
+            bool needsReload = _teamMode != nextTeamMode ||
+                _teamOne.Id != nextTeamOne.Id ||
+                _teamTwo.Id != nextTeamTwo.Id;
 
-                _players.Add(cell);
+            if (!needsReload) {
+                needsReload =
+                    !UpdatePlayerCells(_players, nextRegularPlayers) ||
+                    !UpdatePlayerCells(_teamOnePlayers, nextTeamOnePlayers) ||
+                    !UpdatePlayerCells(_teamTwoPlayers, nextTeamTwoPlayers);
             }
 
-            hasPlayers = room.Players.Count > 0;
+            _teamMode = nextTeamMode;
+            _teamOne = nextTeamOne;
+            _teamTwo = nextTeamTwo;
+
+            if (needsReload) {
+                RebuildPlayerCells(nextRegularPlayers, nextTeamOnePlayers, nextTeamTwoPlayers);
+            }
+
+            hasPlayers = nextPlayers.Length > 0;
             NotifyPropertyChanged(nameof(regularPlayersVisible));
             NotifyPropertyChanged(nameof(teamPlayersVisible));
             NotifyPropertyChanged(nameof(teamOneName));
             NotifyPropertyChanged(nameof(teamTwoName));
-            ReloadPlayers();
+
+            if (needsReload) {
+                ReloadPlayers();
+            }
+        }
+
+        private void RebuildPlayerCells(IReadOnlyList<CompetePlayer> players, IReadOnlyList<CompetePlayer> teamOnePlayers, IReadOnlyList<CompetePlayer> teamTwoPlayers) {
+            _players.Clear();
+            _teamOnePlayers.Clear();
+            _teamTwoPlayers.Clear();
+
+            AddPlayerCells(_players, players);
+            AddPlayerCells(_teamOnePlayers, teamOnePlayers);
+            AddPlayerCells(_teamTwoPlayers, teamTwoPlayers);
+        }
+
+        private void AddPlayerCells(List<object> target, IEnumerable<CompetePlayer> players) {
+            foreach (CompetePlayer player in players) {
+                target.Add(new CompetePlayerCell(player, _materials, ShowProfile));
+            }
+        }
+
+        private static bool UpdatePlayerCells(List<object> cells, IReadOnlyList<CompetePlayer> players) {
+            if (cells.Count != players.Count) {
+                return false;
+            }
+
+            for (int i = 0; i < players.Count; i++) {
+                if (!(cells[i] is CompetePlayerCell cell) || !cell.Matches(players[i])) {
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < players.Count; i++) {
+                ((CompetePlayerCell)cells[i]).Update(players[i]);
+            }
+
+            return true;
         }
 
         private void ReloadPlayers() {

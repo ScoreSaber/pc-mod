@@ -8,9 +8,10 @@ namespace ScoreSaber.Features.Live.Compete.UI.Cells {
     internal class CompetePlayerCell : CompeteListRowCell {
         private const string DefaultAvatar = "ScoreSaber.Resources.user.png";
 
-        private readonly CompetePlayer _player;
+        private CompetePlayer _player;
         private readonly Action<string, string> _profileClicked;
         private readonly ScoreSaberUIMaterials _materials;
+        private string _key;
 
         [UIValue("avatar-url")]
         private string avatarUrl => string.IsNullOrEmpty(_player.AvatarUrl) ? DefaultAvatar : _player.AvatarUrl;
@@ -27,6 +28,24 @@ namespace ScoreSaber.Features.Live.Compete.UI.Cells {
             _player = player;
             _materials = materials;
             _profileClicked = profileClicked;
+            _key = PlayerKey(player);
+        }
+
+        internal bool Matches(CompetePlayer player) {
+            return _key == PlayerKey(player);
+        }
+
+        internal void Update(CompetePlayer player) {
+            string previousAvatarUrl = avatarUrl;
+            _player = player;
+            _key = PlayerKey(player);
+            rowTitle = player.IsLocalPlayer ? $"{player.DisplayName} (you)" : player.DisplayName;
+            rowDetail = player.Rank;
+            rowStatus = player.Status;
+
+            if (avatarUrl != previousAvatarUrl) {
+                NotifyPropertyChanged(nameof(avatarUrl));
+            }
         }
 
         [UIAction("profile-clicked")]
@@ -43,6 +62,14 @@ namespace ScoreSaber.Features.Live.Compete.UI.Cells {
             if (_profileImage != null && _materials != null) {
                 _profileImage.material = _materials.RoundedImageMaterial;
             }
+        }
+
+        private static string PlayerKey(CompetePlayer player) {
+            if (!string.IsNullOrEmpty(player.PlayerId)) {
+                return player.PlayerId;
+            }
+
+            return $"{player.TeamId}:{player.Name}:{player.IsBot}";
         }
     }
 }
