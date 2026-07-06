@@ -35,14 +35,33 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 return;
             }
 
-            Dictionary<string, LiveRoomPlayerState> states = room.PlayerStates.ToDictionary(state => state.PlayerId, state => state);
+            Dictionary<string, LiveRoomPlayerState> states = room.PlayerStates
+                .Where(state => !string.IsNullOrEmpty(state.PlayerId))
+                .GroupBy(state => state.PlayerId)
+                .ToDictionary(group => group.Key, group => group.First());
+            HashSet<string> activePlayerIds = ActivePlayerIds(room);
             var players = new List<CompetePlayer>();
-            bool localReady = session.TournamentRoom.LocalPlayerReady;
+            bool localReady = false;
 
             foreach (CompetePlayer player in session.TournamentRoom.Players) {
                 LiveRoomPlayerState state;
-                if (!states.TryGetValue(player.PlayerId, out state)) {
-                    players.Add(player);
+                bool hasState = states.TryGetValue(player.PlayerId, out state);
+                bool isActive = hasState || (!string.IsNullOrEmpty(player.PlayerId) && activePlayerIds.Contains(player.PlayerId));
+                if (!hasState) {
+                    if (player.IsLocalPlayer && isActive) {
+                        localReady = session.TournamentRoom.LocalPlayerReady;
+                    }
+
+                    players.Add(new CompetePlayer(
+                        player.Name,
+                        isActive ? player.Status : "Offline",
+                        player.TeamId,
+                        player.Rank,
+                        player.IsLocalPlayer,
+                        player.PlayerId,
+                        player.IsBot,
+                        player.AvatarUrl,
+                        isActive));
                     continue;
                 }
 
@@ -59,7 +78,8 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                     isLocal,
                     player.PlayerId,
                     state.IsBot,
-                    player.AvatarUrl));
+                    player.AvatarUrl,
+                    true));
             }
 
             session.TournamentRoom = new CompeteRoom(
@@ -76,6 +96,23 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                 localReady,
                 Math.Max(session.TournamentRoom.PlayerCount, players.Count));
             session.NotifyRoomUpdated(session.TournamentRoom);
+        }
+
+        private static HashSet<string> ActivePlayerIds(LiveMatchRoomState room) {
+            var playerIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string playerId in room.PlayerIds) {
+                if (!string.IsNullOrEmpty(playerId)) {
+                    playerIds.Add(playerId);
+                }
+            }
+
+            foreach (LiveRoomPlayerState state in room.PlayerStates) {
+                if (!string.IsNullOrEmpty(state.PlayerId)) {
+                    playerIds.Add(state.PlayerId);
+                }
+            }
+
+            return playerIds;
         }
 
         private static LiveMatchRoomState FindSessionRoom(ILudusServerCommandSession session, IList<LiveMatchRoomState> rooms) {

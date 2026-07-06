@@ -108,7 +108,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.ViewControllers.Room.Left {
             bool nextTeamMode = room.PlayerListMode == CompetePlayerListMode.Teams;
             CompeteTeam nextTeamOne = room.Teams.Count > 0 ? room.Teams[0] : FallbackTeamOne;
             CompeteTeam nextTeamTwo = room.Teams.Count > 1 ? room.Teams[1] : FallbackTeamTwo;
-            CompetePlayer[] nextPlayers = room.Players.ToArray();
+            CompetePlayer[] nextPlayers = room.Players.Where(player => player.IsActive).ToArray();
             CompetePlayer[] nextRegularPlayers = nextTeamMode ? Array.Empty<CompetePlayer>() : nextPlayers;
             CompetePlayer[] nextTeamOnePlayers = nextTeamMode
                 ? nextPlayers.Where(player => player.TeamId == nextTeamOne.Id).ToArray()

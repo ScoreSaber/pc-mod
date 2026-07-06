@@ -56,7 +56,8 @@ namespace ScoreSaber.Features.Live.Compete.Packets.Handlers {
                         player.IsLocalPlayer,
                         player.PlayerId,
                         livePlayer.IsBot,
-                        player.AvatarUrl);
+                        player.AvatarUrl,
+                        player.IsActive || livePlayer.IsActive);
                 }
 
                 return player;

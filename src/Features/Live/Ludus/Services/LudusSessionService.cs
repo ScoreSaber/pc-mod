@@ -403,7 +403,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _outgoing.ReadyState(_tournamentRoom.Id, ready, _connectionId);
             _tournamentRoom = _tournamentRoom.WithPlayers(_tournamentRoom.Players.Select(player =>
                 player.IsLocalPlayer
-                    ? new CompetePlayer(player.Name, ready ? "Ready" : "Waiting", player.TeamId, player.Rank, true, player.PlayerId, player.IsBot, player.AvatarUrl)
+                    ? new CompetePlayer(player.Name, ready ? "Ready" : "Waiting", player.TeamId, player.Rank, true, player.PlayerId, player.IsBot, player.AvatarUrl, player.IsActive)
                     : player), ready);
             RoomUpdated?.Invoke(_tournamentRoom);
         }

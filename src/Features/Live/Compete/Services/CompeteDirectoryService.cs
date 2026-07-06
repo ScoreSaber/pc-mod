@@ -112,7 +112,8 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 isLocalPlayer,
                 playerId,
                 member.IsBot,
-                member.Player?.Avatar);
+                member.Player?.Avatar,
+                member.Connected);
         }
 
         private async Task<CompeteSongSelection> ToSong(LivePlayerRoomDetailsSelectedSong song, CancellationToken cancellationToken) {
