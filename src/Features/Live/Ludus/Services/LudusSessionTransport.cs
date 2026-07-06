@@ -26,9 +26,9 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         internal bool IsOpen => _socket != null && _socket.State == WebSocketState.Open;
         internal CancellationToken Token => _cancellation?.Token ?? CancellationToken.None;
 
-        internal void Prepare(CancellationToken cancellationToken) {
+        internal void Prepare() {
             DisposeSocket();
-            _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _cancellation = new CancellationTokenSource();
             _socket = new ClientWebSocket();
         }
 

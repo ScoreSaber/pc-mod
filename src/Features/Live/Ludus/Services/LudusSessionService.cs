@@ -27,6 +27,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
         private const float ReconnectMaxDelaySeconds = 10f;
         private const int GameplayMainThreadQueueActionBudget = 8;
         private const float MainThreadQueueBacklogLogIntervalSeconds = 2f;
+        private const int SessionConnectionTimeoutMs = 10000;
         private const int TournamentJoinAckTimeoutMs = 3000;
         private static readonly TimeSpan FreshGameSessionAuthGuard = TimeSpan.FromMinutes(3);
         private static readonly TimeSpan GameSessionReconnectRefreshInterval = TimeSpan.FromHours(3);
@@ -203,9 +204,10 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _tournamentRoom = room;
             _pendingTournamentRoom = room;
             Task<CompeteRoom> pendingJoin = BeginPendingTournamentJoin(room);
+            bool joined = false;
 
             try {
-                await EnsureSessionConnection(cancellationToken);
+                await AwaitSessionConnection(cancellationToken);
                 if (IsConnectedToLudus) {
                     EnterTournamentRoom(room);
                 }
@@ -215,8 +217,12 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 if (completed == pendingJoin) {
                     await pendingJoin;
                 }
+                joined = true;
             } finally {
                 ClearPendingTournamentJoin(pendingJoin);
+                if (!joined) {
+                    ClearPendingTournamentRoom(room);
+                }
             }
 
             EnsureTournamentRoomSongReady(_tournamentRoom);
@@ -339,6 +345,16 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
 
             _pendingTournamentJoin = null;
             _pendingTournamentJoinRoomId = null;
+        }
+
+        private void ClearPendingTournamentRoom(CompeteRoom room) {
+            if (RoomMatches(_pendingTournamentRoom, room)) {
+                _pendingTournamentRoom = null;
+            }
+
+            if (RoomMatches(_tournamentRoom, room) && _roomContext != LudusRoomContextType.LudusRoomContextTypeTournament) {
+                _tournamentRoom = null;
+            }
         }
 
         private void ApplyRoomContext(LudusRoomContextType roomContext, string tournamentId, string currentMatchId) {
@@ -488,12 +504,12 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             }
             MarkAuthenticationAvailable(forceAuthenticationRefresh && !usedCachedSessionAfterRefreshFailure);
 
-            PrepareConnectionAttempt(cancellationToken);
+            PrepareConnectionAttempt();
 
             try {
                 string url = NormalizeLudusUrl(_nextLudusUrl ?? ScoreSaberEndpoints.LudusUrl);
                 Plugin.Log.Info($"Ludus: Connecting to {url}");
-                await _transport.ConnectAsync(new Uri(url));
+                await ConnectSessionTransport(new Uri(url), cancellationToken);
                 _reconnectAttempt = 0;
                 SendConnect();
                 _transport.StartReceiveLoop();
@@ -506,6 +522,37 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 Plugin.Log.Warn($"Ludus connection failed: {ex.Message}");
                 throw;
             }
+        }
+
+        private async Task AwaitSessionConnection(CancellationToken cancellationToken) {
+            Task connectionTask = EnsureSessionConnection(cancellationToken);
+            if (connectionTask.IsCompleted) {
+                await connectionTask;
+                return;
+            }
+
+            Task completed = await Task.WhenAny(connectionTask, Task.Delay(Timeout.Infinite, cancellationToken));
+            if (completed != connectionTask) {
+                ObserveFault(connectionTask);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            if (completed == connectionTask) {
+                await connectionTask;
+            }
+        }
+
+        private async Task ConnectSessionTransport(Uri uri, CancellationToken cancellationToken) {
+            Task connectTask = _transport.ConnectAsync(uri);
+            Task completed = await Task.WhenAny(connectTask, Task.Delay(SessionConnectionTimeoutMs, cancellationToken));
+            if (completed == connectTask) {
+                await connectTask;
+                return;
+            }
+
+            ObserveFault(connectTask);
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new TimeoutException("Timed out connecting to Ludus.");
         }
 
         private bool ShouldRefreshAuthenticationForConnection() {
@@ -602,7 +649,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
                 LudusInstalledMods.List());
         }
 
-        private void PrepareConnectionAttempt(CancellationToken cancellationToken) {
+        private void PrepareConnectionAttempt() {
             _active = true;
             _outgoing.ResetSequences();
             _connectionId = null;
@@ -610,7 +657,7 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             _nextHeartbeatAt = 0f;
             _reconnectScheduled = false;
             _nextReconnectAt = 0f;
-            _transport.Prepare(cancellationToken);
+            _transport.Prepare();
         }
 
         private void ScheduleReconnect(string reason, float? delayOverrideSeconds) {
@@ -737,6 +784,19 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             }
 
             return value;
+        }
+
+        private static bool RoomMatches(CompeteRoom current, CompeteRoom expected) {
+            return current != null &&
+                expected != null &&
+                string.Equals(current.Id, expected.Id, StringComparison.Ordinal) &&
+                string.Equals(current.TournamentId, expected.TournamentId, StringComparison.Ordinal);
+        }
+
+        private static void ObserveFault(Task task) {
+            task.ContinueWith(completed => {
+                completed.Exception?.Handle(_ => true);
+            }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
         }
     }
 }

@@ -61,7 +61,7 @@ namespace ScoreSaber.Core.BeatSaver {
                 : version.DownloadUrl;
             string customSongsPath = Path.GetFullPath(CustomLevelPathHelper.customLevelsDirectoryPath);
             string customSongPath = Path.Combine(customSongsPath, lowerHash);
-            string tempRootPath = Path.Combine(customSongsPath, $"{lowerHash}.{Guid.NewGuid():N}.download");
+            string tempRootPath = Path.Combine(customSongsPath, $".ss-{lowerHash.Substring(0, 8)}-{Guid.NewGuid():N}");
             string tempSongPath = Path.Combine(tempRootPath, "song");
             string zipPath = Path.Combine(tempRootPath, $"{lowerHash}.zip");
 
