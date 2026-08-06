@@ -8,6 +8,7 @@
   "packages": [
     {
       "id": "scoresaber",
+      "identity": "beatmods:281",
       "name": "ScoreSaber",
       "summary": "The home of competitive Beat Saber. Ranked maps, PP, replays, detailed stats & more. Est. May 2018.",
       "description": "The home of competitive Beat Saber. Ranked maps, PP, replays, detailed stats, & more. Est. May 2018.",
