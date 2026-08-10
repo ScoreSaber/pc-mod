@@ -2,7 +2,7 @@
 using HarmonyLib;
 using IPA;
 using IPA.Loader;
-using ScoreSaber.Core.Compat;
+using BeatSaberMarkupLanguage.Util;
 using ScoreSaber.Core;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Platform;
@@ -66,7 +66,7 @@ namespace ScoreSaber {
 
         [OnEnable]
         public void OnEnable() {
-            BsmlCompat.OnMainMenuInitializing(MainMenuInit);
+            MainMenuAwaiter.MainMenuInitializing += MainMenuInit;
             SettingsService.Load();
             ReplayState.Reset();
             if (!SettingsService.Current.disableScoreSaber) {
@@ -77,15 +77,15 @@ namespace ScoreSaber {
         }
 
         private void MainMenuInit() {
-            BsmlCompat.Parser.RegisterTypeHandler(new ProfileDetailViewTypeHandler());
-            BsmlCompat.Parser.RegisterTag(new ProfileDetailViewTag(Metadata.Assembly));
+            BsmlParser.Instance.RegisterTypeHandler(new ProfileDetailViewTypeHandler());
+            BsmlParser.Instance.RegisterTag(new ProfileDetailViewTag(Metadata.Assembly));
         }
 
         // BS Utils and SiraUtil reflect this property and call SetValue on it, no touchy!
         public static bool ScoreSubmission {
             get => ScoreSubmissionRegistry.IsEnabled;
             set {
-                if (!IsScoreSubmissionCompatibilityCaller()) {
+                if (!IsLegacyScoreSubmissionCaller()) {
                     return;
                 }
 
@@ -97,7 +97,7 @@ namespace ScoreSaber {
             }
         }
 
-        private static bool IsScoreSubmissionCompatibilityCaller() {
+        private static bool IsLegacyScoreSubmissionCaller() {
             var frames = new StackTrace().GetFrames();
             if (frames == null) {
                 return false;

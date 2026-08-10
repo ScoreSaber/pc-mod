@@ -28,7 +28,7 @@ namespace ScoreSaber.Features.Leaderboards.Services {
 
             return _scores.TryGetValue(CreateKey(
                 songHash,
-                $"Solo{beatmapKey.beatmapCharacteristic.serializedName}",
+                $"Solo{beatmapKey.CharacteristicSerializedName()}",
                 BeatmapDifficultyMethods.DefaultRating(beatmapKey.difficulty),
                 null,
                 playerId), out score);

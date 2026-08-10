@@ -172,20 +172,8 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             return Mathf.Max(1f, Mathf.Round(Mathf.Round(refreshRate) / 5f) * 5f - 5f);
         }
 
-        private bool IsAudioPlaying() {
-#if BEAT_SABER_1_42_0
-            return _audioTimeSyncController.state == IAudioTimeSource.State.Playing;
-#else
-            return _audioTimeSyncController.state == AudioTimeSyncController.State.Playing;
-#endif
-        }
+        private bool IsAudioPlaying() => _audioTimeSyncController.IsPlaying();
 
-        private bool IsAudioPaused() {
-#if BEAT_SABER_1_42_0
-            return _audioTimeSyncController.state == IAudioTimeSource.State.Paused;
-#else
-            return _audioTimeSyncController.state == AudioTimeSyncController.State.Paused;
-#endif
-        }
+        private bool IsAudioPaused() => _audioTimeSyncController.IsPaused();
     }
 }

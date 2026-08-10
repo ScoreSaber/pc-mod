@@ -9,6 +9,7 @@ namespace ScoreSaber.Features.Replays {
             Container.Bind<ReplayStorageService>().AsSingle();
             Container.Bind<ReplayQueryService>().AsSingle();
             Container.BindInterfacesTo<ResultsViewReplayButtonController>().AsSingle();
+            Container.BindInterfacesTo<ReplayXrEventHandler>().AsSingle().NonLazy();
         }
     }
 }

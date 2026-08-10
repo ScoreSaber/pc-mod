@@ -29,7 +29,8 @@
     <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(Platform)' == 'BS1.40.0'">1.40.0</ScoreSaberTargetVersion>
     <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == '' AND '$(Platform)' == 'BS1.42.0'">1.42.0</ScoreSaberTargetVersion>
     <ScoreSaberTargetVersion Condition="'$(ScoreSaberTargetVersion)' == ''">$(ScoreSaberDefaultTargetVersion)</ScoreSaberTargetVersion>
-    <ScoreSaberTargetDefine>BEAT_SABER_$([System.String]::Copy('$(ScoreSaberTargetVersion)').Replace('.', '_'))</ScoreSaberTargetDefine>
+    <LegatoSourceVersion>1.44.1</LegatoSourceVersion>
+    <LegatoTargetVersion>$(ScoreSaberTargetVersion)</LegatoTargetVersion>
     <ScoreSaberRefsRoot Condition="'$(ScoreSaberRefsRoot)' == '' AND Exists('$(RepositoryRoot)refs')">$(RepositoryRoot)refs</ScoreSaberRefsRoot>
     <ScoreSaberRefsRoot Condition="'$(ScoreSaberRefsRoot)' == '' AND Exists('$(RepositoryRoot)Refs')">$(RepositoryRoot)Refs</ScoreSaberRefsRoot>
     <ScoreSaberRefsRoot Condition="'$(ScoreSaberRefsRoot)' == ''">$(RepositoryRoot)refs</ScoreSaberRefsRoot>
@@ -47,6 +48,8 @@
     <GameReferences Condition="'$(GameReferences)' == '' AND '$(LocalRefsDir)' != ''">$(LocalRefsDir)</GameReferences>
     <GameReferences Condition="'$(GameReferences)' == '' AND '$(GameDirectory)' != ''">$(GameDirectory)</GameReferences>
     <GameReferences Condition="'$(GameReferences)' == '' AND '$(BeatSaberDir)' != ''">$(BeatSaberDir)</GameReferences>
+    <GameDirectory Condition="'$(ScoreSaberUseLocalRefs)' == 'true' AND '$(GameReferences)' != ''">$(GameReferences)</GameDirectory>
+    <BeatSaberDir Condition="'$(ScoreSaberUseLocalRefs)' == 'true' AND '$(GameReferences)' != ''">$(GameReferences)</BeatSaberDir>
     <BeatSaberDir Condition="'$(BeatSaberDir)' == ''">$(GameReferences)</BeatSaberDir>
     <ManifestPath Condition="'$(ManifestPath)' == '' AND Exists('$(MSBuildProjectDirectory)\Manifests\$(ScoreSaberTargetVersion)\manifest.json')">Manifests\$(ScoreSaberTargetVersion)\manifest.json</ManifestPath>
     <ManifestPath Condition="'$(ManifestPath)' == ''">manifest.json</ManifestPath>
@@ -61,31 +64,31 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>RELEASE;$(ScoreSaberTargetDefine)</DefineConstants>
+    <DefineConstants>RELEASE</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(Platform)' != 'AnyCPU' ">
     <OutputPath>bin\$(ScoreSaberTargetVersion)\Release\</OutputPath>
-    <DefineConstants>RELEASE;$(ScoreSaberTargetDefine)</DefineConstants>
+    <DefineConstants>RELEASE</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\$(ScoreSaberTargetVersion)\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;$(ScoreSaberTargetDefine)</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dev|AnyCPU' ">
     <OutputPath>bin\Dev\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;USE_HOT_RELOAD;$(ScoreSaberTargetDefine)</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;USE_HOT_RELOAD</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Dev' AND '$(Platform)' != 'AnyCPU' ">
     <OutputPath>bin\$(ScoreSaberTargetVersion)\Dev\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;USE_HOT_RELOAD;$(ScoreSaberTargetDefine)</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;USE_HOT_RELOAD</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
   </PropertyGroup>
@@ -94,11 +97,8 @@
     <DisableZipRelease>True</DisableZipRelease>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="**\*.1_29_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.29.0'" />
-    <Compile Remove="**\*.1_37_1.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.37.1'" />
-    <Compile Remove="**\*.1_38_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.38.0'" />
-    <Compile Remove="**\*.1_40_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.40.0'" />
-    <Compile Remove="**\*.1_42_0.cs" Condition="'$(ScoreSaberTargetVersion)' != '1.42.0'" />
+    <Compile Remove="Compatibility\ScoreSaber\**\Versions\**\*.cs" />
+    <Compile Include="Compatibility\ScoreSaber\**\Versions\$(ScoreSaberTargetVersion)\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AdditionalContentModel.Interfaces" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\AdditionalContentModel.Interfaces.dll')">
@@ -360,6 +360,11 @@
       <Private>False</Private>
       <Publicize>True</Publicize>
     </Reference>
+    <Reference Include="BeatSaber.Audio.Common" Condition="Exists('$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Audio.Common.dll')">
+      <HintPath>$(GameReferences)\Beat Saber_Data\Managed\BeatSaber.Audio.Common.dll</HintPath>
+      <Private>False</Private>
+      <Publicize>True</Publicize>
+    </Reference>
     <Reference Include="HMLib">
       <HintPath>$(GameReferences)\Beat Saber_Data\Managed\HMLib.dll</HintPath>
       <Private>False</Private>
@@ -465,6 +470,7 @@
     <OutputCopy Include="$(OutputPath)$(AssemblyName).pdb" OutputPath="Plugins\$(AssemblyName).pdb" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="LegatoBS" PrivateAssets="all" />
     <PackageReference Include="BeatSaberModdingTools.Tasks">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

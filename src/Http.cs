@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using ScoreSaber.Core.Compat;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

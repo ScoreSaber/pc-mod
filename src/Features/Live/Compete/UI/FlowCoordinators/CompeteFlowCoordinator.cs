@@ -1,7 +1,6 @@
 using HMUI;
 using IPA.Utilities.Async;
 using ScoreSaber.Core;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.Services;
 using ScoreSaber.Features.Live.Compete.Domain;
@@ -574,14 +573,14 @@ namespace ScoreSaber.Features.Live.Compete.UI.FlowCoordinators {
                 return false;
             }
 
-            _platformLeaderboardViewController.SetDataCompat(song.BeatmapKey);
+            _platformLeaderboardViewController.SetData(song.BeatmapKey);
             return true;
         }
 
         private void RestoreMenuLeaderboard() {
             BeatmapKey beatmapKey = _levelSelectionNavigationController.GetBeatmapKey();
             if (ScoreSaberBeatmapKey.IsSupported(beatmapKey)) {
-                _platformLeaderboardViewController.SetDataCompat(beatmapKey);
+                _platformLeaderboardViewController.SetData(beatmapKey);
                 return;
             }
 

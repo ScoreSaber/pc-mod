@@ -1,6 +1,5 @@
 ﻿using ScoreSaber.Core.Api;
 using ScoreSaber.Core.BeatSaver;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Features.Leaderboards;
 using ScoreSaber.Features.Live;
@@ -12,14 +11,14 @@ using ScoreSaber.Features.Multiplayer;
 using Zenject;
 
 namespace ScoreSaber.Core {
-    internal class MainInstaller : Installer {
+    internal partial class MainInstaller : Installer {
 
         public override void InstallBindings() {
             Container.BindInstance(new object()).WithId("ScoreSaberUIBindings").AsCached();
             Container.Bind<IScoreSaberApiClient>().To<ScoreSaberApiClient>().AsSingle();
             Container.Bind<BeatSaverService>().AsSingle();
             Container.BindInterfacesAndSelfTo<RemoteImageService>().AsSingle();
-            Container.Install<CompatInstaller>();
+            InstallGameBindings();
             Container.Install<PlayersFeatureInstaller>();
             Container.Install<ReplayFeatureInstaller>();
             Container.Install<ScoreSubmissionFeatureInstaller>();
@@ -29,5 +28,7 @@ namespace ScoreSaber.Core {
             Container.BindInterfacesTo<MultiplayerSessionController>().AsSingle();
             Container.BindInterfacesTo<MultiplayerLeaderboardController>().AsSingle();
         }
+
+        partial void InstallGameBindings();
     }
 }

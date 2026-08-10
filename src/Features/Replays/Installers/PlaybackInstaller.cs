@@ -1,5 +1,4 @@
-﻿using ScoreSaber.Core.Compat;
-using ScoreSaber.Features.Replays.HarmonyPatches;
+﻿using ScoreSaber.Features.Replays.HarmonyPatches;
 using ScoreSaber.Features.Replays.Legacy;
 using ScoreSaber.Features.Replays.Legacy.UI;
 using ScoreSaber.Features.Replays.Playback;
@@ -33,9 +32,7 @@ namespace ScoreSaber.Features.Replays.Installers {
                     Container.BindInterfacesTo<ScorePlayer>().AsSingle();
                     Container.BindInterfacesTo<ComboPlayer>().AsSingle();
                     Container.BindInterfacesTo<MultiplierPlayer>().AsSingle();
-#if BEAT_SABER_1_40_0 || BEAT_SABER_1_42_0
-                    Container.BindInterfacesTo<ReplayJumpDistanceTweak>().AsSingle();
-#endif
+                    Container.BindInterfacesTo<ReplayMovementDataEventHandler>().AsSingle();
                     if (_gameplayCoreSceneSetupData.playerSpecificSettings.automaticPlayerHeight)
                         Container.BindInterfacesTo<HeightPlayer>().AsSingle();
                     Container.BindInterfacesAndSelfTo<ReplayTimeSyncController>().AsSingle();

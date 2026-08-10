@@ -60,7 +60,7 @@ namespace ScoreSaber.Features.ScoreSubmission.Domain {
 
         internal static ScoreSaberUploadData Create(BeatmapLevel beatmapLevel, BeatmapKey beatmapKey, LevelCompletionResults results, LocalPlayerInfo playerInfo, string infoHash, float playOutcomeTime, ScoreSaberPlayOutcome? playOutcomeOverride) {
             return new ScoreSaberUploadData {
-                GameMode = $"Solo{beatmapKey.beatmapCharacteristic.serializedName}",
+                GameMode = $"Solo{beatmapKey.CharacteristicSerializedName()}",
                 Difficulty = BeatmapDifficultyMethods.DefaultRating(beatmapKey.difficulty),
                 InfoHash = infoHash,
                 LeaderboardId = ScoreSaberBeatmapKey.GetSongHash(beatmapKey),

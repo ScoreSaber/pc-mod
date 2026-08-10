@@ -1,5 +1,4 @@
 ﻿using IPA.Utilities.Async;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Replays.Format;
@@ -63,7 +62,23 @@ namespace ScoreSaber.Features.Replays {
             }
 
             _scoreSubmissionService.SuspendForReplay();
-            _menuTransitionsHelper.StartReplayLevel(beatmapKey, beatmapLevel, playerData, gameplayModifiers, playerSettings, _environmentsListModel, null, null, ReplayEnd);
+            ColorScheme colorScheme = playerData.colorSchemesSettings.GetOverrideColorScheme();
+            _menuTransitionsHelper.StartStandardLevel(
+                "Replay",
+                beatmapKey,
+                beatmapLevel,
+                playerData.overrideEnvironmentSettings,
+                colorScheme,
+                colorScheme != null ? colorScheme.ShouldOverrideLightshowColors() : playerData.colorSchemesSettings.ShouldOverrideLightshowColors(),
+                gameplayModifiers,
+                playerSettings,
+                null,
+                _environmentsListModel,
+                new GameplayAdditionalInformation("Exit Replay"),
+                null,
+                null,
+                ReplayEnd,
+                null);
         }
 
         private static Z.SavedData DeserializeLegacyReplay(byte[] decompressed) {
@@ -115,7 +130,7 @@ namespace ScoreSaber.Features.Replays {
             }
 
             bool useRecordedPlayerSettings = _settings.Current.useRecordedPlayerSettings && replay.metadata.HasPlaySettingsExtension;
-            PlayerSpecificSettings playerSettings = PlayerSettingsCompat.ForReplay(localPlayerSettings,
+            PlayerSpecificSettings playerSettings = PlayerSpecificSettingsFactory.Create(localPlayerSettings,
                 replay.metadata.LeftHanded,
                 replay.metadata.InitialHeight,
                 replay.heightKeyframes.Count > 0,
@@ -128,7 +143,7 @@ namespace ScoreSaber.Features.Replays {
                 replay.metadata.EnvironmentEffectsFilterDefaultPreset,
                 replay.metadata.EnvironmentEffectsFilterExpertPlusPreset);
             ColorScheme replayColorScheme = useRecordedPlayerSettings
-                ? ColorSchemeCompat.ForReplay(
+                ? ColorSchemeFactory.Create(
                     playerData,
                     replay.metadata.LeftSaberColor,
                     replay.metadata.RightSaberColor,
@@ -141,39 +156,33 @@ namespace ScoreSaber.Features.Replays {
                     replay.metadata.EnvironmentColorWBoost,
                     replay.metadata.SupportsEnvironmentColorBoost)
                 : null;
-            OverrideEnvironmentSettings replayEnvironmentSettings = ReplayEnvironmentSettings(playerData, replay.metadata, useRecordedPlayerSettings);
+            OverrideEnvironmentSettings replayEnvironmentSettings = OverrideEnvironmentSettingsFactory.Create(
+                playerData,
+                _environmentsListModel,
+                replay.metadata.Environment,
+                useRecordedPlayerSettings);
+            ColorScheme playerColorScheme = replayColorScheme ?? playerData.colorSchemesSettings.GetOverrideColorScheme();
 
             _scoreSubmissionService.SuspendForReplay();
-            _menuTransitionsHelper.StartReplayLevel(beatmapKey, beatmapLevel, playerData,
+            _menuTransitionsHelper.StartStandardLevel(
+                "Replay",
+                beatmapKey,
+                beatmapLevel,
+                replayEnvironmentSettings ?? playerData.overrideEnvironmentSettings,
+                playerColorScheme,
+                replayColorScheme != null ? replayColorScheme.ShouldOverrideLightshowColors() : playerData.colorSchemesSettings.ShouldOverrideLightshowColors(),
                 ScoreSaberGameplayModifiers.FromCodes(replay.metadata.Modifiers, false).GameplayModifiers,
-                playerSettings, _environmentsListModel,
-                replayEnvironmentSettings,
-                replayColorScheme,
-                ReplayEnd);
+                playerSettings,
+                null,
+                _environmentsListModel,
+                new GameplayAdditionalInformation("Exit Replay"),
+                null,
+                null,
+                ReplayEnd,
+                null);
         }
 
-        private OverrideEnvironmentSettings ReplayEnvironmentSettings(PlayerData playerData, Metadata metadata, bool useRecordedPlayerSettings) {
-
-#if BEAT_SABER_1_29_0
-            return playerData.overrideEnvironmentSettings;
-#else
-            if (!useRecordedPlayerSettings || string.IsNullOrEmpty(metadata.Environment)) {
-                return playerData.overrideEnvironmentSettings;
-            }
-
-            EnvironmentInfoSO environmentInfo = _environmentsListModel.GetEnvironmentInfoBySerializedName(metadata.Environment);
-            if (environmentInfo == null) {
-                return playerData.overrideEnvironmentSettings;
-            }
-
-            var overrideEnvironmentSettings = new OverrideEnvironmentSettings();
-            overrideEnvironmentSettings.overrideEnvironments = true;
-            overrideEnvironmentSettings.SetEnvironmentInfoForType(environmentInfo.environmentType, environmentInfo);
-            return overrideEnvironmentSettings;
-#endif
-        }
-
-        private void ReplayEnd(StandardLevelScenesTransitionSetupDataSO standardLevelSceneSetupData, LevelCompletionResults levelCompletionResults) {
+        private void ReplayEnd(StandardLevelScenesTransitionSetupData standardLevelSceneSetupData, LevelCompletionResults levelCompletionResults) {
 
             _replayState.EndPlayback();
             _scoreSubmissionService.ResumeAfterReplay();

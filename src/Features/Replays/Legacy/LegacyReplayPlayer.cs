@@ -5,7 +5,6 @@ using Zenject;
 using SiraUtil.Tools.FPFC;
 using UnityEngine;
 using IPA.Utilities;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Gameplay;
 
@@ -99,14 +98,14 @@ namespace ScoreSaber.Features.Replays.Legacy {
             };
             spectatorObject.transform.rotation = rotation;
             _spectatorCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            ReplayCameraCompat.CopyTrackedPoseDriver(_mainCamera, _spectatorCamera);
+            _mainCamera.CopyTrackedPoseDriverTo(_spectatorCamera);
             _spectatorCamera.gameObject.SetActive(true);
             _spectatorCamera.depth = 0;
             _spectatorCamera.transform.SetParent(spectatorObject.transform);
 
             if (_settings.Current.enableReplayFrameRenderer) {
                 var ss = Resources.FindObjectsOfTypeAll<ScreenshotRecorder>().Last();
-                ss.SetField("_folder", _settings.Current.replayFramePath);
+                ss.directory = _settings.Current.replayFramePath;
                 ss.enabled = true;
                 _desktopCamera.depth = 1;
                 var gc = Resources.FindObjectsOfTypeAll<DisableGCWhileEnabled>().Last();

@@ -3,7 +3,6 @@ using BeatSaberMarkupLanguage.Components;
 using HMUI;
 using IPA.Utilities;
 using LeaderboardCore.Models.UI.ViewControllers;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Features.Leaderboards.Services;
@@ -145,7 +144,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         }
 
         protected override void OnDestroy() {
-            BsmlCompat.DestroySprite(_denyahSprite);
+            SpriteFactory.Destroy(_denyahSprite);
             _denyahSprite = null;
             base.OnDestroy();
         }
@@ -269,7 +268,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
             }
 
             if (_denyahSprite == null) {
-                _denyahSprite = BsmlCompat.LoadSpriteRaw(BsmlCompat.GetResource(Assembly.GetExecutingAssembly(), "ScoreSaber.Resources.bri-ish.png"));
+                _denyahSprite = SpriteFactory.Create(EmbeddedResources.Read(Assembly.GetExecutingAssembly(), "ScoreSaber.Resources.bri-ish.png"));
             }
             _background.overrideSprite = _denyahSprite;
         }

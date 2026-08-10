@@ -3,7 +3,6 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.FloatingScreen;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
-using ScoreSaber.Core.Compat;
 using System;
 using System.Collections.Generic;
 using UnityEngine;

@@ -1,5 +1,4 @@
 ﻿using IPA.Utilities;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Replays.Format;
 using SiraUtil.Affinity;
 using SiraUtil.Logging;

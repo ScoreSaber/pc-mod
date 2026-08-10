@@ -12,7 +12,8 @@ namespace ScoreSaber.Core.Api.UploadTrust {
             string uploadVersionHash,
             string encryptedData,
             byte[] replay,
-            UploadTrustSession trust) {
+            UploadTrustSession trust,
+            long timestamp) {
 
             return BuildUploadHeaders(
                 sessionId,
@@ -22,7 +23,7 @@ namespace ScoreSaber.Core.Api.UploadTrust {
                 encryptedData,
                 replay,
                 trust,
-                CurrentEpochSeconds(),
+                timestamp,
                 CreateNonce());
         }
 
@@ -115,10 +116,6 @@ namespace ScoreSaber.Core.Api.UploadTrust {
             using (var hmac = new HMACSHA256(key)) {
                 return ToLowerHex(hmac.ComputeHash(body));
             }
-        }
-
-        private static long CurrentEpochSeconds() {
-            return (long)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
         }
 
         private static string CreateNonce() {

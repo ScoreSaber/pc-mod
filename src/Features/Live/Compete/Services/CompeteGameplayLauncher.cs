@@ -1,4 +1,3 @@
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Live.Compete.Domain;
 using ScoreSaber.Live.V1;
@@ -54,14 +53,23 @@ namespace ScoreSaber.Features.Live.Compete.Services {
 
             _gameplayState.Begin(room.TournamentId, room.Id, song.MapHash);
             try {
-                _menuTransitionsHelper.StartLiveLevel(
+                ColorScheme colorScheme = playerData.colorSchemesSettings.GetOverrideColorScheme();
+                _menuTransitionsHelper.StartStandardLevel(
+                    "Solo",
                     song.BeatmapKey,
                     song.BeatmapLevel,
-                    playerData,
+                    playerData.overrideEnvironmentSettings,
+                    colorScheme,
+                    playerData.colorSchemesSettings.ShouldOverrideLightshowColors(),
                     modifiers,
                     playerSettings,
+                    null,
                     _environmentsListModel,
-                    LevelFinished);
+                    new GameplayAdditionalInformation("Menu"),
+                    null,
+                    null,
+                    LevelFinished,
+                    null);
             } catch {
                 _gameplayState.End();
                 throw;
@@ -87,7 +95,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
             return true;
         }
 
-        private void LevelFinished(StandardLevelScenesTransitionSetupDataSO transition, LevelCompletionResults results) {
+        private void LevelFinished(StandardLevelScenesTransitionSetupData transition, LevelCompletionResults results) {
             _gameplayState.End();
         }
 

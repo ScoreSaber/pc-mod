@@ -1,5 +1,4 @@
 using ScoreSaber.Core;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.Services;
@@ -51,11 +50,11 @@ namespace ScoreSaber.Features.ScoreSubmission {
             _scoreSubmissionService.RegisterCallbacks(HandleStandardLevelFinished, HandleMultiplayerLevelFinished);
         }
 
-        private void HandleStandardLevelFinished(StandardLevelScenesTransitionSetupDataSO transition, LevelCompletionResults results) {
+        private void HandleStandardLevelFinished(StandardLevelScenesTransitionSetupData transition, LevelCompletionResults results) {
             HandleLevelFinished(new ScoreSubmissionRequest(transition.gameMode, transition.GetBeatmapLevel(), transition.GetBeatmapKey(), results, transition.practiceSettings != null, GetCurrentSongTime()));
         }
 
-        private void HandleMultiplayerLevelFinished(MultiplayerLevelScenesTransitionSetupDataSO transition, MultiplayerResultsData resultsData) {
+        private void HandleMultiplayerLevelFinished(MultiplayerLevelScenesTransitionSetupData transition, MultiplayerResultsData resultsData) {
             if (transition.GetBeatmapLevel() == null) {
                 return;
             }

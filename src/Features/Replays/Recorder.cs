@@ -3,6 +3,7 @@ using ScoreSaber.Features.Live.Replay;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Features.Replays.Recorders;
 using System;
+using System.Linq;
 using Zenject;
 
 namespace ScoreSaber.Features.Replays {
@@ -64,15 +65,15 @@ namespace ScoreSaber.Features.Replays {
 
             return new ReplayFile() {
                 metadata = _metadataRecorder.Export(),
-                poseKeyframes = _poseRecorder.Export(),
-                heightKeyframes = _heightEventRecorder.Export(),
-                noteKeyframes = _noteEventRecorder.Export(),
-                scoreKeyframes = _scoreEventRecorder.ExportScoreKeyframes(),
-                comboKeyframes = _scoreEventRecorder.ExportComboKeyframes(),
-                multiplierKeyframes = _scoreEventRecorder.ExportMultiplierKeyframes(),
-                energyKeyframes = _energyEventRecorder.Export(),
-                pauseKeyframes = _pauseEventRecorder.Export(),
-                wallKeyframes = _wallEventRecorder.Export(),
+                poseKeyframes = _poseRecorder.Export().ToList(),
+                heightKeyframes = _heightEventRecorder.Export().ToList(),
+                noteKeyframes = _noteEventRecorder.Export().ToList(),
+                scoreKeyframes = _scoreEventRecorder.ExportScoreKeyframes().ToList(),
+                comboKeyframes = _scoreEventRecorder.ExportComboKeyframes().ToList(),
+                multiplierKeyframes = _scoreEventRecorder.ExportMultiplierKeyframes().ToList(),
+                energyKeyframes = _energyEventRecorder.Export().ToList(),
+                pauseKeyframes = _pauseEventRecorder.Export().ToList(),
+                wallKeyframes = _wallEventRecorder.Export().ToList(),
                 hsvConfig = _hsvConfig
             };
         }

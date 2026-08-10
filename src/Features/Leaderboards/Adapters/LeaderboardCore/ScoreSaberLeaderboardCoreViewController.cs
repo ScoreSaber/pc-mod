@@ -3,7 +3,6 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using IPA.Utilities;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.Services;
@@ -31,11 +30,6 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private static readonly FieldAccessor<PlatformLeaderboardViewController, Sprite>.Accessor PlatformGlobalLeaderboardIcon = FieldAccessor<PlatformLeaderboardViewController, Sprite>.GetAccessor("_globalLeaderboardIcon");
         private static readonly FieldAccessor<PlatformLeaderboardViewController, Sprite>.Accessor PlatformAroundPlayerLeaderboardIcon = FieldAccessor<PlatformLeaderboardViewController, Sprite>.GetAccessor("_aroundPlayerLeaderboardIcon");
         private static readonly FieldAccessor<PlatformLeaderboardViewController, Sprite>.Accessor PlatformFriendsLeaderboardIcon = FieldAccessor<PlatformLeaderboardViewController, Sprite>.GetAccessor("_friendsLeaderboardIcon");
-#if BEAT_SABER_1_29_0
-        private static readonly FieldAccessor<PlatformLeaderboardViewController, IDifficultyBeatmap>.Accessor PlatformDifficultyBeatmap = FieldAccessor<PlatformLeaderboardViewController, IDifficultyBeatmap>.GetAccessor("_difficultyBeatmap");
-#else
-        private static readonly FieldAccessor<PlatformLeaderboardViewController, BeatmapKey>.Accessor PlatformBeatmapKey = FieldAccessor<PlatformLeaderboardViewController, BeatmapKey>.GetAccessor("_beatmapKey");
-#endif
         private const string CountryIconResource = "ScoreSaber.Resources.country.png";
 
         private static PlatformLeaderboardViewController _currentPlatformLeaderboardViewController;
@@ -183,7 +177,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
             if (_scopeControl != null) {
                 _scopeControl.didSelectCellEvent -= ScopeSegmentedControlDidSelectCell;
             }
-            BsmlCompat.DestroySprite(_countryIcon);
+            SpriteFactory.Destroy(_countryIcon);
             _countryIcon = null;
         }
 
@@ -430,7 +424,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         private Sprite CountryIcon() {
             if (_countryIcon == null) {
                 Texture2D countryTexture = new Texture2D(64, 64);
-                countryTexture.LoadImage(BsmlCompat.GetResource(Assembly.GetExecutingAssembly(), CountryIconResource));
+                countryTexture.LoadImage(EmbeddedResources.Read(Assembly.GetExecutingAssembly(), CountryIconResource));
                 countryTexture.Apply();
                 _countryIcon = Sprite.Create(countryTexture, new Rect(0, 0, countryTexture.width, countryTexture.height), Vector2.zero);
             }
@@ -491,13 +485,8 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
                 return false;
             }
 
-#if BEAT_SABER_1_29_0
-            IDifficultyBeatmap difficultyBeatmap = PlatformDifficultyBeatmap(ref platformLeaderboardViewController);
-            return difficultyBeatmap?.level is CustomBeatmapLevel;
-#else
-            BeatmapKey beatmapKey = PlatformBeatmapKey(ref platformLeaderboardViewController);
-            return ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey);
-#endif
+            return platformLeaderboardViewController.TryGetBeatmapKey(out BeatmapKey beatmapKey)
+                && ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey);
         }
 
         private static bool PlatformLeaderboardHasScoreSaberCustomLevel() {
@@ -506,13 +495,9 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
                 return false;
             }
 
-#if BEAT_SABER_1_29_0
-            IDifficultyBeatmap difficultyBeatmap = PlatformDifficultyBeatmap(ref platformLeaderboardViewController);
-            return difficultyBeatmap?.level is CustomBeatmapLevel && ScoreSaberBeatmapKey.IsSupportedLevelId(difficultyBeatmap.level.levelID);
-#else
-            BeatmapKey beatmapKey = PlatformBeatmapKey(ref platformLeaderboardViewController);
-            return ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey) && ScoreSaberBeatmapKey.IsSupported(beatmapKey);
-#endif
+            return platformLeaderboardViewController.TryGetBeatmapKey(out BeatmapKey beatmapKey)
+                && ScoreSaberBeatmapKey.IsCustomLevel(beatmapKey)
+                && ScoreSaberBeatmapKey.IsSupported(beatmapKey);
         }
     }
 

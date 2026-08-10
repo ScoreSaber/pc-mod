@@ -2,7 +2,6 @@ using IPA.Utilities.Async;
 using ScoreSaber.Core.Api;
 using ScoreSaber.Core.Api.Generated;
 using ScoreSaber.Core.BeatSaver;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Live.Compete.Domain;
 using ScoreSaber.Live.V1;
 using SongCore;
@@ -74,7 +73,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 return null;
             }
 
-            BeatmapLevel level = await BeatmapLevelCompat.GetLevelByHash(_beatmapLevelsModel, hash, cancellationToken);
+            BeatmapLevel level = await _beatmapLevelsModel.GetLevelByHash(hash, cancellationToken);
             if (level == null) {
                 return null;
             }
@@ -346,11 +345,11 @@ namespace ScoreSaber.Features.Live.Compete.Services {
         }
 
         private static CompeteSongSelection CreateSongSelection(BeatmapLevel level, BeatmapKey key, LiveSongCommand song, LiveSongDetails scoreSaberDetails) {
-            if (!BeatmapLevelCompat.TryGetDifficultyDetails(level, key, out BeatmapDifficultyDetails difficultyDetails)) {
+            if (!level.TryGetDifficultyDetails(key, out BeatmapDifficultyDetails difficultyDetails)) {
                 return null;
             }
 
-            float njs = BeatmapLevelCompat.GetNoteJumpMovementSpeed(key.difficulty, difficultyDetails.NoteJumpMovementSpeed);
+            float njs = key.difficulty.NoteJumpMovementSpeed(difficultyDetails.NoteJumpMovementSpeed, false);
 
             return new CompeteSongSelection(
                 level,
@@ -358,7 +357,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                 DisplaySongName(level.songName, level.songSubName),
                 MapperName(difficultyDetails.Mappers),
                 key.difficulty.ToString().Replace("Plus", "+"),
-                key.beatmapCharacteristic.serializedName,
+                key.CharacteristicSerializedName(),
                 string.Empty,
                 FormatDuration(level.songDuration),
                 Math.Round(level.beatsPerMinute).ToString(CultureInfo.InvariantCulture),
@@ -388,7 +387,7 @@ namespace ScoreSaber.Features.Live.Compete.Services {
                     difficultyMatch = key;
                 }
 
-                string keyCharacteristic = key.beatmapCharacteristic == null ? string.Empty : key.beatmapCharacteristic.serializedName;
+                string keyCharacteristic = key.CharacteristicSerializedName();
                 if (string.IsNullOrEmpty(characteristic) || NormalizeCharacteristicName(keyCharacteristic) == characteristic) {
                     return key;
                 }

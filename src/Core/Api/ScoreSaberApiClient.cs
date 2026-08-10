@@ -3,6 +3,7 @@ using ScoreSaber.Core;
 using ScoreSaber.Core.Api.UploadTrust;
 using ScoreSaber.Core.Api.Generated;
 using ScoreSaber.Core.Api.Paging;
+using ScoreSaber.Core.Timing;
 using ScoreSaber.Features.Players.Domain;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.ScoreSubmission.Domain;
@@ -23,11 +24,13 @@ namespace ScoreSaber.Core.Api {
         private readonly HttpClient _httpClient;
         private readonly Http _http;
         private readonly UploadTrustClient _uploadTrustClient;
+        private readonly ScoreSaberClock _clock;
 
-        public ScoreSaberApiClient(IHttpService httpService, Http http, ScoreSaberRuntimeInfo runtimeInfo) {
+        public ScoreSaberApiClient(IHttpService httpService, Http http, ScoreSaberRuntimeInfo runtimeInfo, ScoreSaberClock clock) {
             _httpClient = new HttpClient(new SiraUtilHttpMessageHandler(httpService));
             _http = http;
             _uploadTrustClient = new UploadTrustClient(runtimeInfo);
+            _clock = clock;
         }
 
         public async Task<GameAuthenticationResult> AuthenticateGame(GameAuthenticationRequest request, CancellationToken cancellationToken) {
@@ -100,7 +103,8 @@ namespace ScoreSaber.Core.Api {
                     uploadVersionHash,
                     uploadData,
                     replay,
-                    session.UploadTrust);
+                    session.UploadTrust,
+                    _clock.UnixTimeMilliseconds() / 1000L);
 
                 Plugin.Log.Debug("ScoreSaber API POST /api/v2/game/upload using Unity multipart");
                 string responseBody = await _http.PostAsync(

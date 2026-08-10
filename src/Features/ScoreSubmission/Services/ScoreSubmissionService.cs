@@ -1,23 +1,25 @@
 using ScoreSaber.Features.Replays;
 using System;
-using System.Linq;
-using UnityEngine;
 
 namespace ScoreSaber.Features.ScoreSubmission.Services {
     internal class ScoreSubmissionService {
         private readonly ReplayState _replayState;
+        private readonly StandardLevelScenesTransitionSetupData _standardTransition;
+        private readonly MultiplayerLevelScenesTransitionSetupData _multiplayerTransition;
         private bool _enabled = true;
-        private Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> _standardCallback;
-        private Action<MultiplayerLevelScenesTransitionSetupDataSO, MultiplayerResultsData> _multiplayerCallback;
+        private Action<StandardLevelScenesTransitionSetupData, LevelCompletionResults> _standardCallback;
+        private Action<MultiplayerLevelScenesTransitionSetupData, MultiplayerResultsData> _multiplayerCallback;
 
-        public ScoreSubmissionService(ReplayState replayState) {
+        public ScoreSubmissionService(ReplayState replayState, StandardLevelScenesTransitionSetupData standardTransition, MultiplayerLevelScenesTransitionSetupData multiplayerTransition) {
             _replayState = replayState;
+            _standardTransition = standardTransition;
+            _multiplayerTransition = multiplayerTransition;
             ScoreSubmissionRegistry.Use(this);
         }
 
         internal void RegisterCallbacks(
-            Action<StandardLevelScenesTransitionSetupDataSO, LevelCompletionResults> standardCallback,
-            Action<MultiplayerLevelScenesTransitionSetupDataSO, MultiplayerResultsData> multiplayerCallback) {
+            Action<StandardLevelScenesTransitionSetupData, LevelCompletionResults> standardCallback,
+            Action<MultiplayerLevelScenesTransitionSetupData, MultiplayerResultsData> multiplayerCallback) {
 
             ClearCallbacks();
             _standardCallback = standardCallback;
@@ -57,14 +59,9 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
                 return;
             }
 
-            var transition = Resources.FindObjectsOfTypeAll<StandardLevelScenesTransitionSetupDataSO>().FirstOrDefault();
-            if (transition == null) {
-                return;
-            }
-
-            transition.didFinishEvent -= _standardCallback;
+            _standardTransition.didFinishEvent -= _standardCallback;
             if (subscribed) {
-                transition.didFinishEvent += _standardCallback;
+                _standardTransition.didFinishEvent += _standardCallback;
             }
         }
 
@@ -73,14 +70,9 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
                 return;
             }
 
-            var transition = Resources.FindObjectsOfTypeAll<MultiplayerLevelScenesTransitionSetupDataSO>().FirstOrDefault();
-            if (transition == null) {
-                return;
-            }
-
-            transition.didFinishEvent -= _multiplayerCallback;
+            _multiplayerTransition.didFinishEvent -= _multiplayerCallback;
             if (subscribed) {
-                transition.didFinishEvent += _multiplayerCallback;
+                _multiplayerTransition.didFinishEvent += _multiplayerCallback;
             }
         }
     }

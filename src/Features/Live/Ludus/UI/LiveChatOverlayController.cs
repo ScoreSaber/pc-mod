@@ -1,7 +1,6 @@
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.FloatingScreen;
 using HMUI;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Live.Compete.Services;
 using ScoreSaber.Features.Live.Ludus.Domain;

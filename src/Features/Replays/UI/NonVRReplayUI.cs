@@ -1,5 +1,4 @@
 ﻿using ScoreSaber.Core.Configuration;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Features.Replays.Playback;
 using System.Linq;

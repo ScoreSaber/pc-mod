@@ -1,7 +1,6 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.TypeHandlers;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core;
 using System;
 using System.Collections.Generic;

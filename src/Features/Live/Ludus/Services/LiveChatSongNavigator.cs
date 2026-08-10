@@ -19,20 +19,12 @@ namespace ScoreSaber.Features.Live.Ludus.Services {
             bool focused = false;
 
             foreach (LevelCollectionNavigationController controller in Active<LevelCollectionNavigationController>()) {
-#if BEAT_SABER_1_29_0
-                controller.SelectLevel(selection.BeatmapLevel.previewBeatmapLevel);
-#else
                 controller.SelectLevel(selection.BeatmapLevel);
-#endif
                 focused = true;
             }
 
             foreach (LevelCollectionViewController controller in Active<LevelCollectionViewController>()) {
-#if BEAT_SABER_1_29_0
-                controller.SelectLevel(selection.BeatmapLevel.previewBeatmapLevel);
-#else
                 controller.SelectLevel(selection.BeatmapLevel);
-#endif
                 focused = true;
             }
 

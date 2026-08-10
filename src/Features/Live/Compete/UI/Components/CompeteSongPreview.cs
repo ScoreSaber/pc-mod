@@ -1,7 +1,6 @@
 using HMUI;
 using IPA.Utilities.Async;
 using ScoreSaber.Core;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Live.Compete.Domain;
 using System;
 using System.Threading.Tasks;
@@ -89,7 +88,7 @@ namespace ScoreSaber.Features.Live.Compete.UI.Components {
             }
 
             try {
-                Sprite cover = await BeatmapLevelCompat.GetCoverSpriteAsync(song.BeatmapLevel, default);
+                Sprite cover = await song.BeatmapLevel.previewMediaData.GetCoverSpriteAsync();
                 await UnityMainThreadTaskScheduler.Factory.StartNew(() => {
                     if (requestVersion != _coverRequestVersion || _coverImage == null) {
                         return;

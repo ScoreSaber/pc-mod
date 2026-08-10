@@ -2,7 +2,6 @@ using HMUI;
 using IPA.Loader;
 using IPA.Utilities;
 using LeaderboardCore.Models;
-using ScoreSaber.Core.Compat;
 using System;
 using Zenject;
 using HiveVersion = Hive.Versioning.Version;
@@ -77,7 +76,7 @@ namespace ScoreSaber.Features.Multiplayer {
                 return;
             }
 
-            _platformLeaderboardViewController.SetDataCompat(new BeatmapKey(difficultyBeatmap));
+            _platformLeaderboardViewController.SetData(new BeatmapKey(difficultyBeatmap));
             ShowLeaderboardView();
         }
 #else
@@ -86,7 +85,7 @@ namespace ScoreSaber.Features.Multiplayer {
                 return;
             }
 
-            _platformLeaderboardViewController.SetDataCompat(_levelSelectionNavigationController.GetBeatmapKey());
+            _platformLeaderboardViewController.SetData(_levelSelectionNavigationController.GetBeatmapKey());
             ShowLeaderboardView();
         }
 #endif

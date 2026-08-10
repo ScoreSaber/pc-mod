@@ -86,13 +86,13 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
 
                 Plugin.Log.Error($"Failed to upload score: {result.Message}");
                 if (attempt < MaxUploadAttempts && IsRetryable(result)) {
-                    if (IsUploadTrustError(result) && !_gameSessionService.CanUseUploadProtocolV2) {
+                    if (RequiresAuthenticationRefresh(result) && !_gameSessionService.CanUseUploadProtocolV2) {
                         return result;
                     }
 
                     Report(statusChanged, ScoreUploadStatus.Retrying, $"Failed, attempting again ({attempt} of {MaxUploadAttempts} tries...)");
                     await Task.Delay(1000, cancellationToken);
-                    if (IsUploadTrustError(result) && !await RefreshUploadTrust(cancellationToken)) {
+                    if (RequiresAuthenticationRefresh(result) && !await RefreshUploadTrust(cancellationToken)) {
                         return result;
                     }
                     continue;
@@ -122,10 +122,20 @@ namespace ScoreSaber.Features.ScoreSubmission.Services {
 
         private static bool IsRetryable(ScoreUploadResult result) {
             int statusCode = result?.Error?.StatusCode ?? 0;
-            return statusCode == 0 || statusCode >= 500 || IsUploadTrustError(result) || IsNonceError(result);
+            return statusCode == 0 || statusCode == 401 || statusCode >= 500 || IsUploadTrustError(result) || IsNonceError(result);
         }
 
-        private static bool IsUploadTrustError(ScoreUploadResult result) => ContainsMessage(result, "upload protocol") || ContainsMessage(result, "upload trust");
+        private static bool RequiresAuthenticationRefresh(ScoreUploadResult result) => (result?.Error?.StatusCode ?? 0) == 401 || IsUploadTrustError(result);
+
+        private static bool IsUploadTrustError(ScoreUploadResult result) =>
+            ContainsMessage(result, "upload protocol") ||
+            ContainsMessage(result, "upload trust") ||
+            ContainsMessage(result, "trusted for uploads") ||
+            ContainsMessage(result, "upload version") ||
+            ContainsMessage(result, "upload timestamp") ||
+            ContainsMessage(result, "upload signature") ||
+            ContainsMessage(result, "upload build") ||
+            ContainsMessage(result, "official build");
 
         private static bool IsNonceError(ScoreUploadResult result) => ContainsMessage(result, "nonce");
 

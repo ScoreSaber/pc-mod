@@ -37,7 +37,7 @@ namespace ScoreSaber.Features.Leaderboards.Services {
         private LeaderboardQuery GetLeaderboardQuery(BeatmapKey beatmapKey, LeaderboardScreenScope scope, int page, bool filterAroundCountry) {
             var query = new LeaderboardQuery {
                 SongHash = ScoreSaberBeatmapKey.GetSongHash(beatmapKey),
-                GameMode = $"Solo{beatmapKey.beatmapCharacteristic.serializedName}",
+                GameMode = $"Solo{beatmapKey.CharacteristicSerializedName()}",
                 Difficulty = BeatmapDifficultyMethods.DefaultRating(beatmapKey.difficulty),
                 Page = page,
                 Limit = 10,

@@ -1,5 +1,4 @@
 using BeatSaberMarkupLanguage;
-using ScoreSaber.Core.Compat;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
@@ -44,7 +43,7 @@ namespace ScoreSaber.Core.Presentation {
 
             AssetBundle bundle = null;
             IEnumerator LoadBundle() {
-                var bundleContainer = AssetBundle.LoadFromMemoryAsync(BsmlCompat.GetResource(Assembly.GetExecutingAssembly(), FurryMaterialResource));
+                var bundleContainer = AssetBundle.LoadFromMemoryAsync(EmbeddedResources.Read(Assembly.GetExecutingAssembly(), FurryMaterialResource));
                 yield return bundleContainer;
                 bundle = bundleContainer.assetBundle;
             }

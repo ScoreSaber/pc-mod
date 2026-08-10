@@ -1,5 +1,4 @@
 using HMUI;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using System;
 using System.Linq;

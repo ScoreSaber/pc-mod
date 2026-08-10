@@ -1,6 +1,5 @@
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using System;
 using System.Collections.Generic;
@@ -64,7 +63,7 @@ namespace ScoreSaber.Features.MainMenu.MainFlow.Teams.UI {
         }
 
         private void ParseContent() {
-            BsmlCompat.Parser.Parse(BSMLHotReload.ResourceContent(typeof(TeamHost).Assembly, TeamHostResource), _parentGrid, this);
+            BsmlParser.Instance.Parse(BSMLHotReload.ResourceContent(typeof(TeamHost).Assembly, TeamHostResource), _parentGrid, this);
             if (_grid != null) {
                 _grid.constraintCount = 3;
                 _grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;

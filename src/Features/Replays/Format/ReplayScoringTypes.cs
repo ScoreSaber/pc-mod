@@ -32,14 +32,7 @@ namespace ScoreSaber.Features.Replays.Format {
     }
 
     // replays keep values from the game that recorded them, so compare by note parts
-    internal static class ReplayScoringTypes {
-#if BEAT_SABER_1_29_0 || BEAT_SABER_1_37_1 || BEAT_SABER_1_38_0
-        private const ScoringTypeEra GameEra = ScoringTypeEra.Pre1_40;
-#elif BEAT_SABER_1_40_0
-        private const ScoringTypeEra GameEra = ScoringTypeEra.From1_40_0; // bucket ends at 1.40.8
-#else
-        private const ScoringTypeEra GameEra = ScoringTypeEra.From1_40_9;
-#endif
+    internal static partial class ReplayScoringTypes {
 
         [Flags]
         private enum NoteParts {

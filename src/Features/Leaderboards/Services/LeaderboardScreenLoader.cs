@@ -11,14 +11,14 @@ namespace ScoreSaber.Features.Leaderboards.Services {
     internal class LeaderboardScreenLoader {
         private readonly BeatmapLevelsModel _beatmapLevelsModel;
         private readonly LeaderboardQueryService _leaderboardQueryService;
-        private readonly MaxScoreCache _maxScoreCache;
+        private readonly BeatmapMaxScoreCache _maxScoreCache;
         private readonly GameSessionService _gameSessionService;
         private readonly SettingsService _settings;
 
         public LeaderboardScreenLoader(
             BeatmapLevelsModel beatmapLevelsModel,
             LeaderboardQueryService leaderboardQueryService,
-            MaxScoreCache maxScoreCache,
+            BeatmapMaxScoreCache maxScoreCache,
             GameSessionService gameSessionService,
             SettingsService settings) {
             _beatmapLevelsModel = beatmapLevelsModel;

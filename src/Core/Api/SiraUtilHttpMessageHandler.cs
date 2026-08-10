@@ -1,4 +1,3 @@
-using ScoreSaber.Core.Compat;
 using SiraUtil.Web;
 using System;
 using System.Collections.Generic;
@@ -22,12 +21,13 @@ namespace ScoreSaber.Core.Api {
             var headers = GetHeaders(request);
 
             Plugin.Log.Debug($"ScoreSaber API {request.Method} {request.RequestUri.AbsolutePath}");
-            IHttpResponse siraResponse = await _httpService.SendWithTimeoutAsync(
+            IHttpResponse siraResponse = await _httpService.SendAsync(
                 ToMethod(request.Method),
                 request.RequestUri.ToString(),
                 RequestTimeoutSeconds,
                 body,
                 headers,
+                null,
                 cancellationToken);
 
             if (siraResponse == null) {
@@ -55,25 +55,7 @@ namespace ScoreSaber.Core.Api {
         }
 
         private static void CopyHeaders(HttpResponseMessage response, IHttpResponse siraResponse) {
-#if BEAT_SABER_1_29_0
-            // 1.29 has no response headers here
-#else
-            if (siraResponse.Headers != null) {
-                foreach (var header in siraResponse.Headers) {
-                    if (string.IsNullOrEmpty(header.Key) || header.Value == null) {
-                        continue;
-                    }
-
-                    try {
-                        if (!response.Headers.TryAddWithoutValidation(header.Key, header.Value)) {
-                            response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                        }
-                    } catch (Exception ex) {
-                        Plugin.Log.Debug($"Skipped invalid ScoreSaber response header {header.Key}: {ex.Message}");
-                    }
-                }
-            }
-#endif
+            siraResponse.CopyHeadersTo(response);
         }
 
         private static async Task<byte[]> ReadResponseBody(IHttpResponse response) {

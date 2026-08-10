@@ -1,5 +1,4 @@
 using HMUI;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Live.Compete.UI.FlowCoordinators;
 using ScoreSaber.Features.MainMenu.MainFlow;
 using ScoreSaber.Features.MainMenu.Settings;
@@ -40,7 +39,7 @@ namespace ScoreSaber.Features.MainMenu {
 
         private void Present(IScoreSaberFlowCoordinator flowCoordinator) {
             FlowCoordinator activeFlow = DeepestChildFlowCoordinator(_mainFlowCoordinator);
-            activeFlow.Present(flowCoordinator.FlowCoordinator);
+            activeFlow.PresentFlowCoordinator(flowCoordinator.FlowCoordinator);
             flowCoordinator.SetPresentingFlowCoordinator(activeFlow);
         }
 
@@ -51,7 +50,7 @@ namespace ScoreSaber.Features.MainMenu {
 
             _tournamentPresentingFlowCoordinator = DeepestChildFlowCoordinator(_mainFlowCoordinator);
             _activeTournamentFlowCoordinator = flowCoordinator;
-            _tournamentPresentingFlowCoordinator.Present(flowCoordinator);
+            _tournamentPresentingFlowCoordinator.PresentFlowCoordinator(flowCoordinator);
         }
 
         private void TournamentFlowDidFinish() {
@@ -63,7 +62,7 @@ namespace ScoreSaber.Features.MainMenu {
             FlowCoordinator presentingFlowCoordinator = _tournamentPresentingFlowCoordinator;
             _activeTournamentFlowCoordinator = null;
             _tournamentPresentingFlowCoordinator = null;
-            presentingFlowCoordinator.Dismiss(flowCoordinator);
+            presentingFlowCoordinator.DismissFlowCoordinator(flowCoordinator);
         }
 
         private FlowCoordinator DeepestChildFlowCoordinator(FlowCoordinator root) {

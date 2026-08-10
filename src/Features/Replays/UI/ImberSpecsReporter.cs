@@ -1,5 +1,4 @@
 ﻿using ScoreSaber.Features.Replays.Format;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Features.Replays.Playback;
 using System;
 using Zenject;

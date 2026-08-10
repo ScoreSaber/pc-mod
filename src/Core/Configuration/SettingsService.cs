@@ -50,7 +50,7 @@ namespace ScoreSaber.Core.Configuration {
             }
         }
 
-        internal string ReplayPathFor(string playerId, string songHash, BeatmapKey beatmapKey) => $@"{ReplayPath}\{playerId}-{songHash}-{beatmapKey.difficulty.SerializedName()}-{beatmapKey.beatmapCharacteristic.serializedName}.dat";
+        internal string ReplayPathFor(string playerId, string songHash, BeatmapKey beatmapKey) => $@"{ReplayPath}\{playerId}-{songHash}-{beatmapKey.difficulty.SerializedName()}-{beatmapKey.CharacteristicSerializedName()}.dat";
 
         internal string LegacyReplayPathFor(string playerId, string songName, string difficulty, string characteristic, string songHash) => $@"{ReplayPath}\{playerId}-{songName}-{difficulty}-{characteristic}-{songHash}.dat";
 

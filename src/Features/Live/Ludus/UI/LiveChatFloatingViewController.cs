@@ -4,7 +4,6 @@ using BeatSaberMarkupLanguage.ViewControllers;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using ScoreSaber.Core;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Live.Ludus.Domain;
 using ScoreSaber.Features.Live.Ludus.Services;
@@ -713,13 +712,7 @@ namespace ScoreSaber.Features.Live.Ludus.UI {
         private void ConfigureText(TextMeshProUGUI text, Color color, float fontSize, TextAlignmentOptions alignment, bool wordWrapping) {
             text.font = ChatFont;
             text.richText = true;
-#if BEAT_SABER_1_42_0
-            text.textWrappingMode = wordWrapping ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
-#else
-#pragma warning disable CS0618
-            text.enableWordWrapping = wordWrapping;
-#pragma warning restore CS0618
-#endif
+            text.SetWordWrapping(wordWrapping);
             text.overflowMode = TextOverflowModes.Ellipsis;
             text.alignment = alignment;
             text.color = color;

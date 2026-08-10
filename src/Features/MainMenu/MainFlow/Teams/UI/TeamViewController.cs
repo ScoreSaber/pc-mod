@@ -3,7 +3,6 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using Newtonsoft.Json;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Features.MainMenu.MainFlow.Teams;
 using System.Collections.Generic;

@@ -27,7 +27,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
         }
 
         private static void Postfix(object __instance, ref bool __result) {
-            if (!__result || !HasCustomLeaderboard(__instance) || !IsCustomLevel(__instance)) {
+            if (!__result || !HasCustomLeaderboard(__instance) || !ScoreSaberBeatmapKey.IsCustomLevelId(__instance.GetSelectedLevelId())) {
                 return;
             }
 
@@ -46,16 +46,5 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
             return leaderboards != null && leaderboards.Count > 0;
         }
 
-#if BEAT_SABER_1_29_0
-        private static bool IsCustomLevel(object instance) {
-            var selectedLevel = Traverse.Create(instance).Field("selectedLevel").GetValue<IPreviewBeatmapLevel>();
-            return selectedLevel is CustomPreviewBeatmapLevel;
-        }
-#else
-        private static bool IsCustomLevel(object instance) {
-            var selectedLevelKey = Traverse.Create(instance).Field("selectedLevelKey").GetValue<BeatmapKey?>();
-            return selectedLevelKey.HasValue && ScoreSaberBeatmapKey.IsCustomLevel(selectedLevelKey.Value);
-        }
-#endif
     }
 }

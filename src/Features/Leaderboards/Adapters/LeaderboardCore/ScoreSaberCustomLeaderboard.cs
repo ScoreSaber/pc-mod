@@ -1,6 +1,5 @@
 using HMUI;
 using LeaderboardCore.Managers;
-using LeaderboardCore.Models;
 using ScoreSaber.Features.Leaderboards.Domain;
 using ScoreSaber.Features.Leaderboards.UI;
 using System;
@@ -8,7 +7,7 @@ using Zenject;
 
 namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
-    internal class ScoreSaberCustomLeaderboard : CustomLeaderboard, IInitializable, IDisposable {
+    internal class ScoreSaberCustomLeaderboard : CustomLeaderboardAdapter, IInitializable, IDisposable {
         private readonly CustomLeaderboardManager _customLeaderboardManager;
         private readonly ScoreSaberLeaderboardCoreViewController _leaderboardViewController;
         private readonly PanelView _panelView;
@@ -25,11 +24,7 @@ namespace ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore {
 
         protected override ViewController panelViewController => _panelView;
 
-#if BEAT_SABER_1_29_0
-        public override bool ShowForLevel(IPreviewBeatmapLevel selectedLevel) => selectedLevel != null && ScoreSaberBeatmapKey.IsSupportedLevelId(selectedLevel.levelID);
-#else
-        public override bool ShowForLevel(BeatmapKey? beatmapKey) => beatmapKey.HasValue && ScoreSaberBeatmapKey.IsSupported(beatmapKey.Value);
-#endif
+        protected override bool ShowForLevelId(string levelId) => ScoreSaberBeatmapKey.IsSupportedLevelId(levelId);
 
         public void Initialize() => _customLeaderboardManager.Register(this);
 

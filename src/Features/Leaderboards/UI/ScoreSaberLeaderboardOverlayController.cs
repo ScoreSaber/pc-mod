@@ -1,7 +1,6 @@
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Parser;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Features.Leaderboards.Adapters.LeaderboardCore;
 using ScoreSaber.Features.Leaderboards.Domain;
@@ -72,7 +71,7 @@ namespace ScoreSaber.Features.Leaderboards.UI {
         }
 
         private void Parse() {
-            BsmlCompat.Parser.Parse(BSMLHotReload.ResourceContent(typeof(ScoreSaberLeaderboardOverlayController).Assembly, OverlayResource), _leaderboardViewController.gameObject, this);
+            BsmlParser.Instance.Parse(BSMLHotReload.ResourceContent(typeof(ScoreSaberLeaderboardOverlayController).Assembly, OverlayResource), _leaderboardViewController.gameObject, this);
             _container.Inject(_profileDetailView);
             _modalFlow.Bind(_parserParams, _profileDetailView);
         }

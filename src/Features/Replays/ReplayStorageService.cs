@@ -55,7 +55,7 @@ namespace ScoreSaber.Features.Replays {
 
             string songName = beatmapLevel.songName.ReplaceInvalidChars().Truncate(155);
             string difficulty = beatmapKey.difficulty.SerializedName();
-            string characteristic = beatmapKey.beatmapCharacteristic.serializedName;
+            string characteristic = beatmapKey.CharacteristicSerializedName();
 
             yield return _settings.LegacyReplayPathFor(playerId, songName, difficulty, characteristic, songHash);
             yield return _settings.LegacyReplayPathFor(playerId, songName, songHash);

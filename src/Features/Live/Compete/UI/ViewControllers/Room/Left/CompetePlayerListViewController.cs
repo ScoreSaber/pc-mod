@@ -4,7 +4,6 @@ using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using ScoreSaber.Core;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Presentation;
 using ScoreSaber.Features.Live.Compete.Domain;
 using ScoreSaber.Features.Live.Compete.UI.Cells;

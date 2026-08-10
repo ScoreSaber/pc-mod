@@ -7,7 +7,7 @@ using Zenject;
 namespace ScoreSaber.Features.Leaderboards {
     internal class LeaderboardFeatureInstaller : Installer {
         public override void InstallBindings() {
-            Container.Bind<MaxScoreCache>().AsSingle();
+            Container.Bind<BeatmapMaxScoreCache>().AsSingle();
             Container.Bind<LeaderboardPlayerScoreCache>().AsSingle();
             Container.Bind<LeaderboardScreenLoader>().AsSingle();
             Container.BindInterfacesAndSelfTo<LeaderboardScreenSession>().AsSingle();

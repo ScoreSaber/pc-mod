@@ -1,5 +1,4 @@
 ﻿using HMUI;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Replays.Format;
 using ScoreSaber.Features.Replays.Playback;
@@ -9,12 +8,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
 using Zenject;
-#if BEAT_SABER_1_42_0
-using AudioTimeSourceState = IAudioTimeSource.State;
-#else
-// older versions keep this enum on AudioTimeSyncController
-using AudioTimeSourceState = AudioTimeSyncController.State;
-#endif
 
 namespace ScoreSaber.Features.Replays.UI {
     internal class ImberManager : IInitializable, IDisposable {
@@ -112,7 +105,7 @@ namespace ScoreSaber.Features.Replays.UI {
             ((RectTransform)canvas.transform).sizeDelta = new Vector2(100f, 50f);
             CurvedCanvasSettings curvedCanvasSettings = _watermarkObject.AddComponent<CurvedCanvasSettings>();
             curvedCanvasSettings.SetRadius(0f);
-            CurvedTextMeshPro curvedTextMeshPro = BsmlCompat.CreateText((RectTransform)canvas.transform, "Double click left trigger to open Replay menu", new Vector2(0f, 0f));
+            CurvedTextMeshPro curvedTextMeshPro = CurvedTextFactory.Create((RectTransform)canvas.transform, "Double click left trigger to open Replay menu", new Vector2(0f, 0f));
             curvedTextMeshPro.alignment = TMPro.TextAlignmentOptions.Center;
             curvedTextMeshPro.color = new Color(0.95f, 0.95f, 0.95f);
         }
@@ -148,11 +141,11 @@ namespace ScoreSaber.Features.Replays.UI {
 
         private void MainImberPanelView_DidClickPausePlay() {
 
-            if (_audioTimeSyncController.state == AudioTimeSourceState.Playing) {
+            if (_audioTimeSyncController.IsPlaying()) {
                 _replayTimeSyncController.CancelAllHitSounds();
                 _mainImberPanelView.playPauseText = "PLAY";
                 _audioTimeSyncController.Pause();
-            } else if (_audioTimeSyncController.state == AudioTimeSourceState.Paused) {
+            } else if (_audioTimeSyncController.IsPaused()) {
                 _mainImberPanelView.playPauseText = "PAUSE";
                 _audioTimeSyncController.Resume();
             }

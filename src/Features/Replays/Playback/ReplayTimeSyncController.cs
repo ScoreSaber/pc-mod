@@ -2,13 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-#if BEAT_SABER_1_42_0
-using AudioTimeSourceState = IAudioTimeSource.State;
-#else
-// older versions use AudioManagerSO and AudioTimeSyncController.State here
-using AudioManager = AudioManagerSO;
-using AudioTimeSourceState = AudioTimeSyncController.State;
-#endif
 
 namespace ScoreSaber.Features.Replays.Playback {
     internal class ReplayTimeSyncController : TimeSynchronizer, ITickable {
@@ -120,12 +113,12 @@ namespace ScoreSaber.Features.Replays.Playback {
             ResetBeatmapObjects(_basicBeatmapObjectManager._bombNotePoolContainer.activeItems);
             ResetBeatmapObjects(_basicBeatmapObjectManager.activeObstacleControllers);
 
-            var previousState = audioTimeSyncController.state;
+            bool wasPlaying = audioTimeSyncController.IsPlaying();
 
             audioTimeSyncController.Pause();
             audioTimeSyncController.SeekTo(time / audioTimeSyncController.timeScale);
 
-            if (previousState == AudioTimeSourceState.Playing)
+            if (wasPlaying)
                 audioTimeSyncController.Resume();
 
             InitialStartFilterTime(ref _callbackInitData) = time;

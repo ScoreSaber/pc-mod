@@ -1,5 +1,4 @@
 ﻿using IPA.Utilities;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Configuration;
 using ScoreSaber.Features.Replays.Format;
 using SiraUtil.Tools.FPFC;
@@ -85,8 +84,8 @@ namespace ScoreSaber.Features.Replays.Playback {
             };
             spectatorObject.transform.rotation = rotation;
             _spectatorCamera.stereoTargetEye = StereoTargetEyeMask.Both;
-            ReplayCameraCompat.CopyTrackedPoseDriver(_mainCamera, _spectatorCamera);
-            ReplayCameraCompat.RebuildDepthTextureController(_mainCamera, _spectatorCamera);
+            _mainCamera.CopyTrackedPoseDriverTo(_spectatorCamera);
+            _mainCamera.RebuildDepthTextureControllerFor(_spectatorCamera);
 
             _spectatorCamera.gameObject.SetActive(true);
             _spectatorCamera.depth = 0;
@@ -94,7 +93,7 @@ namespace ScoreSaber.Features.Replays.Playback {
 
             if (_settings.Current.enableReplayFrameRenderer) {
                 var ss = Resources.FindObjectsOfTypeAll<ScreenshotRecorder>().Last();
-                ss.SetField("_directory", _settings.Current.replayFramePath);
+                ss.directory = _settings.Current.replayFramePath;
                 ss.enabled = true;
                 _desktopCamera.depth = 1;
                 var gc = Resources.FindObjectsOfTypeAll<DisableGCWhileEnabled>().Last();

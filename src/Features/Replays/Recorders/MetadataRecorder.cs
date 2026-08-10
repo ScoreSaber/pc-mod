@@ -1,12 +1,7 @@
 ﻿using System;
-#if BEAT_SABER_1_40_0 || BEAT_SABER_1_42_0
-using BeatSaber.GameSettings;
-#endif
 using ScoreSaber.Core;
-using ScoreSaber.Core.Compat;
 using ScoreSaber.Core.Gameplay;
 using ScoreSaber.Features.Replays.Format;
-using UnityEngine;
 using Zenject;
 
 namespace ScoreSaber.Features.Replays.Recorders {
@@ -17,34 +12,18 @@ namespace ScoreSaber.Features.Replays.Recorders {
         private readonly IGameEnergyCounter _gameEnergyCounter;
         private readonly ScoreSaberRuntimeInfo _runtimeInfo;
         private readonly AudioTimeSyncController.InitData _audioTimeSyncInitData;
-#if BEAT_SABER_1_40_0 || BEAT_SABER_1_42_0
-        private readonly VariableMovementDataProvider _movementDataProvider;
-        private readonly ControllerProfilesModel _controllerProfilesModel;
-#elif BEAT_SABER_1_38_0
-        private readonly SettingsManager _settingsManager;
-#endif
+        private readonly GameplayMetadataProvider _metadataProvider;
         private float _failTime;
 
-        public MetadataRecorder(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData beatmapObjectSpawnControllerInitData, IGameEnergyCounter gameEnergyCounter, RoomSettings roomSettings, ScoreSaberRuntimeInfo runtimeInfo, [InjectOptional] AudioTimeSyncController.InitData audioTimeSyncInitData
-#if BEAT_SABER_1_40_0 || BEAT_SABER_1_42_0
-            , [InjectOptional] VariableMovementDataProvider movementDataProvider, [InjectOptional] ControllerProfilesModel controllerProfilesModel
-#elif BEAT_SABER_1_38_0
-            , [InjectOptional] SettingsManager settingsManager
-#endif
-            ) {
+        public MetadataRecorder(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData beatmapObjectSpawnControllerInitData, IGameEnergyCounter gameEnergyCounter, RoomSettings roomSettings, ScoreSaberRuntimeInfo runtimeInfo, GameplayMetadataProvider metadataProvider, [InjectOptional] AudioTimeSyncController.InitData audioTimeSyncInitData) {
 
             _beatmapObjectSpawnControllerInitData = beatmapObjectSpawnControllerInitData;
             _gameEnergyCounter = gameEnergyCounter;
             _gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             _roomSettings = roomSettings;
             _runtimeInfo = runtimeInfo;
+            _metadataProvider = metadataProvider;
             _audioTimeSyncInitData = audioTimeSyncInitData;
-#if BEAT_SABER_1_40_0 || BEAT_SABER_1_42_0
-            _movementDataProvider = movementDataProvider;
-            _controllerProfilesModel = controllerProfilesModel;
-#elif BEAT_SABER_1_38_0
-            _settingsManager = settingsManager;
-#endif
         }
 
         public void Initialize() => _gameEnergyCounter.gameEnergyDidReach0Event += GameEnergyCounter_gameEnergyDidReach0Event;
@@ -65,7 +44,7 @@ namespace ScoreSaber.Features.Replays.Recorders {
                 Version = new Version("3.1.0"),
                 LevelID = _gameplayCoreSceneSetupData.GetBeatmapLevel().levelID,
                 Difficulty = BeatmapDifficultyMethods.DefaultRating(_gameplayCoreSceneSetupData.GetBeatmapKey().difficulty),
-                Characteristic = _gameplayCoreSceneSetupData.GetBeatmapKey().beatmapCharacteristic.serializedName,
+                Characteristic = _gameplayCoreSceneSetupData.GetBeatmapKey().CharacteristicSerializedName(),
                 Environment = _gameplayCoreSceneSetupData.GetEnvironmentSerializedName(),
                 Modifiers = GetModifierList(_gameplayCoreSceneSetupData.gameplayModifiers),
                 NoteSpawnOffset = _beatmapObjectSpawnControllerInitData.noteJumpValue,
@@ -79,7 +58,7 @@ namespace ScoreSaber.Features.Replays.Recorders {
                 Platform = "PC",
                 HasPlaySettingsExtension = true,
                 SongSpeed = SongSpeed(),
-                JumpDistance = JumpDistance(),
+                JumpDistance = _metadataProvider.JumpDistance(_beatmapObjectSpawnControllerInitData),
                 LeftSaberColor = _gameplayCoreSceneSetupData.colorScheme?.saberAColor,
                 RightSaberColor = _gameplayCoreSceneSetupData.colorScheme?.saberBColor,
                 ObstacleColor = _gameplayCoreSceneSetupData.colorScheme?.obstaclesColor,
@@ -97,8 +76,8 @@ namespace ScoreSaber.Features.Replays.Recorders {
                 SaberTrailIntensity = _gameplayCoreSceneSetupData.playerSpecificSettings.saberTrailIntensity,
                 HideNoteSpawnEffect = _gameplayCoreSceneSetupData.playerSpecificSettings.hideNoteSpawnEffect,
                 ArcsHapticFeedback = _gameplayCoreSceneSetupData.playerSpecificSettings.arcsHapticFeedback,
-                ArcVisibility = ArcVisibility(),
-                ControllerOffsets = ControllerOffsets(),
+                ArcVisibility = _metadataProvider.ArcVisibility(_gameplayCoreSceneSetupData.playerSpecificSettings),
+                ControllerOffsets = ReplayControllerOffsets(_metadataProvider.ControllerPoses()),
             };
 
         }
@@ -113,35 +92,6 @@ namespace ScoreSaber.Features.Replays.Recorders {
             return audioTimeSyncController != null ? audioTimeSyncController.timeScale : 1f;
         }
 
-        private float JumpDistance() {
-#if BEAT_SABER_1_40_0 || BEAT_SABER_1_42_0
-            if (_movementDataProvider != null && _movementDataProvider.jumpDistance > 0f) {
-                return _movementDataProvider.jumpDistance;
-            }
-#endif
-
-            if (_beatmapObjectSpawnControllerInitData.noteJumpValueType == BeatmapObjectSpawnMovementData.NoteJumpValueType.JumpDuration) {
-                return _beatmapObjectSpawnControllerInitData.noteJumpMovementSpeed * _beatmapObjectSpawnControllerInitData.noteJumpValue * 2f;
-            }
-
-            if (_beatmapObjectSpawnControllerInitData.beatsPerMinute <= 0f) {
-                return 0f;
-            }
-
-            float halfJumpDuration = 4f;
-            float beatDuration = 60f / _beatmapObjectSpawnControllerInitData.beatsPerMinute;
-            while (_beatmapObjectSpawnControllerInitData.noteJumpMovementSpeed * beatDuration * halfJumpDuration > 17.999f) {
-                halfJumpDuration /= 2f;
-            }
-
-            halfJumpDuration += _beatmapObjectSpawnControllerInitData.noteJumpValue;
-            if (halfJumpDuration < 0.25f) {
-                halfJumpDuration = 0.25f;
-            }
-
-            return _beatmapObjectSpawnControllerInitData.noteJumpMovementSpeed * beatDuration * halfJumpDuration * 2f;
-        }
-
         private int CurrentEnvironmentEffectsFilterPreset() {
             if (_gameplayCoreSceneSetupData.GetBeatmapKey().difficulty == BeatmapDifficulty.ExpertPlus) {
                 return (int)_gameplayCoreSceneSetupData.playerSpecificSettings.environmentEffectsFilterExpertPlusPreset;
@@ -150,63 +100,28 @@ namespace ScoreSaber.Features.Replays.Recorders {
             return (int)_gameplayCoreSceneSetupData.playerSpecificSettings.environmentEffectsFilterDefaultPreset;
         }
 
-        private int ArcVisibility() {
-#if BEAT_SABER_1_29_0
-            return (int)_gameplayCoreSceneSetupData.playerSpecificSettings.arcsVisible;
-#else
-            return (int)_gameplayCoreSceneSetupData.playerSpecificSettings.arcVisibility;
-#endif
+        private static ReplayControllerOffsets? ReplayControllerOffsets(ControllerPoseSet? controllerPoses) {
+            if (!controllerPoses.HasValue) {
+                return null;
+            }
+
+            ControllerPoseSet poses = controllerPoses.Value;
+            return new ReplayControllerOffsets {
+                Shared = ReplayControllerOffset(poses.Shared),
+                Left = ReplayControllerOffset(poses.Left),
+                Right = ReplayControllerOffset(poses.Right)
+            };
         }
 
-        private ReplayControllerOffsets? ControllerOffsets() {
-#if BEAT_SABER_1_29_0
-            MainSettingsModelSO[] settings = Resources.FindObjectsOfTypeAll<MainSettingsModelSO>();
-            if (settings.Length == 0) {
+        private static ReplayControllerOffset? ReplayControllerOffset(ControllerPose? controllerPose) {
+            if (!controllerPose.HasValue) {
                 return null;
             }
 
-            return new ReplayControllerOffsets() {
-                Shared = ControllerOffset(settings[0].controllerPosition.value, settings[0].controllerRotation.value)
-            };
-#elif BEAT_SABER_1_37_1
-            return null;
-#elif BEAT_SABER_1_38_0
-            if (_settingsManager == null) {
-                return null;
-            }
-
-            var controller = _settingsManager.settings.controller;
-            return new ReplayControllerOffsets() {
-                Shared = ControllerOffset(
-                    new Vector3(controller.position.x, controller.position.y, controller.position.z),
-                    new Vector3(controller.rotation.x, controller.rotation.y, controller.rotation.z))
-            };
-#elif BEAT_SABER_1_40_0 || BEAT_SABER_1_42_0
-            if (_controllerProfilesModel == null) {
-                return null;
-            }
-
-            var profile = _controllerProfilesModel.selectedProfile;
-            return new ReplayControllerOffsets() {
-                Left = ControllerOffset(profile.leftController.position, profile.leftController.rotation),
-                Right = ControllerOffset(profile.rightController.position, profile.rightController.rotation)
-            };
-#endif
-        }
-
-        private static ReplayControllerOffset ControllerOffset(Vector3 position, Vector3 rotation) {
-
-            return new ReplayControllerOffset() {
-                Position = new VRPosition() {
-                    X = position.x,
-                    Y = position.y,
-                    Z = position.z
-                },
-                Rotation = new VRPosition() {
-                    X = rotation.x,
-                    Y = rotation.y,
-                    Z = rotation.z
-                }
+            ControllerPose pose = controllerPose.Value;
+            return new ReplayControllerOffset {
+                Position = new VRPosition { X = pose.Position.x, Y = pose.Position.y, Z = pose.Position.z },
+                Rotation = new VRPosition { X = pose.Rotation.x, Y = pose.Rotation.y, Z = pose.Rotation.z }
             };
         }
 

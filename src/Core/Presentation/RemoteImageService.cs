@@ -1,4 +1,3 @@
-using ScoreSaber.Core.Compat;
 using System;
 using System.Collections;
 using System.Collections.Generic;
